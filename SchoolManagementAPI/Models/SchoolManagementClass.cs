@@ -296,6 +296,7 @@
         public string? MotherOccupation { get; set; }
         public string? MotherMobile { get; set; }
         public string? MotherEmail { get; set; }
+        public string? Address { get; set; }
         public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIp { get; set; }
