@@ -1184,6 +1184,7 @@ namespace SchoolManagementAPI.DAL
             catch (Exception ex)
             {
                 return new List<tblAdmission> { new tblAdmission { Status = $"ERROR: {ex.Message}" } };
+                //sample changed by anilKuamar
             }
         }
 
