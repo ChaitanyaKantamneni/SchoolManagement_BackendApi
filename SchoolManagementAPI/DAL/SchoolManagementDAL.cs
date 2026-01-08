@@ -95,6 +95,78 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        public UserToken GetUserTokenByRefresh(string email, string refreshToken = null)
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("ManageUserToken", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("p_action", "GET_REFRESH");
+            cmd.Parameters.AddWithValue("p_email", email ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("p_accessToken", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("p_issuedAt", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_expiryAt", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_refreshExpiryAt", DBNull.Value);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return new UserToken
+                {
+                    Email = reader["Email"]?.ToString(),
+                    AccessToken = reader["AccessToken"]?.ToString(),
+                    RefreshToken = reader["RefreshToken"]?.ToString(),
+                    AccessExpiry = reader["ExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["ExpiryAt"]),
+                    RefreshExpiry = reader["RefreshExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["RefreshExpiryAt"])
+                };
+            }
+            return null;
+        }
+
+        public void InsertUserToken(string email, string accessToken, string refreshToken, DateTime accessExpiry, DateTime refreshExpiry)
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("ManageUserToken", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("p_action", "INSERT");
+            cmd.Parameters.AddWithValue("p_email", email);
+            cmd.Parameters.AddWithValue("p_accessToken", accessToken);
+            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken);
+            cmd.Parameters.AddWithValue("p_issuedAt", DateTimeHelper.NowIST());
+            cmd.Parameters.AddWithValue("p_expiryAt", accessExpiry);
+            cmd.Parameters.AddWithValue("p_refreshExpiryAt", refreshExpiry);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RevokeUserToken(string refreshToken)
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("ManageUserToken", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("p_action", "REVOKE");
+            cmd.Parameters.AddWithValue("p_email", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_accessToken", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken);
+            cmd.Parameters.AddWithValue("p_issuedAt", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_expiryAt", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_refreshExpiryAt", DBNull.Value);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
         public List<tblAcademicYear> Tbl_AcademicYear_CRUD_Operations(tblAcademicYear academicYear)
         {
             var AcademicYears = new List<tblAcademicYear>();
@@ -492,78 +564,6 @@ namespace SchoolManagementAPI.DAL
                 var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
                 return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
             }
-        }
-
-        public UserToken GetUserTokenByRefresh(string email, string refreshToken = null)
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            using var cmd = new MySqlCommand("ManageUserToken", conn)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            cmd.Parameters.AddWithValue("p_action", "GET_REFRESH");
-            cmd.Parameters.AddWithValue("p_email", email ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("p_accessToken", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("p_issuedAt", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_expiryAt", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_refreshExpiryAt", DBNull.Value);
-
-            conn.Open();
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                return new UserToken
-                {
-                    Email = reader["Email"]?.ToString(),
-                    AccessToken = reader["AccessToken"]?.ToString(),
-                    RefreshToken = reader["RefreshToken"]?.ToString(),
-                    AccessExpiry = reader["ExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["ExpiryAt"]),
-                    RefreshExpiry = reader["RefreshExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["RefreshExpiryAt"])
-                };
-            }
-            return null;
-        }
-
-        public void InsertUserToken(string email, string accessToken, string refreshToken, DateTime accessExpiry, DateTime refreshExpiry)
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            using var cmd = new MySqlCommand("ManageUserToken", conn)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            cmd.Parameters.AddWithValue("p_action", "INSERT");
-            cmd.Parameters.AddWithValue("p_email", email);
-            cmd.Parameters.AddWithValue("p_accessToken", accessToken);
-            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken);
-            cmd.Parameters.AddWithValue("p_issuedAt", DateTimeHelper.NowIST());
-            cmd.Parameters.AddWithValue("p_expiryAt", accessExpiry);
-            cmd.Parameters.AddWithValue("p_refreshExpiryAt", refreshExpiry);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-        }
-
-        public void RevokeUserToken(string refreshToken)
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            using var cmd = new MySqlCommand("ManageUserToken", conn)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            cmd.Parameters.AddWithValue("p_action", "REVOKE");
-            cmd.Parameters.AddWithValue("p_email", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_accessToken", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_refreshToken", refreshToken);
-            cmd.Parameters.AddWithValue("p_issuedAt", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_expiryAt", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_refreshExpiryAt", DBNull.Value);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
         }
 
         public List<tblRoles> Tbl_Roles_CRUD_Operations(tblRoles role)
