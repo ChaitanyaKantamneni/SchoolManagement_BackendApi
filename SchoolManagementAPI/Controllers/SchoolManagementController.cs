@@ -5,6 +5,7 @@ using MimeKit;
 using SchoolManagementAPI.DAL;
 using SchoolManagementAPI.Models;
 using SchoolManagementAPI.Services;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Mail;
@@ -36,9 +37,74 @@ namespace SchoolManagementAPI.Controllers
             dbop = new SchoolManagementDAL(connectionString);
         }
 
+        [HttpPost("Tbl_SchoolDetails_CRUD")]
+        public IActionResult Tbl_SchoolDetails_CRUD([FromBody] SchoolDetails school)
+        {
+            try
+            {
+                //var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                //var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+
+                //if (school.Flag == "1" && roleId != "1")
+                //    return Forbid();
+
+                //if (school.Flag != "1" && roleId != "1")
+                //{
+                //    if (string.IsNullOrEmpty(tokenSchoolId))
+                //        return Forbid();
+
+                //    school.ID = tokenSchoolId;
+                //}
+
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+
+                school.ID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+
+                var result = dbop.Tbl_SchoolDetails_CRUD(school);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => !string.IsNullOrEmpty(x.Status) && x.Status.ToLower().Contains("error"));
+                if (error != null)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Success = false,
+                    Message = "Internal server error.",
+                    Error = ex.Message
+                });
+            }
+        }
+
         [AllowAnonymous]
         [HttpPost("Tbl_Users_CRUD_Operations")]
-        public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] tblUsers user, [FromForm] List<IFormFile>? files)
+        public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
         {
             try
             {
@@ -93,15 +159,20 @@ namespace SchoolManagementAPI.Controllers
                         return Unauthorized(new { message = "Invalid credentials" });
 
                     var tokenService = new TokenService(_configuration);
-                    var (accessToken, refreshToken, accessExpiry, refreshExpiry) = tokenService.GenerateTokens(
-                        dbUser.Email,
-                        $"{dbUser.FirstName} {dbUser.LastName}",
-                        dbUser.RollId
-                    );
+                    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
+                    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
+                        tokenService.GenerateTokens(dbUser.Email, $"{dbUser.FirstName} {dbUser.LastName}", dbUser.RollId, schoolID);
+
+                    //var (accessToken, refreshToken, accessExpiry, refreshExpiry) = tokenService.GenerateTokens(
+                    //    dbUser.Email,
+                    //    $"{dbUser.FirstName} {dbUser.LastName}",
+                    //    dbUser.RollId
+                    //);
 
                     // Check for existing valid token (latest by email)
                     var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                    if (existingToken != null && existingToken.AccessExpiry > DateTime.UtcNow)
+                    if (existingToken != null && existingToken.AccessExpiry > DateTime.Now)
                     {
                         return Ok(new
                         {
@@ -204,51 +275,103 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        //[AllowAnonymous]
+        //[HttpPost("refresh-token")]
+        //public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
+        //{
+        //    if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.RefreshToken))
+        //        return Unauthorized();
+
+        //    var tokenRecord = dbop.GetUserTokenByRefresh(request.Email, request.RefreshToken);
+
+        //    if (tokenRecord == null)
+        //        return Unauthorized(new { message = "Invalid refresh token" });
+
+        //    if (tokenRecord.RefreshExpiry < DateTimeHelper.NowIST())
+        //        return Unauthorized(new { message = "Refresh token expired" });
+
+        //    var tokenService = new TokenService(_configuration);
+        //    var (newAccess, newRefresh, accessExpiry, refreshExpiry) =
+        //        tokenService.GenerateTokens(
+        //            tokenRecord.Email,
+        //            "",
+        //            ""
+        //        );
+
+        //    dbop.RevokeUserToken(tokenRecord.RefreshToken);
+
+        //    dbop.InsertUserToken(
+        //        tokenRecord.Email,
+        //        newAccess,
+        //        newRefresh,
+        //        accessExpiry,
+        //        refreshExpiry
+        //    );
+
+        //    return Ok(new
+        //    {
+        //        accessToken = newAccess,
+        //        refreshToken = newRefresh
+        //    });
+        //}
+
         [AllowAnonymous]
         [HttpPost("refresh-token")]
         public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.RefreshToken))
-                return Unauthorized();
+                return Unauthorized(new { message = "Invalid request" });
 
             var tokenRecord = dbop.GetUserTokenByRefresh(request.Email, request.RefreshToken);
-
             if (tokenRecord == null)
                 return Unauthorized(new { message = "Invalid refresh token" });
 
             if (tokenRecord.RefreshExpiry < DateTimeHelper.NowIST())
                 return Unauthorized(new { message = "Refresh token expired" });
 
+            var dbUser = dbop.Tbl_Users_CRUD_Operations(new TblUser
+            {
+                Email = request.Email,
+                Flag = "11"
+            }).FirstOrDefault();
+
+            if (dbUser == null || string.IsNullOrEmpty(dbUser.RollId))
+                return Unauthorized(new { message = "Invalid user" });
+
+            string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
             var tokenService = new TokenService(_configuration);
-            var (newAccess, newRefresh, accessExpiry, refreshExpiry) =
+            var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
                 tokenService.GenerateTokens(
-                    tokenRecord.Email,
-                    "",
-                    ""
+                    dbUser.Email,
+                    $"{dbUser.FirstName} {dbUser.LastName}",
+                    dbUser.RollId,
+                    schoolID
                 );
 
             dbop.RevokeUserToken(tokenRecord.RefreshToken);
-
-            dbop.InsertUserToken(
-                tokenRecord.Email,
-                newAccess,
-                newRefresh,
-                accessExpiry,
-                refreshExpiry
-            );
+            dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
 
             return Ok(new
             {
-                accessToken = newAccess,
-                refreshToken = newRefresh
+                accessToken,
+                refreshToken,
+                role = dbUser.RollId,
+                email = dbUser.Email
             });
         }
+
 
         [HttpPost("Tbl_Roles_CRUD_Operations")]
         public IActionResult Tbl_Roles_CRUD_Operations([FromBody] tblRoles role)
         {
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+
+                role.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+
                 var result = dbop.Tbl_Roles_CRUD_Operations(role);
 
                 if (result == null || result.Count == 0)
@@ -660,6 +783,11 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
         public IActionResult Tbl_AcademicYear_CRUD_Operations([FromBody] tblAcademicYear academicYear)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+
+            academicYear.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+
             var result = dbop.Tbl_AcademicYear_CRUD_Operations(academicYear);
 
             if (result == null || result.Count == 0)
@@ -730,6 +858,10 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_Class_CRUD_Operations")]
         public IActionResult Tbl_Class_CRUD_Operations([FromBody] tblClass Class)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+
+            Class.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
             var result = dbop.Tbl_Class_CRUD_Operations(Class);
 
             if (result == null || result.Count == 0)
