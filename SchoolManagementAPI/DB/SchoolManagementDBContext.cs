@@ -7,6 +7,6 @@ namespace SchoolManagementAPI.DB
     {
         public SchoolManagementDBContext(DbContextOptions<SchoolManagementDBContext> options) : base(options) { }
 
-        public DbSet<tblUsers> tbl_users { get; set; }
+        public DbSet<TblUser> tbl_users { get; set; }
     }
 }

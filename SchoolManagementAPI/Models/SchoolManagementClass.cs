@@ -4,29 +4,114 @@
     {
     }
 
-    public class tblUsers
+    public class SchoolDetails
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; }
+        public string? ID { get; set; }
+        public string? Name { get; set; }
         public string? MobileNo { get; set; }
-        public string? Password { get; set; }
-        public string? RollId { get; set; }
-        public string? IsActive { get; set; }
+        public string? Email { get; set; }
+        public string? Website { get; set; }
+        public string? Address { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIP { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? ModifiedBy { get; set; }
         public string? ModifiedIP { get; set; }
-        public DateTime? ModifiedDate { get; set; }        
+        public DateTime? ModifiedDate { get; set; }
         public string? Flag { get; set; }
-        public string? OldPassword { get; set; }
-        public string? NewPassword { get; set; }
         public string? Status { get; set; }
-        public string? FileName { get; set; }
-        public string? FilePath { get; set; }
-        public string? AccessToken { get; set; }
 
+        public int? Limit { get; set; }
+        public int? Offset { get; set; }
+    }
+
+
+    //public class tblUsers
+    //{
+    //    public string? SchoolID { get; set; }
+    //    public string? FirstName { get; set; }
+    //    public string? LastName { get; set; }
+    //    public string? Email { get; set; }
+    //    public string? MobileNo { get; set; }
+    //    public string? Password { get; set; }
+    //    public string? RollId { get; set; }
+    //    public string? IsActive { get; set; }
+    //    public string? CreatedBy { get; set; }
+    //    public string? CreatedIP { get; set; }
+    //    public DateTime? CreatedDate { get; set; }
+    //    public string? ModifiedBy { get; set; }
+    //    public string? ModifiedIP { get; set; }
+    //    public DateTime? ModifiedDate { get; set; }        
+    //    public string? Flag { get; set; }
+    //    public string? OldPassword { get; set; }
+    //    public string? NewPassword { get; set; }
+    //    public string? Status { get; set; }
+    //    public string? FileName { get; set; }
+    //    public string? FilePath { get; set; }
+    //    public string? AccessToken { get; set; }
+
+
+    //}
+
+    public class TblUser
+    {
+        // ===== Table Columns =====
+
+        public long ID { get; set; }
+
+        public string? FirstName { get; set; }
+
+        public string? LastName { get; set; }
+
+        public string? Email { get; set; }
+
+        public string? MobileNo { get; set; }
+
+        public string? Password { get; set; }
+
+        public string? RollId { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public bool? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+
+        public string? CreatedIP { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+
+        public string? ModifiedIP { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+
+        public string? FileName { get; set; }
+
+        public string? FilePath { get; set; }
+
+
+        // ===== Stored Procedure Only Parameters =====
+
+        public string? Flag { get; set; }
+
+        public string? OldPassword { get; set; }
+
+        public string? NewPassword { get; set; }
+
+        public int? Limit { get; set; }
+
+        public int? Offset { get; set; }
+
+
+        // ===== API / Response Only =====
+
+        public string? Status { get; set; }
+
+        public string? Message { get; set; }
+
+        public string? AccessToken { get; set; }
     }
 
     public class UserOTP
@@ -50,6 +135,7 @@
 
     public class tblAcademicYear
     {
+        public string? SchoolID { get; set; }
         public string? ID { get; set; }
         public string? Name { get; set; }
         public DateTime? StartDate { get; set; }
@@ -64,11 +150,17 @@
         public DateTime? ModifiedDate { get; set; }
         public string? Flag { get; set; }
         public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
     }
 
     public class tblSyllabus
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? Name { get; set; }
         public DateTime? AvailableFrom { get; set; }
         public string? Description { get; set; }
@@ -86,6 +178,8 @@
     public class tblClass
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? Name { get; set; }
         public string? Syllabus { get; set; }
         public string? Description { get; set; }
@@ -103,6 +197,8 @@
     public class tblClassDivision
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? Class { get; set; }
         public string? Name { get; set; }
         public string? Strength { get; set; }
@@ -123,6 +219,8 @@
     public class tblStaff
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? StaffType { get; set; }
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }
@@ -160,6 +258,7 @@
     public class tblRoles
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
         public string? RoleName { get; set; }
         public string? Description { get; set; }
         public string? IsActive { get; set; }
@@ -233,6 +332,8 @@
     public class tblSubjects
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? Class { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
@@ -253,6 +354,8 @@
     public class tblSubjectStaff
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? Class { get; set; }
         public string? StaffName { get; set; }
         public string? CreatedBy { get; set; }

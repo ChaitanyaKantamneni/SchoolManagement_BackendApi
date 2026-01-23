@@ -11,35 +11,45 @@ namespace SchoolManagementAPI.Services
         private readonly IConfiguration _config;
         public TokenService(IConfiguration config) { _config = config; }
 
-        public (string accessToken, string refreshToken, DateTime accessExpiry, DateTime refreshExpiry) GenerateTokens(string email, string fullName, string role)
+        public (string accessToken, string refreshToken, DateTime accessExpiry, DateTime refreshExpiry) GenerateTokens(
+            string email,
+            string fullName,
+            string role,
+            string? schoolID = null) // optional SchoolID
         {
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-
             var nowIST = DateTimeHelper.NowIST();
 
             var accessExpiry = nowIST.AddMinutes(Convert.ToDouble(_config["Jwt:ExpiryMinutes"]));
             var refreshExpiry = nowIST.AddDays(30);
 
+            
+            var claims = new List<Claim>
+            {
+                new Claim("email", email),    
+                new Claim("name", fullName),
+                new Claim("role", role)        
+            };
 
-            //var accessExpiry = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:ExpiryMinutes"]));
-            //var refreshExpiry = DateTime.UtcNow.AddDays(30); // Refresh token valid for 30 days
+            if (!string.IsNullOrEmpty(schoolID) && role != "1")
+            {
+                claims.Add(new Claim("SchoolID", schoolID));
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var accessTokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Name, fullName),
-                new Claim(ClaimTypes.Role, role)
-            }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = accessExpiry,
                 Issuer = _config["Jwt:Issuer"],
                 Audience = _config["Jwt:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
             };
+
             var accessToken = tokenHandler.WriteToken(tokenHandler.CreateToken(accessTokenDescriptor));
-            var refreshToken = Guid.NewGuid().ToString("N"); // Random refresh token
+            var refreshToken = Guid.NewGuid().ToString("N");
 
             return (accessToken, refreshToken, accessExpiry, refreshExpiry);
         }
