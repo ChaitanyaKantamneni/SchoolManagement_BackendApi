@@ -1,11 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
+using OfficeOpenXml;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using SchoolManagementAPI.DAL;
+using SchoolManagementAPI.DB;
 using SchoolManagementAPI.Models;
 using SchoolManagementAPI.Services;
 using System.Data;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Mail;
@@ -23,10 +30,12 @@ namespace SchoolManagementAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly SchoolManagementDAL dbop;
         private readonly ILogger<SchoolManagementController> _logger;
+        private readonly SchoolManagementDBContext _dbContext;
 
         public SchoolManagementController(
             IConfiguration configuration,
-            ILogger<SchoolManagementController> logger)
+            ILogger<SchoolManagementController> logger,
+            SchoolManagementDBContext dbContext)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -35,6 +44,8 @@ namespace SchoolManagementAPI.Controllers
                                    ?? throw new ArgumentNullException("Connection string not found");
 
             dbop = new SchoolManagementDAL(connectionString);
+
+            _dbContext = dbContext;
         }
 
         [HttpPost("Tbl_SchoolDetails_CRUD")]
@@ -56,28 +67,32 @@ namespace SchoolManagementAPI.Controllers
                 //    school.ID = tokenSchoolId;
                 //}
 
-                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var roleId = User.FindFirst("role")?.Value;
                 var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
-
-                school.ID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+                if (roleId != "1")
+                {
+                    school.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+                }                    
 
                 var result = dbop.Tbl_SchoolDetails_CRUD(school);
 
-                if (result == null || result.Count == 0)
+                if (result == null)
                 {
-                    return BadRequest(new
+                    return StatusCode(500, new
                     {
-                        StatusCode = 400,
-                        Message = "No result returned or operation failed."
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
                     });
                 }
 
                 var error = result.FirstOrDefault(x => !string.IsNullOrEmpty(x.Status) && x.Status.ToLower().Contains("error"));
                 if (error != null)
                 {
-                    return BadRequest(new
+                    return StatusCode(500, new
                     {
-                        StatusCode = 400,
+                        StatusCode = 500,
+                        Success = false,
                         Message = error.Status
                     });
                 }
@@ -92,11 +107,12 @@ namespace SchoolManagementAPI.Controllers
             }
             catch (Exception ex)
             {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SchoolDetails_CRUD", Newtonsoft.Json.JsonConvert.SerializeObject(school));
                 return BadRequest(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Success = false,
-                    Message = "Internal server error.",
+                    Message = "Internal server error occurred. Please try again.",
                     Error = ex.Message
                 });
             }
@@ -123,7 +139,7 @@ namespace SchoolManagementAPI.Controllers
                         return BadRequest("Invalid image format.");
 
                     string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
-                    Directory.CreateDirectory(uploadsFolder); // Will not recreate if exists
+                    Directory.CreateDirectory(uploadsFolder); 
 
                     string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -140,59 +156,100 @@ namespace SchoolManagementAPI.Controllers
                 }
                 var result = dbop.Tbl_Users_CRUD_Operations(user);
 
-                if (result == null || result.Count == 0)
+                if (result == null)
                 {
-                    return BadRequest(new { StatusCode = 400, Message = "No result returned or operation failed." });
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
                 }
 
-                // Check for any user with error status
                 var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
                 if (error != null)
                 {
-                    return BadRequest(new { StatusCode = 400, Message = error.Status });
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
                 }
+
+                //if (user.Flag == "4")
+                //{
+                //    var dbUser = result[0];
+                //    if (string.IsNullOrEmpty(dbUser.RollId))
+                //        return Unauthorized(new { message = "Invalid credentials" });
+
+                //    var tokenService = new TokenService(_configuration);
+                //    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
+                //    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
+                //        tokenService.GenerateTokens(dbUser.Email, $"{dbUser.FirstName} {dbUser.LastName}", dbUser.RollId, schoolID);
+
+                //    var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
+                //    if (existingToken != null && existingToken.AccessExpiry > DateTime.Now)
+                //    {
+                //        return Ok(new
+                //        {
+                //            StatusCode = 200,
+                //            Success = true,
+                //            Message = dbUser.Status,
+                //            Data = result,
+                //            token = existingToken.AccessToken,
+                //            refreshToken = existingToken.RefreshToken,
+                //            role = dbUser.RollId,
+                //            email = dbUser.Email
+                //        });
+                //    }
+
+                //    // Revoke old token if exists
+                //    if (existingToken != null)
+                //        dbop.RevokeUserToken(existingToken.RefreshToken);
+
+                //    // Insert new token in DB
+                //    dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
+
+                //    return Ok(new
+                //    {
+                //        accessToken,
+                //        refreshToken,
+                //        role = dbUser.RollId,
+                //        email = dbUser.Email
+                //    });
+                //}
 
                 if (user.Flag == "4")
                 {
                     var dbUser = result[0];
+
                     if (string.IsNullOrEmpty(dbUser.RollId))
                         return Unauthorized(new { message = "Invalid credentials" });
 
                     var tokenService = new TokenService(_configuration);
                     string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
 
-                    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
-                        tokenService.GenerateTokens(dbUser.Email, $"{dbUser.FirstName} {dbUser.LastName}", dbUser.RollId, schoolID);
+                    var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
+                        tokenService.GenerateTokens(
+                            dbUser.Email,
+                            $"{dbUser.FirstName} {dbUser.LastName}",
+                            dbUser.RollId,
+                            schoolID
+                        );
 
-                    //var (accessToken, refreshToken, accessExpiry, refreshExpiry) = tokenService.GenerateTokens(
-                    //    dbUser.Email,
-                    //    $"{dbUser.FirstName} {dbUser.LastName}",
-                    //    dbUser.RollId
-                    //);
-
-                    // Check for existing valid token (latest by email)
                     var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                    if (existingToken != null && existingToken.AccessExpiry > DateTime.Now)
-                    {
-                        return Ok(new
-                        {
-                            StatusCode = 200,
-                            Success = true,
-                            Message = dbUser.Status,
-                            Data = result,
-                            token = existingToken.AccessToken,
-                            refreshToken = existingToken.RefreshToken,
-                            role = dbUser.RollId,
-                            email = dbUser.Email
-                        });
-                    }
-
-                    // Revoke old token if exists
                     if (existingToken != null)
                         dbop.RevokeUserToken(existingToken.RefreshToken);
 
-                    // Insert new token in DB
-                    dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
+                    dbop.InsertUserToken(
+                        dbUser.Email,
+                        accessToken,
+                        refreshToken,
+                        accessExpiryUtc,
+                        refreshExpiryUtc
+                    );
 
                     return Ok(new
                     {
@@ -204,57 +261,6 @@ namespace SchoolManagementAPI.Controllers
                 }
 
 
-
-
-                // Optional: You can trigger mail only on registration (Flag = "1")
-                //if (user.Flag == "1")
-                //{
-                //    SendRegistrationEmailAsync(user.Email, user.FirstName, user.Password, false);
-                //    SendRegistrationEmailAsync(user.Email, user.FirstName, user.Password, true);
-                //}
-                //if (user.Flag == "5")
-                //{
-                //    var dbResult = result.FirstOrDefault();
-
-                //    if (dbResult == null || dbResult.Status?.ToString() != "UserExists")
-                //    {
-                //        return NotFound(new { Message = "User not found or inactive." });
-                //    }
-
-                //    string email = dbResult.Email;
-                //    string name = dbResult.FirstName;
-
-                //    if (string.IsNullOrEmpty(email))
-                //    {
-                //        return BadRequest(new { Message = "Email is missing in the user record." });
-                //    }
-
-                //    // Rate limit check
-                //    if (_otpCache.TryGetValue(email, out var existingOtp))
-                //    {
-                //        var sentTimeApprox = existingOtp.ExpiryTime.AddMinutes(-10);
-                //        if ((DateTime.Now - sentTimeApprox).TotalSeconds < 60)
-                //        {
-                //            return BadRequest(new { Message = "OTP already sent. Please wait a minute before requesting again." });
-                //        }
-                //    }
-
-                //    var otp = GenerateOTP(6);
-                //    var expiryTime = DateTime.Now.AddMinutes(10);
-
-                //    _otpCache[email] = new UserOTP
-                //    {
-                //        Email = email,
-                //        OTP = otp,
-                //        ExpiryTime = expiryTime
-                //    };
-
-                //    var emailBody = $"Hi {name},\n\nYour OTP for password reset is: {otp}\n\nThis OTP is valid for 10 minutes.";
-                //    await SendEmailOtpAsync(email, "Your OTP for Password Reset", emailBody);
-
-                //    return Ok(new { StatusCode = 200, Message = "OTP sent successfully to your email." });
-                //}
-
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -265,9 +271,10 @@ namespace SchoolManagementAPI.Controllers
             }
             catch (Exception ex)
             {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Users_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(user));
                 return BadRequest(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Success = false,
                     Message = "Internal server error.",
                     Error = ex.Message
@@ -280,38 +287,44 @@ namespace SchoolManagementAPI.Controllers
         //public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
         //{
         //    if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.RefreshToken))
-        //        return Unauthorized();
+        //        return Unauthorized(new { message = "Invalid request" });
 
         //    var tokenRecord = dbop.GetUserTokenByRefresh(request.Email, request.RefreshToken);
-
         //    if (tokenRecord == null)
         //        return Unauthorized(new { message = "Invalid refresh token" });
 
         //    if (tokenRecord.RefreshExpiry < DateTimeHelper.NowIST())
         //        return Unauthorized(new { message = "Refresh token expired" });
 
+        //    var dbUser = dbop.Tbl_Users_CRUD_Operations(new TblUser
+        //    {
+        //        Email = request.Email,
+        //        Flag = "11"
+        //    }).FirstOrDefault();
+
+        //    if (dbUser == null || string.IsNullOrEmpty(dbUser.RollId))
+        //        return Unauthorized(new { message = "Invalid user" });
+
+        //    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
         //    var tokenService = new TokenService(_configuration);
-        //    var (newAccess, newRefresh, accessExpiry, refreshExpiry) =
+        //    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
         //        tokenService.GenerateTokens(
-        //            tokenRecord.Email,
-        //            "",
-        //            ""
+        //            dbUser.Email,
+        //            $"{dbUser.FirstName} {dbUser.LastName}",
+        //            dbUser.RollId,
+        //            schoolID
         //        );
 
         //    dbop.RevokeUserToken(tokenRecord.RefreshToken);
-
-        //    dbop.InsertUserToken(
-        //        tokenRecord.Email,
-        //        newAccess,
-        //        newRefresh,
-        //        accessExpiry,
-        //        refreshExpiry
-        //    );
+        //    dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
 
         //    return Ok(new
         //    {
-        //        accessToken = newAccess,
-        //        refreshToken = newRefresh
+        //        accessToken,
+        //        refreshToken,
+        //        role = dbUser.RollId,
+        //        email = dbUser.Email
         //    });
         //}
 
@@ -319,7 +332,8 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("refresh-token")]
         public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.RefreshToken))
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.RefreshToken))
                 return Unauthorized(new { message = "Invalid request" });
 
             var tokenRecord = dbop.GetUserTokenByRefresh(request.Email, request.RefreshToken);
@@ -341,7 +355,8 @@ namespace SchoolManagementAPI.Controllers
             string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
 
             var tokenService = new TokenService(_configuration);
-            var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
+
+            var (accessToken, newRefreshToken, accessExpiryUtc, refreshExpiryUtc) =
                 tokenService.GenerateTokens(
                     dbUser.Email,
                     $"{dbUser.FirstName} {dbUser.LastName}",
@@ -350,17 +365,423 @@ namespace SchoolManagementAPI.Controllers
                 );
 
             dbop.RevokeUserToken(tokenRecord.RefreshToken);
-            dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
+            dbop.InsertUserToken(
+                dbUser.Email,
+                accessToken,
+                newRefreshToken,
+                accessExpiryUtc,
+                refreshExpiryUtc
+            );
 
             return Ok(new
             {
                 accessToken,
-                refreshToken,
+                refreshToken = newRefreshToken,
                 role = dbUser.RollId,
                 email = dbUser.Email
             });
         }
 
+
+        [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
+        public IActionResult Tbl_AcademicYear_CRUD_Operations([FromBody] tblAcademicYear academicYear)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    academicYear.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_AcademicYear_CRUD_Operations(academicYear);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_AcademicYear_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(academicYear));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_Syllabus_CRUD_Operations")]
+        public IActionResult Tbl_Syllabus_CRUD_Operations([FromBody] tblSyllabus syllabus)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    syllabus.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_Syllabus_CRUD_Operations(syllabus);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex) {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Syllabus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(syllabus));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }            
+        }
+
+        [HttpPost("ExportSyllabusToExcel")]
+        public async Task<IActionResult> ExportSyllabusToExcel([FromBody] tblSyllabus filter)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            const int batchSize = 50_000;
+            DateTime? lastCreatedDate = null;
+            int? lastID = null;
+
+            // Do NOT use "using" here for the stream; ASP.NET will manage it
+            var stream = new MemoryStream();
+            var package = new ExcelPackage(stream);
+
+            var ws = package.Workbook.Worksheets.Add("Syllabus");
+
+            // Header
+            ws.Cells[1, 1].Value = "ID";
+            ws.Cells[1, 2].Value = "Name";
+            ws.Cells[1, 3].Value = "School Name";
+            ws.Cells[1, 4].Value = "Academic Year";
+            ws.Cells[1, 5].Value = "Available From";
+            ws.Cells[1, 6].Value = "Description";
+            ws.Cells[1, 7].Value = "Status";
+            ws.Cells[1, 8].Value = "Created Date";
+
+            int currentRow = 2;
+
+            while (true)
+            {
+                var batch = await _dbContext.Tbl_Syllabus
+                    .FromSqlRaw(
+                        @"CALL Proc_Syllabus(
+                    NULL,
+                    {0}, {1}, {2},
+                    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                    {3}, {4}, {5}, {6},
+                    NULL, NULL, -1
+                )",
+                        filter.SchoolID,
+                        filter.AcademicYear,
+                        filter.Name,
+                        filter.Flag ?? "2",
+                        batchSize,
+                        lastCreatedDate,
+                        lastID
+                    )
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                if (!batch.Any()) break;
+
+                foreach (var item in batch)
+                {
+                    ws.Cells[currentRow, 1].Value = item.ID ?? 0;
+                    ws.Cells[currentRow, 2].Value = item.Name ?? "";
+                    ws.Cells[currentRow, 3].Value = item.SchoolName ?? "";
+                    ws.Cells[currentRow, 4].Value = item.AcademicYearName ?? "";
+                    ws.Cells[currentRow, 5].Value = item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "";
+                    ws.Cells[currentRow, 6].Value = item.Description ?? "";
+                    ws.Cells[currentRow, 7].Value = (item.IsActive ?? false) ? "Active" : "Inactive";
+                    ws.Cells[currentRow, 8].Value = item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+                    currentRow++;
+                }
+
+                lastCreatedDate = batch.Last().CreatedDate;
+                lastID = batch.Last().ID;
+            }
+
+            ws.Cells[ws.Dimension.Address].AutoFitColumns();
+
+            package.Save();
+            stream.Position = 0;
+
+            // Return stream directly; do NOT dispose it yet
+            return File(
+                stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+            );
+        }
+
+        [HttpPost("ExportSyllabus")]
+        public async Task<IActionResult> ExportSyllabus([FromBody] tblSyllabus filter, [FromQuery] string type)
+        {
+            const int batchSize = 50000;
+            DateTime? lastCreatedDate = null;
+            int? lastID = null;
+
+            if (type == "excel")
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                var stream = new MemoryStream();
+                var package = new ExcelPackage(stream);
+                var ws = package.Workbook.Worksheets.Add("Syllabus");
+
+                // Headers
+                ws.Cells[1, 1].Value = "ID";
+                ws.Cells[1, 2].Value = "Name";
+                ws.Cells[1, 3].Value = "School Name";
+                ws.Cells[1, 4].Value = "Academic Year";
+                ws.Cells[1, 5].Value = "Available From";
+                ws.Cells[1, 6].Value = "Description";
+                ws.Cells[1, 7].Value = "Status";
+                ws.Cells[1, 8].Value = "Created Date";
+
+                int currentRow = 2;
+
+                while (true)
+                {
+                    var batch = await _dbContext.Tbl_Syllabus
+                        .FromSqlRaw(
+                            @"CALL Proc_Syllabus(
+                            NULL,
+                            {0}, {1}, {2},
+                            NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                            {3}, {4}, {5}, {6},
+                            NULL, NULL, -1
+                        )",
+                            filter.SchoolID,
+                            filter.AcademicYear,
+                            filter.Name,
+                            filter.Flag ?? "2",
+                            batchSize,
+                            lastCreatedDate,
+                            lastID
+                        )
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    if (!batch.Any()) break;
+
+                    foreach (var item in batch)
+                    {
+                        ws.Cells[currentRow, 1].Value = item.ID ?? 0;
+                        ws.Cells[currentRow, 2].Value = item.Name ?? "";
+                        ws.Cells[currentRow, 3].Value = item.SchoolName ?? "";
+                        ws.Cells[currentRow, 4].Value = item.AcademicYearName ?? "";
+                        ws.Cells[currentRow, 5].Value = item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "";
+                        ws.Cells[currentRow, 6].Value = item.Description ?? "";
+                        ws.Cells[currentRow, 7].Value = (item.IsActive ?? false) ? "Active" : "Inactive";
+                        ws.Cells[currentRow, 8].Value = item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+                        currentRow++;
+                    }
+
+                    lastCreatedDate = batch.Last().CreatedDate;
+                    lastID = batch.Last().ID;
+                }
+
+                ws.Cells[ws.Dimension.Address].AutoFitColumns();
+                package.Save();
+                stream.Position = 0;
+
+                return File(
+                    stream,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+                );
+            }
+            else if (type == "pdf" || type == "print")
+            {
+                var stream = new MemoryStream();
+                var allData = new List<tblSyllabus>();
+                while (true)
+                {
+                    var batch = await _dbContext.Tbl_Syllabus
+                        .FromSqlRaw(
+                            @"CALL Proc_Syllabus(
+                NULL,
+                {0}, {1}, {2},
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                {3}, {4}, {5}, {6},
+                NULL, NULL, -1
+            )",
+                            filter.SchoolID,
+                            filter.AcademicYear,
+                            filter.Name,
+                            filter.Flag ?? "2",
+                            batchSize,
+                            lastCreatedDate,
+                            lastID
+                        )
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    if (!batch.Any()) break;
+
+                    allData.AddRange(batch);
+                    lastCreatedDate = batch.Last().CreatedDate;
+                    lastID = batch.Last().ID;
+                }
+
+                // Generate PDF with borders & colors, no Description column
+                var doc = Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(20);
+                        page.DefaultTextStyle(x => x.FontSize(10));
+
+                        page.Header().Text("Syllabus Report").SemiBold().FontSize(14);
+
+                        page.Content().Table(table =>
+                        {
+                            // Define 7 columns (without Description)
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(); // ID
+                                columns.RelativeColumn(); // Name
+                                columns.RelativeColumn(); // School Name
+                                columns.RelativeColumn(); // Academic Year
+                                columns.RelativeColumn(); // Available From
+                                columns.RelativeColumn(); // Status
+                                columns.RelativeColumn(); // Created Date
+                            });
+
+                            // Header row with background color
+                            table.Header(header =>
+                            {
+                                var headerCells = new[] { "ID", "Name", "School Name", "Academic Year", "Available From", "Status", "Created Date" };
+                                foreach (var h in headerCells)
+                                {
+                                    header.Cell()
+                                          .Background(Colors.Grey.Lighten2)
+                                          .Border(1)
+                                          .BorderColor(Colors.Black)
+                                          .Padding(3)
+                                          .Text(h)
+                                          .SemiBold();
+                                }
+                            });
+
+                            // Data rows with borders
+                            foreach (var item in allData)
+                            {
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.ID?.ToString() ?? "");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.Name ?? "");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.SchoolName ?? "");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AcademicYearName ?? "");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text((item.IsActive ?? false) ? "Active" : "Inactive");
+                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                            }
+                        });
+                    });
+                });
+
+                doc.GeneratePdf(stream);
+                stream.Position = 0;
+
+                return File(
+                    stream,
+                    "application/pdf",
+                    $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.pdf"
+                );
+            }
+
+
+            return BadRequest("Invalid export type");
+        }
+        
+        [HttpPost("Tbl_Modules_CRUD_Operations")]
+        public IActionResult Tbl_Modules_CRUD_Operations([FromBody] tblModules module)
+        {
+            try
+            {
+                var result = dbop.Tbl_Modules_CRUD_Operations(module);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new { StatusCode = 400, Message = "No result returned or operation failed." });
+                }
+
+                // Check for any error status
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return BadRequest(new { StatusCode = 400, Message = error.Status });
+                }
+
+                return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { StatusCode = 400, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
 
         [HttpPost("Tbl_Roles_CRUD_Operations")]
         public IActionResult Tbl_Roles_CRUD_Operations([FromBody] tblRoles role)
@@ -400,33 +821,6 @@ namespace SchoolManagementAPI.Controllers
             try
             {
                 var result = dbop.Tbl_UserRoles_CRUD_Operations(userRole);
-
-                if (result == null || result.Count == 0)
-                {
-                    return BadRequest(new { StatusCode = 400, Message = "No result returned or operation failed." });
-                }
-
-                // Check for any error status
-                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-                if (error != null)
-                {
-                    return BadRequest(new { StatusCode = 400, Message = error.Status });
-                }
-
-                return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { StatusCode = 400, Success = false, Message = "Internal server error.", Error = ex.Message });
-            }
-        }
-
-        [HttpPost("Tbl_Modules_CRUD_Operations")]
-        public IActionResult Tbl_Modules_CRUD_Operations([FromBody] tblModules module)
-        {
-            try
-            {
-                var result = dbop.Tbl_Modules_CRUD_Operations(module);
 
                 if (result == null || result.Count == 0)
                 {
@@ -780,80 +1174,6 @@ namespace SchoolManagementAPI.Controllers
         //        return Ok(new { StatusCode = 200, Message = "OTP is valid." });
         //    }
 
-        [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
-        public IActionResult Tbl_AcademicYear_CRUD_Operations([FromBody] tblAcademicYear academicYear)
-        {
-            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-            var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
-
-            academicYear.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
-
-            var result = dbop.Tbl_AcademicYear_CRUD_Operations(academicYear);
-
-            if (result == null || result.Count == 0)
-            {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = "No result returned or operation failed."
-                });
-            }
-
-            var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-            if (error != null)
-            {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = error.Status
-                });
-            }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
-        }
-
-        [HttpPost("Tbl_Syllabus_CRUD_Operations")]
-        public IActionResult Tbl_Syllabus_CRUD_Operations([FromBody] tblSyllabus syllabus)
-        {
-            var result = dbop.Tbl_Syllabus_CRUD_Operations(syllabus);
-
-            if (result == null || result.Count == 0)
-            {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = "No result returned or operation failed."
-                });
-            }
-
-            var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-            if (error != null)
-            {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = error.Status
-                });
-            }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
-        }
 
         [HttpPost("Tbl_Class_CRUD_Operations")]
         public IActionResult Tbl_Class_CRUD_Operations([FromBody] tblClass Class)

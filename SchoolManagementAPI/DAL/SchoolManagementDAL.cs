@@ -1,6 +1,8 @@
 ﻿using MySqlConnector;
+using Newtonsoft.Json;
 using SchoolManagementAPI.Models;
 using System.Data;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 
 namespace SchoolManagementAPI.DAL
@@ -13,6 +15,100 @@ namespace SchoolManagementAPI.DAL
             _connectionString = connectionString;
         }
 
+        public void LogException(Exception ex, string controller, string action, string data)
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("Proc_InsertExceptionLog", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("p_Message", ex.Message);
+            cmd.Parameters.AddWithValue("p_StackTrace", ex.StackTrace);
+            cmd.Parameters.AddWithValue("p_Controller", controller);
+            cmd.Parameters.AddWithValue("p_Action", action);
+            cmd.Parameters.AddWithValue("p_Data", data);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+
+
+        //public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
+        //{
+        //    var schools = new List<SchoolDetails>();
+
+        //    string CleanParam(string? value)
+        //    {
+        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+        //    }
+
+        //    try
+        //    {
+        //        using (var conn = new MySqlConnection(_connectionString))
+        //        using (var cmd = new MySqlCommand("Proc_Tbl_SchoolDetails", conn))
+        //        {
+        //            cmd.CommandType = CommandType.StoredProcedure;
+
+        //            cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(school.Email) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Website", (object?)CleanParam(school.Website) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(school.Address) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(school.CreatedBy) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(school.CreatedIP) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(school.ModifiedBy) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(school.ModifiedIP) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(school.Flag) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Limit", school.Limit ?? 100);
+        //            cmd.Parameters.AddWithValue("p_Offset", school.Offset ?? 0);
+
+        //            conn.Open();
+
+        //            if (!string.IsNullOrEmpty(school.Flag))
+        //            {
+        //                using (var reader = cmd.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {
+        //                        var s = new SchoolDetails
+        //                        {
+        //                            ID = reader["ID"]?.ToString(),
+        //                            Name = reader["Name"]?.ToString(),
+        //                            MobileNo = reader["MobileNo"]?.ToString(),
+        //                            Email = reader["Email"]?.ToString(),
+        //                            Website = reader["Website"]?.ToString(),
+        //                            Address = reader["Address"]?.ToString(),
+        //                            CreatedBy = reader["CreatedBy"]?.ToString(),
+        //                            CreatedIP = reader["CreatedIp"]?.ToString(),
+        //                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+        //                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+        //                            ModifiedIP = reader["ModifiedIp"]?.ToString(),
+        //                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+        //                            Status = reader["Message"]?.ToString()
+        //                        };
+
+        //                        schools.Add(s);
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        return schools;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD", Newtonsoft.Json.JsonConvert.SerializeObject(school));
+        //        return new List<SchoolDetails>
+        //        {
+        //            new SchoolDetails
+        //            {
+        //                Status = $"ERROR: {ex.Message}"
+        //            }
+        //        };
+        //    }
+        //}
+
         public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
         {
             var schools = new List<SchoolDetails>();
@@ -24,52 +120,72 @@ namespace SchoolManagementAPI.DAL
 
             try
             {
-                using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_Tbl_SchoolDetails", conn))
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_Tbl_SchoolDetails", conn)
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    CommandType = CommandType.StoredProcedure
+                };
 
-                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(school.Email) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Website", (object?)CleanParam(school.Website) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(school.Address) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(school.CreatedBy) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(school.CreatedIP) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(school.ModifiedBy) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(school.ModifiedIP) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(school.Flag) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Limit", school.Limit ?? 100);
-                    cmd.Parameters.AddWithValue("p_Offset", school.Offset ?? 0);
+                // Add parameters
+                cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(school.Email) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Website", (object?)CleanParam(school.Website) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(school.Address) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", school.IsActive ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(school.CreatedBy) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(school.CreatedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(school.ModifiedBy) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(school.ModifiedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(school.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Limit", school.Limit ?? 100);
+                cmd.Parameters.AddWithValue("p_Offset", school.Offset ?? 0);
+                cmd.Parameters.AddWithValue("p_LastCreatedDate", school.LastCreatedDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_LastID", school.LastID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(school.SortColumn) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(school.SortDirection) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(school.SchoolID) ?? DBNull.Value);
 
-                    conn.Open();
+                conn.Open();
 
-                    if (!string.IsNullOrEmpty(school.Flag))
+                if (!string.IsNullOrEmpty(school.Flag))
+                {
+                    if (school.Flag == "6" || school.Flag == "8") // Count flags
                     {
-                        using (var reader = cmd.ExecuteReader())
-                        {   
-                            while (reader.Read())
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            schools.Add(new SchoolDetails
                             {
-                                var s = new SchoolDetails
-                                {
-                                    ID = reader["ID"]?.ToString(),
-                                    Name = reader["Name"]?.ToString(),
-                                    MobileNo = reader["MobileNo"]?.ToString(),
-                                    Email = reader["Email"]?.ToString(),
-                                    Website = reader["Website"]?.ToString(),
-                                    Address = reader["Address"]?.ToString(),
-                                    CreatedBy = reader["CreatedBy"]?.ToString(),
-                                    CreatedIP = reader["CreatedIp"]?.ToString(),
-                                    CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
-                                    ModifiedIP = reader["ModifiedIp"]?.ToString(),
-                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                    Status = reader["Message"]?.ToString()
-                                };
-
-                                schools.Add(s);
-                            }
+                                totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                            });
+                        }
+                    }
+                    else // Fetch / Insert / Update / Search flags
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            schools.Add(new SchoolDetails
+                            {
+                                ID = reader["ID"]?.ToString(),
+                                Name = reader["Name"]?.ToString(),
+                                MobileNo = reader["MobileNo"]?.ToString(),
+                                Email = reader["Email"]?.ToString(),
+                                Website = reader["Website"]?.ToString(),
+                                Address = reader["Address"]?.ToString(),
+                                AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+                                Description = reader["Description"]?.ToString(),
+                                IsActive = reader["IsActive"].ToString(),
+                                CreatedBy = reader["CreatedBy"]?.ToString(),
+                                CreatedIP = reader["CreatedIp"]?.ToString(),
+                                CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                ModifiedIP = reader["ModifiedIp"]?.ToString(),
+                                ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                Status = reader["Message"]?.ToString()
+                            });
                         }
                     }
                 }
@@ -78,100 +194,37 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
+                LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(school));
                 return new List<SchoolDetails>
                 {
-                    new SchoolDetails
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
+                    new SchoolDetails { Status = $"ERROR: {ex.Message}" }
                 };
             }
         }
 
-        //public List<tblUsers> Tbl_Users_CRUD_Operations(tblUsers user)
-        //{
-        //    var USER = new List<tblUsers>();
+        public static class DateTimeHelper
+        {
+            private static readonly TimeZoneInfo IstTimeZone =
+                TimeZoneInfo.FindSystemTimeZoneById(
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        ? "India Standard Time"
+                        : "Asia/Kolkata"
+                );
 
-        //    string CleanParam(string? value)
-        //    {
-        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
-        //    }
+            public static DateTime NowIST()
+            {
+                return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, IstTimeZone);
+            }
 
-        //    try
-        //    {
-        //        using (var conn = new MySqlConnection(_connectionString))
-        //        using (var cmd = new MySqlCommand("Proc_Tbl_User", conn))
-        //        {
-        //            cmd.CommandType = CommandType.StoredProcedure;
+            public static DateTime ToIST(DateTime utcDateTime)
+            {
+                if (utcDateTime.Kind != DateTimeKind.Utc)
+                    utcDateTime = DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc);
 
-        //            cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(user.SchoolID) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(user.FirstName) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(user.Email) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(user.MobileNo) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Password", (object?)CleanParam(user.Password) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(user.CreatedBy) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(user.CreatedIP) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_CreatedDate", user.CreatedDate ?? (object)DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(user.ModifiedBy) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(user.ModifiedIP) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_ModifiedDate", user.ModifiedDate ?? (object)DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_RollId", (object?)CleanParam(user.RollId) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_LastName", (object?)CleanParam(user.LastName) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(user.IsActive) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(user.Flag) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_OldPassword", (object?)CleanParam(user.OldPassword) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_NewPassword", (object?)CleanParam(user.NewPassword) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_FileName", (object?)CleanParam(user.FileName) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_FilePath", (object?)CleanParam(user.FilePath) ?? DBNull.Value);
+                return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, IstTimeZone);
+            }
+        }
 
-        //            conn.Open();
-
-        //            if (user.Flag != null)
-        //            {
-        //                using (var reader = cmd.ExecuteReader())
-        //                {
-        //                    while (reader.Read())
-        //                    {
-        //                        var User = new tblUsers
-        //                        {
-        //                            SchoolID = reader["SchoolID"]?.ToString(),
-        //                            FirstName = reader["FirstName"]?.ToString(),
-        //                            Email = reader["Email"]?.ToString(),
-        //                            MobileNo = reader["MobileNo"]?.ToString(),
-        //                            Password = reader["Password"]?.ToString(),
-        //                            RollId = reader["RollId"]?.ToString(),
-        //                            LastName = reader["LastName"]?.ToString(),
-        //                            IsActive = reader["IsActive"]?.ToString(),
-        //                            CreatedBy = reader["CreatedBy"]?.ToString(),
-        //                            CreatedIP = reader["CreatedIP"]?.ToString(),
-        //                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-        //                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
-        //                            ModifiedIP = reader["ModifiedIP"]?.ToString(),
-        //                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-        //                            FileName = reader["FileName"]?.ToString(),
-        //                            FilePath = reader["FilePath"]?.ToString(),
-        //                            Status = reader["Message"]?.ToString()
-        //                        };
-
-        //                        USER.Add(User);
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        return USER;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new List<tblUsers>
-        //        {
-        //            new tblUsers
-        //            {
-        //                Status = $"ERROR: {ex.Message}"
-        //            }
-        //        };
-        //    }
-        //}
 
         public List<TblUser> Tbl_Users_CRUD_Operations(TblUser user)
         {
@@ -243,16 +296,16 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Users_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(user));
                 return new List<TblUser>
-        {
-            new TblUser
-            {
-                Message = $"ERROR: {ex.Message}"
-            }
-        };
+                {
+                    new TblUser
+                    {
+                        Message = $"ERROR: {ex.Message}"
+                    }
+                };
             }
         }
-
 
         public UserToken GetUserTokenByRefresh(string email, string refreshToken = null)
         {
@@ -272,6 +325,7 @@ namespace SchoolManagementAPI.DAL
 
             conn.Open();
             using var reader = cmd.ExecuteReader();
+
             if (reader.Read())
             {
                 return new UserToken
@@ -279,14 +333,15 @@ namespace SchoolManagementAPI.DAL
                     Email = reader["Email"]?.ToString(),
                     AccessToken = reader["AccessToken"]?.ToString(),
                     RefreshToken = reader["RefreshToken"]?.ToString(),
-                    AccessExpiry = reader["ExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["ExpiryAt"]),
-                    RefreshExpiry = reader["RefreshExpiryAt"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["RefreshExpiryAt"])
+                    AccessExpiry = Convert.ToDateTime(reader["ExpiryAt"]),
+                    RefreshExpiry = Convert.ToDateTime(reader["RefreshExpiryAt"])
                 };
             }
+
             return null;
         }
 
-        public void InsertUserToken(string email, string accessToken, string refreshToken, DateTime accessExpiry, DateTime refreshExpiry)
+        public void InsertUserToken(string email,string accessToken,string refreshToken,DateTime accessExpiryUtc,DateTime refreshExpiryUtc)
         {
             using var conn = new MySqlConnection(_connectionString);
             using var cmd = new MySqlCommand("ManageUserToken", conn)
@@ -298,9 +353,11 @@ namespace SchoolManagementAPI.DAL
             cmd.Parameters.AddWithValue("p_email", email);
             cmd.Parameters.AddWithValue("p_accessToken", accessToken);
             cmd.Parameters.AddWithValue("p_refreshToken", refreshToken);
+
+            // IST in DB
             cmd.Parameters.AddWithValue("p_issuedAt", DateTimeHelper.NowIST());
-            cmd.Parameters.AddWithValue("p_expiryAt", accessExpiry);
-            cmd.Parameters.AddWithValue("p_refreshExpiryAt", refreshExpiry);
+            cmd.Parameters.AddWithValue("p_expiryAt", DateTimeHelper.ToIST(accessExpiryUtc));
+            cmd.Parameters.AddWithValue("p_refreshExpiryAt", DateTimeHelper.ToIST(refreshExpiryUtc));
 
             conn.Open();
             cmd.ExecuteNonQuery();
@@ -357,12 +414,15 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_Limit", academicYear.Limit ?? 100);
                     cmd.Parameters.AddWithValue("p_LastCreatedDate", academicYear.LastCreatedDate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_LastID", academicYear.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(academicYear.SortColumn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(academicYear.SortDirection) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", academicYear.Offset ?? (object)DBNull.Value);
 
                     conn.Open();
 
                     if (academicYear.Flag != null)
                     {
-                        if (academicYear.Flag=="6")
+                        if (academicYear.Flag == "6" || academicYear.Flag == "8")
                         {
                             using (var reader = cmd.ExecuteReader())
                             {
@@ -376,6 +436,35 @@ namespace SchoolManagementAPI.DAL
                                     AcademicYears.Add(Academicyear);
                                 }
                             }
+                        }
+                        else if (academicYear.Flag == "2" || academicYear.Flag == "3" || academicYear.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var Academicyear = new tblAcademicYear
+                                    {
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        ID = reader["ID"]?.ToString(),
+                                        Name = reader["Name"]?.ToString(),
+                                        StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
+                                        EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString()
+                                    };                                    
+
+                                    AcademicYears.Add(Academicyear);
+                                }
+                            }                            
                         }
                         else
                         {
@@ -412,6 +501,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
+                LogException(ex, "SchoolManagementDAL", "Tbl_AcademicYear_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(academicYear));
                 return new List<tblAcademicYear>
                 {
                     new tblAcademicYear
@@ -438,43 +528,98 @@ namespace SchoolManagementAPI.DAL
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(syllabus.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(syllabus.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(syllabus.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ID", syllabus.ID);
                     cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(syllabus.Name) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_AvailableFrom", syllabus.AvailableFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(syllabus.Description) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(syllabus.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", syllabus.IsActive);
                     cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(syllabus.CreatedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(syllabus.CreatedIp) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(syllabus.ModifiedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(syllabus.ModifiedIp) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_flag", (object?)CleanParam(syllabus.Flag) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", syllabus.Limit ?? 100);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", syllabus.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", syllabus.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(syllabus.SortColumn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(syllabus.SortDirection) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", syllabus.Offset ?? (object)DBNull.Value);
 
                     conn.Open();
 
                     if (syllabus.Flag != null)
                     {
-                        using (var reader = cmd.ExecuteReader())
+                        if (syllabus.Flag == "6" || syllabus.Flag == "8")
                         {
-                            while (reader.Read())
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                var Syllabus = new tblSyllabus
+                                while (reader.Read())
                                 {
-                                    //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
-                                    ID = reader["ID"]?.ToString(),
-                                    Name = reader["Name"]?.ToString(),
-                                    AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
-                                    Description = reader["Description"]?.ToString(),
-                                    IsActive = reader["IsActive"]?.ToString(),
-                                    CreatedBy = reader["CreatedBy"]?.ToString(),
-                                    CreatedIp = reader["CreatedIp"]?.ToString(),
-                                    CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
-                                    ModifiedIp = reader["ModifiedIp"]?.ToString(),
-                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                    Status = reader["Message"]?.ToString()
-                                };
+                                    var Syllabus = new tblSyllabus
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    };
 
-                                Syllabuses.Add(Syllabus);
+                                    Syllabuses.Add(Syllabus);
+                                }
+                            }
+                        }
+                        else if (syllabus.Flag == "2" || syllabus.Flag == "3" || syllabus.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var Syllabus = new tblSyllabus
+                                    {
+                                        //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        Name = reader["Name"]?.ToString(),
+                                        AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToBoolean(reader["IsActive"]),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString()
+                                    };
+
+                                    Syllabuses.Add(Syllabus);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var Syllabus = new tblSyllabus
+                                    {
+                                        //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        Name = reader["Name"]?.ToString(),
+                                        AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToBoolean(reader["IsActive"]),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Syllabuses.Add(Syllabus);
+                                }
                             }
                         }
                     }
@@ -484,6 +629,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Syllabus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(syllabus));
                 return new List<tblSyllabus>
                 {
                     new tblSyllabus
@@ -493,6 +639,96 @@ namespace SchoolManagementAPI.DAL
                 };
             }
         }
+
+        public List<tblModules> Tbl_Modules_CRUD_Operations(tblModules module)
+        {
+            var modules = new List<tblModules>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Tbl_Module", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", module.ID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModuleName", (object?)CleanParam(module.ModuleName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(module.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", module.IsActive ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(module.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(module.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(module.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(module.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(module.Flag) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", module.Limit ?? 100);
+                    cmd.Parameters.AddWithValue("p_Offset", module.Offset ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", module.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", module.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(module.SortColumn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(module.SortDirection) ?? DBNull.Value);
+
+                    conn.Open();
+
+                    if (!string.IsNullOrWhiteSpace(module.Flag))
+                    {
+                        if (module.Flag == "6" || module.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    modules.Add(new tblModules
+                                    {
+                                        totalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    modules.Add(new tblModules
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        ModuleName = reader["ModuleName"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"].ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] != DBNull.Value ? Convert.ToDateTime(reader["ModifiedDate"]) : (DateTime?)null,
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return modules;
+            }
+            catch (Exception ex)
+            {
+                return new List<tblModules>
+                {
+                    new tblModules
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
 
         public List<tblClass> Tbl_Class_CRUD_Operations(tblClass Class)
         {
@@ -560,6 +796,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Class_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(Class));
                 return new List<tblClass>
                 {
                     new tblClass
@@ -742,15 +979,6 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
-        public static class DateTimeHelper
-        {
-            public static DateTime NowIST()
-            {
-                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-                return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
-            }
-        }
-
         public List<tblRoles> Tbl_Roles_CRUD_Operations(tblRoles role)
         {
             var roles = new List<tblRoles>();
@@ -865,63 +1093,6 @@ namespace SchoolManagementAPI.DAL
             catch (Exception ex)
             {
                 return new List<tblUserRoles> { new tblUserRoles { Status = $"ERROR: {ex.Message}" } };
-            }
-        }
-
-        public List<tblModules> Tbl_Modules_CRUD_Operations(tblModules module)
-        {
-            var modules = new List<tblModules>();
-
-            string CleanParam(string? value)
-            {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
-            }
-
-            try
-            {
-                using var conn = new MySqlConnection(_connectionString);
-                using var cmd = new MySqlCommand("Proc_Tbl_Module", conn)
-                {
-                    CommandType = CommandType.StoredProcedure
-                };
-
-                cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(module.ID) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ModuleName", (object?)CleanParam(module.ModuleName) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(module.Description) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(module.IsActive) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(module.CreatedBy) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(module.CreatedIp) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(module.ModifiedBy) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(module.ModifiedIp) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(module.Flag) ?? DBNull.Value);
-
-                conn.Open();
-                if (module.Flag != null)
-                {
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        modules.Add(new tblModules
-                        {
-                            ID = reader["ID"]?.ToString(),
-                            ModuleName = reader["ModuleName"]?.ToString(),
-                            Description = reader["Description"]?.ToString(),
-                            IsActive = reader["IsActive"]?.ToString(),
-                            CreatedBy = reader["CreatedBy"]?.ToString(),
-                            CreatedIp = reader["CreatedIp"]?.ToString(),
-                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
-                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
-                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                            Status = reader["Message"]?.ToString()
-                        });
-                    }
-                }
-                return modules;
-            }
-            catch (Exception ex)
-            {
-                return new List<tblModules> { new tblModules { Status = $"ERROR: {ex.Message}" } };
             }
         }
 
