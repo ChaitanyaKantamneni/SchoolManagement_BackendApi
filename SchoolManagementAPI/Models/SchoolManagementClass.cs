@@ -1,17 +1,50 @@
-﻿namespace SchoolManagementAPI.Models
+﻿using MySqlConnector;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
+
+namespace SchoolManagementAPI.Models
 {
     public class SchoolManagementClass
     {
     }
 
+    //public class SchoolDetails
+    //{
+    //    public string? ID { get; set; }
+    //    public string? Name { get; set; }
+    //    public string? MobileNo { get; set; }
+    //    public string? Email { get; set; }
+    //    public string? Website { get; set; }
+    //    public string? Address { get; set; }
+    //    public string? CreatedBy { get; set; }
+    //    public string? CreatedIP { get; set; }
+    //    public DateTime? CreatedDate { get; set; }
+    //    public string? ModifiedBy { get; set; }
+    //    public string? ModifiedIP { get; set; }
+    //    public DateTime? ModifiedDate { get; set; }
+    //    public string? Flag { get; set; }
+    //    public string? Status { get; set; }
+    //    public int? Limit { get; set; }
+    //    public DateTime? LastCreatedDate { get; set; }
+    //    public int? LastID { get; set; }
+    //    public int? totalcount { get; set; }
+    //    public string? SortColumn { get; set; }
+    //    public string? SortDirection { get; set; }
+    //    public int? Offset { get; set; }
+    //}
+
     public class SchoolDetails
     {
+        public string? SchoolID { get; set; }
         public string? ID { get; set; }
         public string? Name { get; set; }
         public string? MobileNo { get; set; }
         public string? Email { get; set; }
         public string? Website { get; set; }
         public string? Address { get; set; }
+        public DateTime? AvailableFrom { get; set; }
+        public string? Description { get; set; }
+        public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIP { get; set; }
         public DateTime? CreatedDate { get; set; }
@@ -20,11 +53,14 @@
         public DateTime? ModifiedDate { get; set; }
         public string? Flag { get; set; }
         public string? Status { get; set; }
-
         public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
         public int? Offset { get; set; }
     }
-
 
     //public class tblUsers
     //{
@@ -51,7 +87,7 @@
     //    public string? AccessToken { get; set; }
 
 
-    //}
+        //}
 
     public class TblUser
     {
@@ -154,15 +190,61 @@
         public DateTime? LastCreatedDate { get; set; }
         public int? LastID { get; set; }
         public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }        
     }
 
     public class tblSyllabus
     {
-        public string? ID { get; set; }
+        public int? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
         public string? Name { get; set; }
         public DateTime? AvailableFrom { get; set; }
+        public string? Description { get; set; }
+        public bool? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+
+    public class ExportSyllabusRequest
+    {
+        public string Flag { get; set; } = "2";
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Name { get; set; }
+    }
+
+    public class tblModules
+    {
+        public string? ID { get; set; }
+        public string? ModuleName { get; set; }
         public string? Description { get; set; }
         public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
@@ -173,7 +255,16 @@
         public DateTime? ModifiedDate { get; set; }
         public string? Flag { get; set; }
         public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public int? Offset { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? totalCount { get; set; }
+        public List<tblPages>? Pages { get; set; }
     }
+
 
     public class tblClass
     {
@@ -278,23 +369,6 @@
         public string? RoleID { get; set; }
         public string? Flag { get; set; }
         public string? Status { get; set; }
-    }
-
-    public class tblModules
-    {
-        public string? ID { get; set; }
-        public string? ModuleName { get; set; }
-        public string? Description { get; set; }
-        public string? IsActive { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? CreatedIp { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public string? ModifiedBy { get; set; }
-        public string? ModifiedIp { get; set; }
-        public DateTime? ModifiedDate { get; set; }
-        public string? Flag { get; set; }
-        public string? Status { get; set; }
-        public List<tblPages>? Pages { get; set; }
     }
 
     public class tblPages
