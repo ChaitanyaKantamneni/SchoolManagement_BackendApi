@@ -53,26 +53,12 @@ namespace SchoolManagementAPI.Controllers
         {
             try
             {
-                //var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                //var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
-
-                //if (school.Flag == "1" && roleId != "1")
-                //    return Forbid();
-
-                //if (school.Flag != "1" && roleId != "1")
-                //{
-                //    if (string.IsNullOrEmpty(tokenSchoolId))
-                //        return Forbid();
-
-                //    school.ID = tokenSchoolId;
-                //}
-
                 var roleId = User.FindFirst("role")?.Value;
                 var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
                 if (roleId != "1")
                 {
                     school.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
-                }                    
+                }
 
                 var result = dbop.Tbl_SchoolDetails_CRUD(school);
 
@@ -139,7 +125,7 @@ namespace SchoolManagementAPI.Controllers
                         return BadRequest("Invalid image format.");
 
                     string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
-                    Directory.CreateDirectory(uploadsFolder); 
+                    Directory.CreateDirectory(uploadsFolder);
 
                     string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -177,50 +163,6 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                //if (user.Flag == "4")
-                //{
-                //    var dbUser = result[0];
-                //    if (string.IsNullOrEmpty(dbUser.RollId))
-                //        return Unauthorized(new { message = "Invalid credentials" });
-
-                //    var tokenService = new TokenService(_configuration);
-                //    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
-
-                //    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
-                //        tokenService.GenerateTokens(dbUser.Email, $"{dbUser.FirstName} {dbUser.LastName}", dbUser.RollId, schoolID);
-
-                //    var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                //    if (existingToken != null && existingToken.AccessExpiry > DateTime.Now)
-                //    {
-                //        return Ok(new
-                //        {
-                //            StatusCode = 200,
-                //            Success = true,
-                //            Message = dbUser.Status,
-                //            Data = result,
-                //            token = existingToken.AccessToken,
-                //            refreshToken = existingToken.RefreshToken,
-                //            role = dbUser.RollId,
-                //            email = dbUser.Email
-                //        });
-                //    }
-
-                //    // Revoke old token if exists
-                //    if (existingToken != null)
-                //        dbop.RevokeUserToken(existingToken.RefreshToken);
-
-                //    // Insert new token in DB
-                //    dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
-
-                //    return Ok(new
-                //    {
-                //        accessToken,
-                //        refreshToken,
-                //        role = dbUser.RollId,
-                //        email = dbUser.Email
-                //    });
-                //}
-
                 if (user.Flag == "4")
                 {
                     var dbUser = result[0];
@@ -251,13 +193,48 @@ namespace SchoolManagementAPI.Controllers
                         refreshExpiryUtc
                     );
 
+                    string schoolRouteName = dbUser.SchoolName.Replace(" ", "");
+
                     return Ok(new
                     {
                         accessToken,
                         refreshToken,
                         role = dbUser.RollId,
-                        email = dbUser.Email
+                        email = dbUser.Email,
+                        schoolId = dbUser.SchoolID,
+                        schoolName = schoolRouteName
                     });
+                }
+                else if (user.Flag == "1")
+                {
+                    var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                    var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                    if (roleId != "1")
+                    {
+                        user.SchoolID = schoolId;
+                    }
+                    string? schoolName = null;
+                    string? schoolUrl = null;
+
+                    if (!string.IsNullOrEmpty(user.SchoolID))
+                    {
+                        var school = GetSchoolById(user.SchoolID);
+                        if (school != null)
+                        {
+                            schoolName = school.Name;
+                            schoolUrl = !string.IsNullOrEmpty(school.Website) ? school.Website : "https://www.smartschools.com";
+                        }
+                    }
+
+                    await SendRegistrationEmailAsync(
+                        user.Email,
+                        $"{user.FirstName} {user.LastName}",
+                        user.Password,
+                        isAdmin: false,
+                        schoolName,
+                        schoolUrl
+                    );
                 }
 
 
@@ -282,51 +259,245 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        //[AllowAnonymous]
-        //[HttpPost("refresh-token")]
-        //public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
+        //private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin)
         //{
-        //    if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.RefreshToken))
-        //        return Unauthorized(new { message = "Invalid request" });
+        //    string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+        //    string subject = isAdmin ? "New User Registered" : "Welcome to Buserele Family!";
+        //    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+        //    string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-        //    var tokenRecord = dbop.GetUserTokenByRefresh(request.Email, request.RefreshToken);
-        //    if (tokenRecord == null)
-        //        return Unauthorized(new { message = "Invalid refresh token" });
+        //    var emailMessage = new MimeMessage();
+        //    emailMessage.From.Add(new MailboxAddress("BUSERELE Property Management", _configuration["Smtp:Username"]));
+        //    emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+        //    emailMessage.Subject = subject;
 
-        //    if (tokenRecord.RefreshExpiry < DateTimeHelper.NowIST())
-        //        return Unauthorized(new { message = "Refresh token expired" });
+        //    var builder = new BodyBuilder();
 
-        //    var dbUser = dbop.Tbl_Users_CRUD_Operations(new TblUser
+        //    var headerImage = builder.LinkedResources.Add(imagePath);
+        //    headerImage.ContentId = "CompanyLogo";
+        //    var footerLogo = builder.LinkedResources.Add(logoPath);
+        //    footerLogo.ContentId = "BusereleLogo";
+
+        //    string htmlBody = isAdmin
+        //        ? $@"
+        //    <html>
+        //    <head>
+        //        <style>
+        //            body {{ font-family: Arial, sans-serif; }}
+        //            .container {{ text-align: center; padding: 20px; background-color: #000; color: #fff; }}
+        //            .content {{ margin: 20px; padding: 20px; background-color: #fff; color: #000; border-radius: 10px; }}
+        //            .footer {{ margin-top: 20px; font-size: 12px; }}
+        //        </style>
+        //    </head>
+        //    <body>
+        //        <div class='container'>
+        //            <div class='content'>
+        //                <img src='cid:CompanyLogo' alt='Company Logo' width='200' />
+        //                <h2>New User Registration</h2>
+        //                <p><strong>Name:</strong> {userName}</p>
+        //                <p><strong>Email:</strong> {toEmail}</p>
+        //                <img src='cid:BusereleLogo' alt='Buserele Logo' width='150' />
+        //            </div>
+        //            <p class='footer'>&copy; GVR Infosystems Pvt Ltd 2025. All rights reserved.</p>
+        //        </div>
+        //    </body>
+        //    </html>"
+        //        : $@"
+        //    <html>
+        //    <head>
+        //    <style>
+        //        body {{ font-family: Arial, sans-serif; }}
+        //        .container {{ text-align: center; padding: 20px; background-color: #000; color: #fff; }}
+        //        .content {{ margin: 20px; padding: 20px; background-color: #fff; color: #000; border-radius: 10px; }}
+        //        .footer {{ margin-top: 20px; font-size: 12px; }}
+        //    </style>
+        //</head>
+        //<body>
+        //    <div class='container'>
+        //        <img src='cid:CompanyLogo' alt='Company Logo' width='200' />
+        //        <h2>Dear {userName},</h2>
+        //        <p>Welcome to Beserele Family!</p>
+        //        <p>Thank you for registering. Please login using the credentials below:</p>
+        //        <div class='content'>
+        //            <p><strong>UserID:</strong> {toEmail}</p>
+        //            <p><strong>Password:</strong> {userPassword}</p>
+        //        </div>
+        //        <p>If you have any questions, feel free to contact us.</p>
+        //        <p>Visit us at <a href='https://www.buserele.com'>www.buserele.com</a></p>
+        //        <p class='footer'>&copy; GVR Infosystems Pvt Ltd 2025. All rights reserved.</p>
+        //        <br>
+        //        <img src='cid:BusereleLogo' alt='Buserele Logo' width='150' />
+        //    </div>
+        //</body>
+        //    </html>";
+
+        //    builder.HtmlBody = htmlBody;
+        //    emailMessage.Body = builder.ToMessageBody();
+
+        //    //try
+        //    //{
+        //    //    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+        //    //    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), false);
+        //    //    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+        //    //    await smtpClient.SendAsync(emailMessage);
+        //    //    await smtpClient.DisconnectAsync(true);
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    Console.WriteLine($"Error sending email: {ex.Message}");
+        //    //    throw;
+        //    //}
+
+
+        //    try
         //    {
-        //        Email = request.Email,
-        //        Flag = "11"
-        //    }).FirstOrDefault();
+        //        var smtpClient = new System.Net.Mail.SmtpClient(_configuration["Smtp:smtpServer"])
+        //        {
+        //            Port = int.Parse(_configuration["Smtp:Port"]),
+        //            Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]),
+        //            EnableSsl = false
+        //        };
 
-        //    if (dbUser == null || string.IsNullOrEmpty(dbUser.RollId))
-        //        return Unauthorized(new { message = "Invalid user" });
+        //        Console.WriteLine("smtpClient", smtpClient.ToString());
 
-        //    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
-
-        //    var tokenService = new TokenService(_configuration);
-        //    var (accessToken, refreshToken, accessExpiry, refreshExpiry) =
-        //        tokenService.GenerateTokens(
-        //            dbUser.Email,
-        //            $"{dbUser.FirstName} {dbUser.LastName}",
-        //            dbUser.RollId,
-        //            schoolID
-        //        );
-
-        //    dbop.RevokeUserToken(tokenRecord.RefreshToken);
-        //    dbop.InsertUserToken(dbUser.Email, accessToken, refreshToken, accessExpiry, refreshExpiry);
-
-        //    return Ok(new
+        //        var mailMessage = new MailMessage
+        //        {
+        //            From = new MailAddress(_configuration["Smtp:FromEmail"], "Support Team"),
+        //            Subject = subject,
+        //            IsBodyHtml = true,
+        //            Body = htmlBody
+        //        };
+        //        mailMessage.To.Add(actualRecipient);
+        //        await smtpClient.SendMailAsync(mailMessage);
+        //    }
+        //    catch (Exception ex)
         //    {
-        //        accessToken,
-        //        refreshToken,
-        //        role = dbUser.RollId,
-        //        email = dbUser.Email
-        //    });
+        //        Console.WriteLine($"Error sending email: {ex.Message}");
+        //        throw ex;
+        //    }
         //}
+
+        // Fetch school details by ID
+        
+        private SchoolDetails? GetSchoolById(string schoolId)
+        {
+            if (string.IsNullOrEmpty(schoolId))
+                return null;
+
+            var schoolList = dbop.Tbl_SchoolDetails_CRUD(new SchoolDetails
+            {
+                Flag = "4",
+                ID = schoolId
+            });
+
+            return schoolList.FirstOrDefault();
+        }
+
+        private async Task SendRegistrationEmailAsync(string toEmail,string userName,string userPassword,bool isAdmin,string? schoolName = null,string? schoolUrl = null)
+        {
+            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+            string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
+
+            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+            emailMessage.Subject = subject;
+
+            var builder = new BodyBuilder();
+
+            // Attach images only if they exist
+            if (System.IO.File.Exists(imagePath))
+            {
+                var headerImage = builder.LinkedResources.Add(imagePath);
+                headerImage.ContentId = "CompanyLogo";
+            }
+
+            if (System.IO.File.Exists(logoPath))
+            {
+                var footerLogo = builder.LinkedResources.Add(logoPath);
+                footerLogo.ContentId = "FooterLogo";
+            }
+
+            // Choose URL and footer based on school
+            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+            string htmlBody = isAdmin
+                ? $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='content'>
+                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                <h2>New Employee Registration</h2>
+                <p><strong>Name:</strong> {userName}</p>
+                <p><strong>Email:</strong> {toEmail}</p>
+                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+            </div>
+            <p class='footer'>{footerText}</p>
+        </div>
+    </body>
+    </html>"
+                : $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+            <h2>Welcome, {userName}!</h2>
+            <p>Congratulations! Your employee account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+            <div class='content'>
+                <h3>Login Details:</h3>
+                <div class='credentials'>
+                    <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    <p><strong>Password:</strong> {userPassword}</p>
+                </div>
+            </div>
+            <p>{loginText}</p>
+            <p>If you face any issues, contact your system administrator.</p>
+            <p class='footer'>{footerText}</p>
+            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+        </div>
+    </body>
+    </html>";
+
+            builder.HtmlBody = htmlBody;
+            emailMessage.Body = builder.ToMessageBody();
+
+            try
+            {
+                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                await smtpClient.SendAsync(emailMessage);
+                await smtpClient.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                throw;
+            }
+        }
 
         [AllowAnonymous]
         [HttpPost("refresh-token")]
@@ -378,10 +549,11 @@ namespace SchoolManagementAPI.Controllers
                 accessToken,
                 refreshToken = newRefreshToken,
                 role = dbUser.RollId,
-                email = dbUser.Email
+                email = dbUser.Email,
+                schoolId = dbUser.SchoolID,
+                schoolName = dbUser.SchoolName
             });
         }
-
 
         [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
         public IActionResult Tbl_AcademicYear_CRUD_Operations([FromBody] tblAcademicYear academicYear)
@@ -483,7 +655,8 @@ namespace SchoolManagementAPI.Controllers
                     Data = result
                 });
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_Syllabus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(syllabus));
                 return BadRequest(new
                 {
@@ -492,7 +665,7 @@ namespace SchoolManagementAPI.Controllers
                     Message = "Internal server error occurred. Please try again.",
                     Error = ex.Message
                 });
-            }            
+            }
         }
 
         [HttpPost("ExportSyllabusToExcel")]
@@ -755,7 +928,7 @@ namespace SchoolManagementAPI.Controllers
 
             return BadRequest("Invalid export type");
         }
-        
+
         [HttpPost("Tbl_Modules_CRUD_Operations")]
         public IActionResult Tbl_Modules_CRUD_Operations([FromBody] tblModules module)
         {
@@ -763,24 +936,205 @@ namespace SchoolManagementAPI.Controllers
             {
                 var result = dbop.Tbl_Modules_CRUD_Operations(module);
 
-                if (result == null || result.Count == 0)
+                if (result == null)
                 {
-                    return BadRequest(new { StatusCode = 400, Message = "No result returned or operation failed." });
+                    return BadRequest(new { StatusCode = 500, Message = "No result returned or operation failed." });
                 }
 
                 // Check for any error status
                 var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
                 if (error != null)
                 {
-                    return BadRequest(new { StatusCode = 400, Message = error.Status });
+                    return BadRequest(new { StatusCode = 500, Message = error.Status });
                 }
 
                 return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { StatusCode = 400, Success = false, Message = "Internal server error.", Error = ex.Message });
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Modules_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(module));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
             }
+        }
+
+        [HttpPost("Tbl_Pages_CRUD_Operations")]
+        public IActionResult Tbl_Pages_CRUD_Operations([FromBody] tblPages page)
+        {
+            try
+            {
+                var result = dbop.Tbl_Pages_CRUD_Operations(page);
+
+                if (result == null)
+                {
+                    return BadRequest(new { StatusCode = 500, Message = "No result returned or operation failed." });
+                }
+
+                // Check for any error status
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return BadRequest(new { StatusCode = 500, Message = error.Status });
+                }
+
+                return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Pages_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(page));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("ExportPages")]
+        public IActionResult ExportPages([FromBody] tblPages filter, [FromQuery] string type)
+        {
+            const int batchSize = 50000;
+            DateTime? lastCreatedDate = null;
+            int? lastID = null;
+
+            // ensure paging values
+            filter.Limit = batchSize;
+            filter.Offset = -1;
+            filter.Flag ??= "2";
+
+            var allData = new List<tblPages>();
+
+            while (true)
+            {
+                filter.LastCreatedDate = lastCreatedDate;
+                filter.LastID = lastID;
+
+                // 🔥 CALL DAL (this already handles INT → string safely)
+                var batch = dbop.Tbl_Pages_CRUD_Operations(filter);
+
+                if (batch == null || batch.Count == 0)
+                    break;
+
+                allData.AddRange(batch);
+
+                lastCreatedDate = batch.Last().CreatedDate;
+                lastID = int.TryParse(batch.Last().ID, out var pid) ? pid : lastID;
+            }
+
+            if (type == "excel")
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                var stream = new MemoryStream();
+                using var package = new ExcelPackage(stream);
+                var ws = package.Workbook.Worksheets.Add("Pages");
+
+                // Headers
+                ws.Cells[1, 1].Value = "ID";
+                ws.Cells[1, 2].Value = "Module";
+                ws.Cells[1, 3].Value = "Page Name";
+                ws.Cells[1, 4].Value = "Description";
+                ws.Cells[1, 5].Value = "Status";
+                ws.Cells[1, 6].Value = "Created Date";
+
+                int row = 2;
+                foreach (var item in allData)
+                {
+                    ws.Cells[row, 1].Value = item.ID;
+                    ws.Cells[row, 2].Value = item.ModuleName;
+                    ws.Cells[row, 3].Value = item.PageName;
+                    ws.Cells[row, 4].Value = item.Description;
+                    ws.Cells[row, 5].Value =
+                        (item.IsActive == "1" || item.IsActive?.ToLower() == "true")
+                            ? "Active"
+                            : "Inactive";
+                    ws.Cells[row, 6].Value =
+                        item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss");
+                    row++;
+                }
+
+                ws.Cells[ws.Dimension.Address].AutoFitColumns();
+                package.Save();
+
+                stream.Position = 0;
+                return File(
+                    stream,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Pages_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+                );
+            }
+
+            if (type == "pdf" || type == "print")
+            {
+                var stream = new MemoryStream();
+
+                var doc = Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(20);
+                        page.DefaultTextStyle(x => x.FontSize(10));
+
+                        page.Header()
+                            .Text("Pages Report")
+                            .SemiBold()
+                            .FontSize(14);
+
+                        page.Content().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
+
+                            table.Header(header =>
+                            {
+                                string[] headers =
+                                {
+                            "ID", "Module", "Page Name",
+                            "Description", "Status", "Created Date"
+                        };
+
+                                foreach (var h in headers)
+                                {
+                                    header.Cell()
+                                          .Background(Colors.Grey.Lighten2)
+                                          .Border(1)
+                                          .Padding(3)
+                                          .Text(h)
+                                          .SemiBold();
+                                }
+                            });
+
+                            foreach (var item in allData)
+                            {
+                                table.Cell().Border(1).Padding(3).Text(item.ID);
+                                table.Cell().Border(1).Padding(3).Text(item.ModuleName);
+                                table.Cell().Border(1).Padding(3).Text(item.PageName);
+                                table.Cell().Border(1).Padding(3).Text(item.Description);
+                                table.Cell().Border(1).Padding(3)
+                                    .Text((item.IsActive == "1" || item.IsActive?.ToLower() == "true")
+                                        ? "Active"
+                                        : "Inactive");
+                                table.Cell().Border(1).Padding(3)
+                                    .Text(item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss"));
+                            }
+                        });
+                    });
+                });
+
+                doc.GeneratePdf(stream);
+                stream.Position = 0;
+
+                return File(
+                    stream,
+                    "application/pdf",
+                    $"Pages_{DateTime.Now:yyyyMMddHHmmss}.pdf"
+                );
+            }
+
+            return BadRequest("Invalid export type");
         }
 
         [HttpPost("Tbl_Roles_CRUD_Operations")]
@@ -789,9 +1143,12 @@ namespace SchoolManagementAPI.Controllers
             try
             {
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                role.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+                if (roleId != "1")
+                {
+                    role.SchoolID = schoolId;
+                }
 
                 var result = dbop.Tbl_Roles_CRUD_Operations(role);
 
@@ -821,33 +1178,6 @@ namespace SchoolManagementAPI.Controllers
             try
             {
                 var result = dbop.Tbl_UserRoles_CRUD_Operations(userRole);
-
-                if (result == null || result.Count == 0)
-                {
-                    return BadRequest(new { StatusCode = 400, Message = "No result returned or operation failed." });
-                }
-
-                // Check for any error status
-                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-                if (error != null)
-                {
-                    return BadRequest(new { StatusCode = 400, Message = error.Status });
-                }
-
-                return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { StatusCode = 400, Success = false, Message = "Internal server error.", Error = ex.Message });
-            }
-        }
-
-        [HttpPost("Tbl_Pages_CRUD_Operations")]
-        public IActionResult Tbl_Pages_CRUD_Operations([FromBody] tblPages page)
-        {
-            try
-            {
-                var result = dbop.Tbl_Pages_CRUD_Operations(page);
 
                 if (result == null || result.Count == 0)
                 {
@@ -966,124 +1296,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        //    private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin)
-        //    {
-        //        string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-        //        string subject = isAdmin ? "New User Registered" : "Welcome to Buserele Family!";
-        //        string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-        //        string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
-
-        //        var emailMessage = new MimeMessage();
-        //        emailMessage.From.Add(new MailboxAddress("BUSERELE Property Management", _configuration["Smtp:Username"]));
-        //        emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-        //        emailMessage.Subject = subject;
-
-        //        var builder = new BodyBuilder();
-
-        //        var headerImage = builder.LinkedResources.Add(imagePath);
-        //        headerImage.ContentId = "CompanyLogo";
-        //        var footerLogo = builder.LinkedResources.Add(logoPath);
-        //        footerLogo.ContentId = "BusereleLogo";
-
-        //        string htmlBody = isAdmin
-        //            ? $@"
-        //    <html>
-        //    <head>
-        //        <style>
-        //            body {{ font-family: Arial, sans-serif; }}
-        //            .container {{ text-align: center; padding: 20px; background-color: #000; color: #fff; }}
-        //            .content {{ margin: 20px; padding: 20px; background-color: #fff; color: #000; border-radius: 10px; }}
-        //            .footer {{ margin-top: 20px; font-size: 12px; }}
-        //        </style>
-        //    </head>
-        //    <body>
-        //        <div class='container'>
-        //            <div class='content'>
-        //                <img src='cid:CompanyLogo' alt='Company Logo' width='200' />
-        //                <h2>New User Registration</h2>
-        //                <p><strong>Name:</strong> {userName}</p>
-        //                <p><strong>Email:</strong> {toEmail}</p>
-        //                <img src='cid:BusereleLogo' alt='Buserele Logo' width='150' />
-        //            </div>
-        //            <p class='footer'>&copy; GVR Infosystems Pvt Ltd 2025. All rights reserved.</p>
-        //        </div>
-        //    </body>
-        //    </html>"
-        //            : $@"
-        //    <html>
-        //    <head>
-        //    <style>
-        //        body {{ font-family: Arial, sans-serif; }}
-        //        .container {{ text-align: center; padding: 20px; background-color: #000; color: #fff; }}
-        //        .content {{ margin: 20px; padding: 20px; background-color: #fff; color: #000; border-radius: 10px; }}
-        //        .footer {{ margin-top: 20px; font-size: 12px; }}
-        //    </style>
-        //</head>
-        //<body>
-        //    <div class='container'>
-        //        <img src='cid:CompanyLogo' alt='Company Logo' width='200' />
-        //        <h2>Dear {userName},</h2>
-        //        <p>Welcome to Beserele Family!</p>
-        //        <p>Thank you for registering. Please login using the credentials below:</p>
-        //        <div class='content'>
-        //            <p><strong>UserID:</strong> {toEmail}</p>
-        //            <p><strong>Password:</strong> {userPassword}</p>
-        //        </div>
-        //        <p>If you have any questions, feel free to contact us.</p>
-        //        <p>Visit us at <a href='https://www.buserele.com'>www.buserele.com</a></p>
-        //        <p class='footer'>&copy; GVR Infosystems Pvt Ltd 2025. All rights reserved.</p>
-        //        <br>
-        //        <img src='cid:BusereleLogo' alt='Buserele Logo' width='150' />
-        //    </div>
-        //</body>
-        //    </html>";
-
-        //        builder.HtmlBody = htmlBody;
-        //        emailMessage.Body = builder.ToMessageBody();
-
-        //        //try
-        //        //{
-        //        //    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-        //        //    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), false);
-        //        //    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-        //        //    await smtpClient.SendAsync(emailMessage);
-        //        //    await smtpClient.DisconnectAsync(true);
-        //        //}
-        //        //catch (Exception ex)
-        //        //{
-        //        //    Console.WriteLine($"Error sending email: {ex.Message}");
-        //        //    throw;
-        //        //}
-
-
-        //        try
-        //        {
-        //            var smtpClient = new System.Net.Mail.SmtpClient(_configuration["Smtp:smtpServer"])
-        //            {
-        //                Port = int.Parse(_configuration["Smtp:Port"]),
-        //                Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]),
-        //                EnableSsl = false
-        //            };
-
-        //            Console.WriteLine("smtpClient", smtpClient.ToString());
-
-        //            var mailMessage = new MailMessage
-        //            {
-        //                From = new MailAddress(_configuration["Smtp:FromEmail"], "Support Team"),
-        //                Subject = subject,
-        //                IsBodyHtml = true,
-        //                Body = htmlBody
-        //            };
-        //            mailMessage.To.Add(actualRecipient);
-        //            await smtpClient.SendMailAsync(mailMessage);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"Error sending email: {ex.Message}");
-        //            throw ex;
-        //        }
-        //    }
-
         //    private static Dictionary<string, UserOTP> _otpCache = new Dictionary<string, UserOTP>();
 
         //    private static Random random = new Random();
@@ -1179,9 +1391,12 @@ namespace SchoolManagementAPI.Controllers
         public IActionResult Tbl_Class_CRUD_Operations([FromBody] tblClass Class)
         {
             var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-            var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+            var schoolId = User.FindFirst("SchoolID")?.Value;
 
-            Class.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+            if (roleId != "1")
+            {
+                Class.SchoolID = schoolId;
+            }
             var result = dbop.Tbl_Class_CRUD_Operations(Class);
 
             if (result == null || result.Count == 0)
@@ -1217,6 +1432,13 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_ClassDivision_CRUD_Operations")]
         public IActionResult Tbl_ClassDivision_CRUD_Operations([FromBody] tblClassDivision classDivision)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var schoolId = User.FindFirst("SchoolID")?.Value;
+
+            if (roleId != "1")
+            {
+                classDivision.SchoolID = schoolId;
+            }
             var result = dbop.Tbl_ClassDivision_CRUD_Operations(classDivision);
 
             if (result == null || result.Count == 0)
@@ -1263,52 +1485,82 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_Staff_CRUD_Operations")]
         public IActionResult Tbl_Staff_CRUD_Operations([FromBody] tblStaff staff)
         {
-            var result = dbop.Tbl_Staff_CRUD_Operations(staff);
-
-            if (result == null || result.Count == 0)
+            try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    staff.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_Staff_CRUD_Operations(staff);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (staff.Flag == "1" && statusText.Contains("staff member already exists"))
+                {
+                    return Conflict(new
+                    {
+                        StatusCode = 409,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Staff_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(staff));
                 return BadRequest(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Success = false,
-                    Message = "No result returned or operation failed."
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
                 });
             }
 
-            var statusText = result.First().Status?.ToLower() ?? string.Empty;
-
-            if (staff.Flag == "1" && statusText.Contains("staff member already exists"))
-            {
-                return Conflict(new
-                {
-                    StatusCode = 409,
-                    Success = false,
-                    Message = result.First().Status
-                });
-            }
-
-            if (statusText.Contains("error"))
-            {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = result.First().Status
-                });
-            }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
         }
 
         [HttpPost("Tbl_Subject_CRUD_Operations")]
         public IActionResult Tbl_Subject_CRUD_Operations([FromBody] tblSubjects subject)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var schoolId = User.FindFirst("SchoolID")?.Value;
+
+            if (roleId != "1")
+            {
+                subject.SchoolID = schoolId;
+            }
+
             var result = dbop.Tbl_Subjects_CRUD_Operations(subject);
 
             if (result == null || result.Count == 0)
@@ -1345,6 +1597,13 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_SubjectStaff_CRUD_Operations")]
         public IActionResult Tbl_SubjectStaff_CRUD_Operations([FromBody] tblSubjectStaff subjectStaff)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var schoolId = User.FindFirst("SchoolID")?.Value;
+
+            if (roleId != "1")
+            {
+                subjectStaff.SchoolID = schoolId;
+            }
             var result = dbop.Tbl_SubjectStaff_CRUD_Operations(subjectStaff);
 
             if (result == null || result.Count == 0)

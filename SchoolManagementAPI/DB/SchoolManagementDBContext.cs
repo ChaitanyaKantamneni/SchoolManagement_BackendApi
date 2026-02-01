@@ -11,11 +11,13 @@ namespace SchoolManagementAPI.DB
         public DbSet<tblAcademicYear> Tbl_AcademicYear { get; set; }
         public DbSet<tblSyllabus> Tbl_Syllabus { get; set; }
         public DbSet<SchoolDetails> tbl_SchoolDetails { get; set; }
+        public DbSet<tblPages> tbl_pages { get; set; }
+        public DbSet<tblModules> tbl_modules { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<tblSyllabus>().HasNoKey();
+            modelBuilder.Entity<tblPages>().HasNoKey();
             base.OnModelCreating(modelBuilder);
         }
-
     }
 }
