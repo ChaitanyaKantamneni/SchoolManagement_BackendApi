@@ -1871,6 +1871,7 @@ namespace SchoolManagementAPI.DAL
                 cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(subjectStaff.ModifiedBy) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(subjectStaff.ModifiedIp) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(subjectStaff.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(subjectStaff.IsActive) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_Limit", subjectStaff.Limit ?? 100);
                 cmd.Parameters.AddWithValue("p_LastCreatedDate", subjectStaff.LastCreatedDate ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("p_LastID", subjectStaff.LastID ?? (object)DBNull.Value);
@@ -1916,7 +1917,8 @@ namespace SchoolManagementAPI.DAL
                                     Status = reader["Message"]?.ToString(),
                                     SchoolName = reader["SchoolName"]?.ToString(),
                                     AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                    ClassName = reader["ClassName"]?.ToString()
+                                    ClassName = reader["ClassName"]?.ToString(),
+                                    StaffFullName= reader["StaffName"]?.ToString()
                                 });
                             }
                         }
