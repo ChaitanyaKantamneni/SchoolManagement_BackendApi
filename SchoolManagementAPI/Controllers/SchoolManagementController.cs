@@ -378,7 +378,7 @@ namespace SchoolManagementAPI.Controllers
         //}
 
         // Fetch school details by ID
-        
+
         private SchoolDetails? GetSchoolById(string schoolId)
         {
             if (string.IsNullOrEmpty(schoolId))
@@ -393,7 +393,7 @@ namespace SchoolManagementAPI.Controllers
             return schoolList.FirstOrDefault();
         }
 
-        private async Task SendRegistrationEmailAsync(string toEmail,string userName,string userPassword,bool isAdmin,string? schoolName = null,string? schoolUrl = null)
+        private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin, string? schoolName = null, string? schoolUrl = null)
         {
             string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
             string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
@@ -1673,6 +1673,7 @@ namespace SchoolManagementAPI.Controllers
             });
         }
 
+
         [HttpPost("Tbl_Bus_CRUD_Operations")]
         public IActionResult Tbl_Bus_CRUD_Operations([FromBody] tblBus bus)
         {
@@ -1888,6 +1889,64 @@ namespace SchoolManagementAPI.Controllers
             catch (Exception ex)
             {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_Fare_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
+        public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    wrkdays.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_WorkingDays_CRUD_Operations(wrkdays);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_WorkingDays_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(wrkdays));
                 return BadRequest(new
                 {
                     StatusCode = 500,
