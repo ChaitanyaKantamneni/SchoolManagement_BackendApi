@@ -1196,8 +1196,10 @@ namespace SchoolManagementAPI.DAL
                             {
                                 var ClassDivision = new tblSubjects
                                 {
-                                    SNo = reader["SNo"]?.ToString(),
+                                    SubjectID = reader["SubjectID"]?.ToString(),
                                     SyllabusClassName = reader["SyllabusClassSubjectName"]?.ToString(),
+                                    ClassID = reader["ClassID"]?.ToString(),
+                                    SyllabusID = reader["SyllabusID"]?.ToString(),
                                     Status = reader["Message"]?.ToString()
                                 };
 
@@ -1378,7 +1380,7 @@ namespace SchoolManagementAPI.DAL
                             }
                         }
                     }
-                    else if (subjectStaff.Flag == "2" || subjectStaff.Flag == "3" || subjectStaff.Flag == "7")
+                    else if (subjectStaff.Flag == "2" || subjectStaff.Flag == "3" || subjectStaff.Flag == "4" || subjectStaff.Flag == "7")
                     {
                         using (var reader = cmd.ExecuteReader())
                         {

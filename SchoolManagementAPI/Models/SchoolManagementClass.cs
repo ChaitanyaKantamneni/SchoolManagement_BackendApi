@@ -325,6 +325,9 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
         public string? ClassName { get; set; }
+        public string? SubjectID { get; set; }
+        public string? ClassID { get; set; }
+        public string? SyllabusID { get; set; }
     }
 
     public class tblSubjectStaff
