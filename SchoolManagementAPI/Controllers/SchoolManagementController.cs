@@ -1931,7 +1931,7 @@ namespace SchoolManagementAPI.Controllers
             }
             catch (Exception ex)
             {
-                dbop.LogException(ex, "SchoolManagementController", "Tbl_Fare_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Examtype_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
                 return BadRequest(new
                 {
                     StatusCode = 500,
