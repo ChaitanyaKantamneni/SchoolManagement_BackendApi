@@ -2343,7 +2343,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(route));
+                LogException(ex, "SchoolManagementDAL", "Tbl_route_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(route));
                 return new List<tblRoute>
                 {
                     new tblRoute
@@ -2482,7 +2482,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(stop));
+                LogException(ex, "SchoolManagementDAL", "Tbl_stops_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(stop));
                 return new List<tblStops>
                 {
                     new tblStops
@@ -2624,7 +2624,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                LogException(ex, "SchoolManagementDAL", "Tbl_fare_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
                 return new List<tblFare>
                 {
                     new tblFare
@@ -2759,7 +2759,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(wrkdays));
+                LogException(ex, "SchoolManagementDAL", "Tbl_WorkingDays_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(wrkdays));
                 return new List<TblWorkingDays>
                 {
                     new TblWorkingDays
@@ -2783,7 +2783,7 @@ namespace SchoolManagementAPI.DAL
             try
             {
                 using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_Fare", conn))
+                using (var cmd = new MySqlCommand("Proc_ExamType", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(examtype.ID) ?? DBNull.Value);
@@ -2847,7 +2847,7 @@ namespace SchoolManagementAPI.DAL
                                         MaxMark = reader["MaxMark"]?.ToString(),
                                         PassMarks = reader["PassMarks"]?.ToString(),
                                         ExamDuration = reader["ExamDuration"]?.ToString(),
-                                        NoofQuestion = reader["DescripNoofQuestiontion"]?.ToString(),
+                                        NoofQuestion = reader["NoofQuestion"]?.ToString(),
                                         Instructions = reader["Instructions"]?.ToString(),
                                         IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
@@ -2906,7 +2906,7 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ExamType));
+                LogException(ex, "SchoolManagementDAL", "Tbl_ExamType_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ExamType));
                 return new List<tblExamType>
                 {
                     new tblExamType
