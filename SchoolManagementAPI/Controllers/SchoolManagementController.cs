@@ -1884,6 +1884,8 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        [HttpPost("Tbl_Examtype_CRUD_Operations")]
+
 
         //Exam Module
         [HttpPost("Tbl_Examtype_CRUD_Operations")]
@@ -1941,5 +1943,139 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
+
+        [HttpPost("Tbl_FeeCategory_CRUD_Operations")]
+        public IActionResult Tbl_FeeCategory_CRUD_Operations([FromBody] feeCategory fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_feeCategory_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status== "Fee Category Already Exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data=result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_feeCategory_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_FeeAllocation_CRUD_Operations")]
+        public IActionResult Tbl_FeeAllocation_CRUD_Operations([FromBody] FeeAllocation fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_FeeAllocation_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x =>
+                    x.Status?.ToLower().Contains("error") == true);
+
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(
+                    ex,
+                    "SchoolManagementController",
+                    "Tbl_FeeAllocation_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(fee)
+                );
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred.",
+                    Error = ex.Message
+                });
+            }
+        }
+
     }
+
 }
