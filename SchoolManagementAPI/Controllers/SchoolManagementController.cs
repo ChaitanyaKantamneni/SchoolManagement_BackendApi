@@ -49,72 +49,7 @@ namespace SchoolManagementAPI.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpPost("Tbl_SchoolDetails_CRUD")]
-        public IActionResult Tbl_SchoolDetails_CRUD([FromBody] SchoolDetails school)
-        {
-            try
-            {
-                var roleId = User.FindFirst("role")?.Value;
-                var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
-                if (roleId != "1")
-                {
-                    school.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
-                }
 
-                var result = dbop.Tbl_SchoolDetails_CRUD(school);
-
-                if (result == null)
-                {
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = "Database returned null result."
-                    });
-                }
-
-                var error = result.FirstOrDefault(x => !string.IsNullOrEmpty(x.Status) && x.Status.ToLower().Contains("error"));
-                if (error != null)
-                {
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = error.Status
-                    });
-                }
-
-                if (result.First().Status == "School name already exists")
-                {
-                    return StatusCode(400, new
-                    {
-                        StatusCode = 400,
-                        Success = false,
-                        Message = result.First().Status,
-                        Data = result
-                    });
-                }
-
-                return Ok(new
-                {
-                    StatusCode = 200,
-                    Success = true,
-                    Message = result.First().Status,
-                    Data = result
-                });
-            }
-            catch (Exception ex)
-            {
-                dbop.LogException(ex, "SchoolManagementController", "Tbl_SchoolDetails_CRUD", Newtonsoft.Json.JsonConvert.SerializeObject(school));
-                return BadRequest(new
-                {
-                    StatusCode = 500,
-                    Success = false,
-                    Message = "Internal server error occurred. Please try again.",
-                    Error = ex.Message
-                });
-            }
-        }
 
         [AllowAnonymous]
         [HttpPost("Tbl_Users_CRUD_Operations")]
@@ -445,6 +380,75 @@ namespace SchoolManagementAPI.Controllers
                 schoolId = dbUser.SchoolID,
                 schoolName = dbUser.SchoolName
             });
+        }
+
+
+        //Masters Module
+        [HttpPost("Tbl_SchoolDetails_CRUD")]
+        public IActionResult Tbl_SchoolDetails_CRUD([FromBody] SchoolDetails school)
+        {
+            try
+            {
+                var roleId = User.FindFirst("role")?.Value;
+                var tokenSchoolId = User.FindFirst("SchoolID")?.Value;
+                if (roleId != "1")
+                {
+                    school.SchoolID = string.IsNullOrWhiteSpace(tokenSchoolId) ? null : tokenSchoolId;
+                }
+
+                var result = dbop.Tbl_SchoolDetails_CRUD(school);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => !string.IsNullOrEmpty(x.Status) && x.Status.ToLower().Contains("error"));
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "School name already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SchoolDetails_CRUD", Newtonsoft.Json.JsonConvert.SerializeObject(school));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
         }
 
         [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
@@ -907,7 +911,7 @@ namespace SchoolManagementAPI.Controllers
                     Message = "Internal server error occurred. Please try again.",
                     Error = ex.Message
                 });
-            }            
+            }
         }
 
         [HttpPost("Tbl_ClassDivision_CRUD_Operations")]
@@ -975,7 +979,70 @@ namespace SchoolManagementAPI.Controllers
                     Message = "Internal server error occurred. Please try again.",
                     Error = ex.Message
                 });
-            }            
+            }
+        }
+
+        [HttpPost("Tbl_Staff_CRUD_Operations")]
+        public IActionResult Tbl_Staff_CRUD_Operations([FromBody] tblStaff staff)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    staff.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_Staff_CRUD_Operations(staff);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return BadRequest(new { StatusCode = 500, Success = false, Message = error.Status });
+                }
+
+                if (result.First().Status == "Staff already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Staff_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(staff));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+
         }
 
         [HttpPost("Tbl_Subject_CRUD_Operations")]
@@ -1045,7 +1112,7 @@ namespace SchoolManagementAPI.Controllers
                     Error = ex.Message
                 });
             }
-            
+
         }
 
         [HttpPost("Tbl_SubjectStaff_CRUD_Operations")]
@@ -1492,69 +1559,8 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        [HttpPost("Tbl_Staff_CRUD_Operations")]
-        public IActionResult Tbl_Staff_CRUD_Operations([FromBody] tblStaff staff)
-        {
-            try
-            {
-                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                if (roleId != "1")
-                {
-                    staff.SchoolID = schoolId;
-                }
-                var result = dbop.Tbl_Staff_CRUD_Operations(staff);
-
-                if (result == null || result.Count == 0)
-                {
-                    return BadRequest(new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = "No result returned or operation failed."
-                    });
-                }
-
-                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-                if (error != null)
-                {
-                    return BadRequest(new { StatusCode = 500, Success = false, Message = error.Status });
-                }
-
-                if (result.First().Status == "Staff already exists")
-                {
-                    return StatusCode(400, new
-                    {
-                        StatusCode = 400,
-                        Success = false,
-                        Message = result.First().Status,
-                        Data = result
-                    });
-                }
-
-                return Ok(new
-                {
-                    StatusCode = 200,
-                    Success = true,
-                    Message = result.First().Status,
-                    Data = result
-                });
-            }
-            catch (Exception ex)
-            {
-                dbop.LogException(ex, "SchoolManagementController", "Tbl_Staff_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(staff));
-                return BadRequest(new
-                {
-                    StatusCode = 500,
-                    Success = false,
-                    Message = "Internal server error occurred. Please try again.",
-                    Error = ex.Message
-                });
-            }
-
-        }
-
+        //Academic Module
         [HttpPost("Tbl_Admissions_CRUD_Operations")]
         public IActionResult Tbl_Admissions_CRUD_Operations([FromBody] tblAdmission admission)
         {
@@ -1592,6 +1598,7 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        //Transportation Module
         [HttpPost("Tbl_Bus_CRUD_Operations")]
         public IActionResult Tbl_Bus_CRUD_Operations([FromBody] tblBus bus)
         {
@@ -1818,7 +1825,9 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
-        [AllowAnonymous]
+
+
+        //Time Table Module
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -1874,8 +1883,10 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-    
-      [HttpPost("Tbl_Examtype_CRUD_Operations")]
+
+
+        //Exam Module
+        [HttpPost("Tbl_Examtype_CRUD_Operations")]
         public IActionResult Tbl_examtype_CRUD_Operations([FromBody] tblExamType fare)
         {
             try
