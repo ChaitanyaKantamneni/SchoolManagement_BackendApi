@@ -1884,9 +1884,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        [HttpPost("Tbl_Examtype_CRUD_Operations")]
-
-
+        
         //Exam Module
         [HttpPost("Tbl_Examtype_CRUD_Operations")]
         public IActionResult Tbl_examtype_CRUD_Operations([FromBody] tblExamType fare)
