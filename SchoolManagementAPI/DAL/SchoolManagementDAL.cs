@@ -4053,7 +4053,7 @@ namespace SchoolManagementAPI.DAL
                                             RouteID = reader["RouteID"]?.ToString(),
                                             StopID = reader["StopID"]?.ToString(),
                                             BusID = reader["BusID"]?.ToString(),
-                                            Amount = reader["Amount"]?.ToString(),
+                                            Amount = reader["Amount"] == DBNull.Value ? null : Convert.ToDecimal(reader["Amount"]),
                                             IsActive = reader["IsActive"].ToString(),
                                             CreatedBy = reader["CreatedBy"]?.ToString(),
                                             CreatedIp = reader["CreatedIp"]?.ToString(),
