@@ -1061,6 +1061,7 @@ namespace SchoolManagementAPI.Controllers
             return BadRequest("Invalid export type");
         }
 
+        [AllowAnonymous]
         [HttpPost("Tbl_Class_CRUD_Operations")]
         public IActionResult Tbl_Class_CRUD_Operations([FromBody] tblClass Class)
         {
@@ -2487,6 +2488,62 @@ namespace SchoolManagementAPI.Controllers
             catch (Exception ex)
             {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_Examtype_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_SetExam_CRUD_Operations")]
+        public IActionResult Tbl_setExam_CRUD_Operations([FromBody] tblSetExam fare)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fare.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_SetExam_CRUD_Operations(fare);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SetExam_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
                 return BadRequest(new
                 {
                     StatusCode = 500,
