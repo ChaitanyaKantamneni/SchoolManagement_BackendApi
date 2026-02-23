@@ -180,7 +180,8 @@ namespace SchoolManagementAPI.Controllers
                         user.Password,
                         isAdmin: false,
                         schoolName,
-                        schoolUrl
+                        schoolUrl,
+                        user.RollId
                     );
                 }
 
@@ -220,41 +221,253 @@ namespace SchoolManagementAPI.Controllers
             return schoolList.FirstOrDefault();
         }
 
-        private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin, string? schoolName = null, string? schoolUrl = null)
+        private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin, string? schoolName = null, string? schoolUrl = null, string? Roleid = null)
         {
-            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-            string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
-
-            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
-
-            var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-            emailMessage.Subject = subject;
-
-            var builder = new BodyBuilder();
-
-            // Attach images only if they exist
-            if (System.IO.File.Exists(imagePath))
+            if (Roleid=="14")
             {
-                var headerImage = builder.LinkedResources.Add(imagePath);
-                headerImage.ContentId = "CompanyLogo";
-            }
+                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
 
-            if (System.IO.File.Exists(logoPath))
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                emailMessage.Subject = subject;
+
+                var builder = new BodyBuilder();
+
+                // Attach images only if they exist
+                if (System.IO.File.Exists(imagePath))
+                {
+                    var headerImage = builder.LinkedResources.Add(imagePath);
+                    headerImage.ContentId = "CompanyLogo";
+                }
+
+                if (System.IO.File.Exists(logoPath))
+                {
+                    var footerLogo = builder.LinkedResources.Add(logoPath);
+                    footerLogo.ContentId = "FooterLogo";
+                }
+
+                // Choose URL and footer based on school
+                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+                string htmlBody = isAdmin
+                    ? $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='content'>
+                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                <h2>New Student Registration</h2>
+                <p><strong>Name:</strong> {userName}</p>
+                <p><strong>Email:</strong> {toEmail}</p>
+                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+            </div>
+            <p class='footer'>{footerText}</p>
+        </div>
+    </body>
+    </html>"
+                    : $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+            <h2>Welcome, {userName}!</h2>
+            <p>Congratulations! Your Student account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+            <div class='content'>
+                <h3>Login Details:</h3>
+                <div class='credentials'>
+                    <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    <p><strong>Password:</strong> {userPassword}</p>
+                </div>
+            </div>
+            <p>{loginText}</p>
+            <p>If you face any issues, contact your system administrator.</p>
+            <p class='footer'>{footerText}</p>
+            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+        </div>
+    </body>
+    </html>";
+
+                builder.HtmlBody = htmlBody;
+                emailMessage.Body = builder.ToMessageBody();
+
+                try
+                {
+                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    await smtpClient.SendAsync(emailMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending email: {ex.Message}");
+                    throw;
+                }
+            }
+            else if(Roleid == "15")
             {
-                var footerLogo = builder.LinkedResources.Add(logoPath);
-                footerLogo.ContentId = "FooterLogo";
+                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
+
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                emailMessage.Subject = subject;
+
+                var builder = new BodyBuilder();
+
+                // Attach images only if they exist
+                if (System.IO.File.Exists(imagePath))
+                {
+                    var headerImage = builder.LinkedResources.Add(imagePath);
+                    headerImage.ContentId = "CompanyLogo";
+                }
+
+                if (System.IO.File.Exists(logoPath))
+                {
+                    var footerLogo = builder.LinkedResources.Add(logoPath);
+                    footerLogo.ContentId = "FooterLogo";
+                }
+
+                // Choose URL and footer based on school
+                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+                string htmlBody = isAdmin
+                    ? $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='content'>
+                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                <h2>New Parent Registration</h2>
+                <p><strong>Name:</strong> {userName}</p>
+                <p><strong>Email:</strong> {toEmail}</p>
+                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+            </div>
+            <p class='footer'>{footerText}</p>
+        </div>
+    </body>
+    </html>"
+                    : $@"
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+            <h2>Welcome, {userName}!</h2>
+            <p>Congratulations! Your Parent account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+            <div class='content'>
+                <h3>Login Details:</h3>
+                <div class='credentials'>
+                    <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    <p><strong>Password:</strong> {userPassword}</p>
+                </div>
+            </div>
+            <p>{loginText}</p>
+            <p>If you face any issues, contact your system administrator.</p>
+            <p class='footer'>{footerText}</p>
+            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+        </div>
+    </body>
+    </html>";
+
+                builder.HtmlBody = htmlBody;
+                emailMessage.Body = builder.ToMessageBody();
+
+                try
+                {
+                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    await smtpClient.SendAsync(emailMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending email: {ex.Message}");
+                    throw;
+                }
             }
+            else
+            {
+                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
 
-            // Choose URL and footer based on school
-            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-            string htmlBody = isAdmin
-                ? $@"
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                emailMessage.Subject = subject;
+
+                var builder = new BodyBuilder();
+
+                // Attach images only if they exist
+                if (System.IO.File.Exists(imagePath))
+                {
+                    var headerImage = builder.LinkedResources.Add(imagePath);
+                    headerImage.ContentId = "CompanyLogo";
+                }
+
+                if (System.IO.File.Exists(logoPath))
+                {
+                    var footerLogo = builder.LinkedResources.Add(logoPath);
+                    footerLogo.ContentId = "FooterLogo";
+                }
+
+                // Choose URL and footer based on school
+                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+                string htmlBody = isAdmin
+                    ? $@"
     <html>
     <head>
         <style>
@@ -277,7 +490,7 @@ namespace SchoolManagementAPI.Controllers
         </div>
     </body>
     </html>"
-                : $@"
+                    : $@"
     <html>
     <head>
         <style>
@@ -308,21 +521,22 @@ namespace SchoolManagementAPI.Controllers
     </body>
     </html>";
 
-            builder.HtmlBody = htmlBody;
-            emailMessage.Body = builder.ToMessageBody();
+                builder.HtmlBody = htmlBody;
+                emailMessage.Body = builder.ToMessageBody();
 
-            try
-            {
-                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                await smtpClient.SendAsync(emailMessage);
-                await smtpClient.DisconnectAsync(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending email: {ex.Message}");
-                throw;
+                try
+                {
+                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    await smtpClient.SendAsync(emailMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending email: {ex.Message}");
+                    throw;
+                }
             }
         }
 
@@ -1561,41 +1775,339 @@ namespace SchoolManagementAPI.Controllers
 
 
         //Academic Module
-        [HttpPost("Tbl_Admissions_CRUD_Operations")]
-        public IActionResult Tbl_Admissions_CRUD_Operations([FromBody] tblAdmission admission)
+        [HttpPost("Tbl_StudentDetails_CRUD_Operations")]
+        public IActionResult Tbl_StudentDetails_CRUD_Operations([FromBody] tblStudentDetails admission)
         {
-            var result = dbop.Tbl_Admission_CRUD_Operations(admission);
-
-            if (result == null || result.Count == 0)
+            try
             {
-                return BadRequest(new
+                var result = dbop.Tbl_StudentDetails_CRUD_Operations(admission);
+
+                if (result == null || result.Count == 0)
                 {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = "No result returned or operation failed."
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "AdmissionNo already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
                 });
             }
-
-            var statusText = result.First().Status?.ToLower() ?? string.Empty;
-
-            if (statusText.Contains("error"))
+            catch(Exception ex)
             {
-                return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = result.First().Status
-                });
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
             }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
         }
+
+        [HttpPost("Tbl_StudentAddressDetails_CRUD_Operations")]
+        public IActionResult Tbl_StudentAddressDetails_CRUD_Operations([FromBody] tblStudentAddressDetails admission)
+        {
+            try
+            {
+                var result = dbop.Tbl_StudentAddressDetails_CRUD_Operations(admission);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Page Name Already Exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentAddressDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("Tbl_StudentParentDetails_CRUD_Operations")]
+        public IActionResult Tbl_StudentParentDetails_CRUD_Operations([FromBody] tblStudentParentDetails admission)
+        {
+            try
+            {
+                var result = dbop.Tbl_StudentParentDetails_CRUD_Operations(admission);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Parent details for this AdmissionID already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentParentDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("Tbl_StudentAcademicDetails_CRUD_Operations")]
+        public IActionResult Tbl_StudentAcademicDetails_CRUD_Operations([FromBody] tblStudentAcademicDetails admission)
+        {
+            try
+            {
+                var result = dbop.Tbl_StudentAcademicDetails_CRUD_Operations(admission);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Page Name Already Exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentAcademicDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("Tbl_StudentTransportationDetails_CRUD_Operations")]
+        public IActionResult Tbl_StudentTransportationDetails_CRUD_Operations([FromBody] tblStudentTransportationDetails admission)
+        {
+            try
+            {
+                var result = dbop.Tbl_StudentTransportationDetails_CRUD_Operations(admission);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Page Name Already Exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentTransportationDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+
+        [HttpPost("Tbl_AllotClassTeacher_CRUD_Operations")]
+        public IActionResult Tbl_AllotClassTeacher_CRUD_Operations([FromBody] tblAllotClassTeacher ClassTeacher)
+        {
+            try
+            {
+                var result = dbop.Tbl_AllotClassTeacher_CRUD_Operations(ClassTeacher);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Class Teacher already Allocated")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = "Class Teacher already Allocated for this class",
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_AllotClassTeacher_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ClassTeacher));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
+            }
+        }
+
+
+
 
 
         //Transportation Module
@@ -1631,6 +2143,17 @@ namespace SchoolManagementAPI.Controllers
                         StatusCode = 500,
                         Success = false,
                         Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Bus name already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
 
@@ -1690,6 +2213,17 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Route name already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -1746,6 +2280,17 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Stop already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -1766,7 +2311,6 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-
 
         [HttpPost("Tbl_Fare_CRUD_Operations")]
         public IActionResult Tbl_fare_CRUD_Operations([FromBody] tblFare fare)
@@ -1800,6 +2344,17 @@ namespace SchoolManagementAPI.Controllers
                         StatusCode = 500,
                         Success = false,
                         Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Fare already exists for this stop, bus, and route")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
 
