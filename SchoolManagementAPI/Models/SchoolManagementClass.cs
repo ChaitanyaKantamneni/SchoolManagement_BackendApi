@@ -434,11 +434,6 @@ namespace SchoolManagementAPI.Models
         public string? CanDelete { get; set; }
     }
 
-
-    
-
-    
-
     public class tblStaff
     {
         public string? ID { get; set; }
@@ -547,8 +542,6 @@ namespace SchoolManagementAPI.Models
         public string? Flag { get; set; }
         public string? Status { get; set; }
     }
-
-    
 
     public class tblAdmission
     {
@@ -727,8 +720,7 @@ namespace SchoolManagementAPI.Models
         public string? RouteID { get; set; }
         public string? StopID { get; set; }
         public string? BusID { get; set; }
-        public string? Amount { get; set; }
-
+        public decimal? Amount { get; set; }   // or public decimal Amount { get; set; } = 0m;  if non-nullable + default
         //public string? Distance { get; set; }
         //public string? Description { get; set; }
 
@@ -814,6 +806,54 @@ namespace SchoolManagementAPI.Models
 
         public string? ExamDuration { get; set; }
         public string? NoofQuestion { get; set; }
+        public string? Instructions { get; set; }
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblSetExam
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Syllabus { get; set; }
+        public string? Class { get; set; }
+
+        public string? Divisions { get; set; }
+        public string? ExamType { get; set; }
+        public string? Subjects { get; set; }
+        public string? MaxMarks { get; set; }
+        public string? PassMarks { get; set; }
+        public string? ExamDateAndTime { get; set; }
+
+
+        public string? Duration { get; set; }
+        public string? NoOfQuestion { get; set; }
         public string? Instructions { get; set; }
 
         public string? IsActive { get; set; }
