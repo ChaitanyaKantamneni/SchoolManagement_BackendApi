@@ -1900,7 +1900,7 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
-        [AllowAnonymous]
+        
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -1933,6 +1933,17 @@ namespace SchoolManagementAPI.Controllers
                         StatusCode = 500,
                         Success = false,
                         Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Working day already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
 
