@@ -4286,6 +4286,7 @@ namespace SchoolManagementAPI.DAL
                 };
             }
         }
+        
         public List<TblSession> Tbl_Session_CRUD_Operations(TblSession Session1)
         {
             var Sessiontt = new List<TblSession>();
@@ -4346,7 +4347,7 @@ namespace SchoolManagementAPI.DAL
                             {
                                 while (reader.Read())
                                 {
-                                    var Sessiontt1 new TblSession
+                                    var Sessiontt1=new TblSession
                                     {
                                         //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
                                         ID = reader["ID"].ToString(),
@@ -4371,7 +4372,7 @@ namespace SchoolManagementAPI.DAL
                                 }
                             }
                         }
-                        else if (Session.Flag == "1" || Session.Flag == "5")
+                        else if (Session1.Flag == "1" || Session1.Flag == "5")
                         {
                             using (var reader = cmd.ExecuteReader())
                             {
@@ -4379,14 +4380,14 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     if (reader["Message"]?.ToString() == "Working day already exists")
                                     {
-                                        Wrkdays.Add(new TblWorkingDays
+                                        Sessiontt.Add(new TblSession
                                         {
                                             Status = reader["Message"]?.ToString()
                                         });
                                     }
                                     else
                                     {
-                                        Sessiontt.Add(new TbllSession
+                                        Sessiontt.Add(new TblSession
                                         {
                                             ID = reader["ID"].ToString(),
                                             SchoolID = reader["SchoolID"]?.ToString(),
@@ -4413,7 +4414,7 @@ namespace SchoolManagementAPI.DAL
                             {
                                 while (reader.Read())
                                 {
-                                    var Sessiontt2 = new TblSession
+                                    var Sessiontt1 = new TblSession
                                     {
                                         ID = reader["ID"].ToString(),
                                         SchoolID = reader["SchoolID"]?.ToString(),
@@ -4431,21 +4432,21 @@ namespace SchoolManagementAPI.DAL
                                         Status = reader["Message"]?.ToString()
                                     };
 
-                                    Wrkdays.Add(Sessiontt2);
+                                    Sessiontt.Add(Sessiontt1);
                                 }
                             }
                         }
                     }
                 }
 
-                return Wrkdays;
+                return Sessiontt;
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_bus_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(wrkdays));
-                return new List<TblWorkingDays>
+                LogException(ex, "SchoolManagementDAL", "Tbl_Session_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(Session1));
+                return new List<TblSession>
                 {
-                    new TblWorkingDays
+                    new TblSession
                     {
                         Status = $"ERROR: {ex.Message}"
                     }
