@@ -1257,7 +1257,6 @@ namespace SchoolManagementAPI.Controllers
                     Error = ex.Message
                 });
             }
-
         }
 
         [HttpPost("Tbl_Subject_CRUD_Operations")]
@@ -1333,44 +1332,59 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_SubjectStaff_CRUD_Operations")]
         public IActionResult Tbl_SubjectStaff_CRUD_Operations([FromBody] tblSubjectStaff subjectStaff)
         {
-            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-            var schoolId = User.FindFirst("SchoolID")?.Value;
-
-            if (roleId != "1")
+            try
             {
-                subjectStaff.SchoolID = schoolId;
-            }
-            var result = dbop.Tbl_SubjectStaff_CRUD_Operations(subjectStaff);
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
 
-            if (result == null || result.Count == 0)
-            {
-                return BadRequest(new
+                if (roleId != "1")
                 {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = "No result returned or operation failed."
+                    subjectStaff.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_SubjectStaff_CRUD_Operations(subjectStaff);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
                 });
             }
-
-            var statusText = result.First().Status?.ToLower() ?? string.Empty;
-
-            if (statusText.Contains("error"))
+            catch (Exception ex)
             {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SubjectStaff_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(subjectStaff));
                 return BadRequest(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Success = false,
-                    Message = result.First().Status
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
                 });
             }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
         }
 
         [HttpPost("Tbl_Modules_CRUD_Operations")]
@@ -1781,6 +1795,14 @@ namespace SchoolManagementAPI.Controllers
         {
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    admission.SchoolID = schoolId;
+                }
+
                 var result = dbop.Tbl_StudentDetails_CRUD_Operations(admission);
 
                 if (result == null || result.Count == 0)
@@ -2057,6 +2079,14 @@ namespace SchoolManagementAPI.Controllers
         {
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    ClassTeacher.SchoolID = schoolId;
+                }
+
                 var result = dbop.Tbl_AllotClassTeacher_CRUD_Operations(ClassTeacher);
 
                 if (result == null || result.Count == 0)
