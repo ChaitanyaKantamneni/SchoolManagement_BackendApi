@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
         //      .AllowAnyHeader()
         //      .AllowAnyMethod();
 
-        policy.WithOrigins("https://smartschoolserp.com")
+        policy.WithOrigins("https://smartschoolserp.com", "http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod();
 
