@@ -434,11 +434,6 @@ namespace SchoolManagementAPI.Models
         public string? CanDelete { get; set; }
     }
 
-
-    
-
-    
-
     public class tblStaff
     {
         public string? ID { get; set; }
@@ -550,20 +545,22 @@ namespace SchoolManagementAPI.Models
 
     
 
-    public class tblAdmission
+    public class tblStudentDetails
     {
         public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
         public string? AdmissionNo { get; set; }
-        public DateTime? AcadamicYear { get; set; }
+        public string? Syllabus { get; set; }
         public string? Class { get; set; }
         public string? Division { get; set; }
-        public DateTime? DateOfJoin { get; set; }
+        public DateTime? JoinDate { get; set; }
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }
         public string? LastName { get; set; }
         public string? AadharNo { get; set; }
-        public string? StudentMobileNo { get; set; }
-        public string? StudentEmail { get; set; }
+        public string? MobileNo { get; set; }
+        public string? EmailID { get; set; }
         public DateTime? DOB { get; set; }
         public string? Gender { get; set; }
         public string? BloodGroup { get; set; }
@@ -571,17 +568,6 @@ namespace SchoolManagementAPI.Models
         public string? Religion { get; set; }
         public string? Caste { get; set; }
         public string? DocumentDetails { get; set; }
-        public string? FatherName { get; set; }
-        public string? FatherQualification { get; set; }
-        public string? FatherOccupation { get; set; }
-        public string? FatherMobile { get; set; }
-        public string? FatherEmail { get; set; }
-        public string? MotherName { get; set; }
-        public string? MotherQualification { get; set; }
-        public string? MotherOccupation { get; set; }
-        public string? MotherMobile { get; set; }
-        public string? MotherEmail { get; set; }
-        public string? Address { get; set; }
         public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIp { get; set; }
@@ -591,7 +577,190 @@ namespace SchoolManagementAPI.Models
         public DateTime? ModifiedDate { get; set; }
         public string? Flag { get; set; }
         public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }        
+        public string? NewAdmissionNo { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? ClassName { get; set; }
+        public string? ClassDivisionName { get; set; }        
     }
+
+    public class tblStudentAddressDetails
+    {
+        public string? ID { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? PermanentAddressLine1 { get; set; }
+        public string? PermanentAddressLine2 { get; set; }
+        public string? PermanentPinCode { get; set; }
+        public string? PermanentPlace { get; set; }
+        public string? PermanentCountry { get; set; }
+        public string? PermanentState { get; set; }
+        public string? PermanentDistrict { get; set; }
+        public string? PermanentCity { get; set; }
+
+
+        public string? TemporaryAddressLine1 { get; set; }
+        public string? TemporaryAddressLine2 { get; set; }
+        public string? TemporaryPinCode { get; set; }
+        public string? TemporaryPlace { get; set; }
+        public string? TemporaryCountry { get; set; }
+        public string? TemporaryState { get; set; }
+        public string? TemporaryDistrict { get; set; }
+        public string? TemporaryCity { get; set; }
+
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+    }
+
+    public class tblStudentParentDetails
+    {
+        public string? ID { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? FatherName { get; set; }
+        public string? FatherQualification { get; set; }
+        public string? FatherOccupation { get; set; }
+        public string? FatherContact { get; set; }
+        public string? FatherAadhar { get; set; }
+        public string? FatherEmail { get; set; }
+        public string? MotherName { get; set; }
+        public string? MotherQualification { get; set; }
+        public string? MotherOccupation { get; set; }
+        public string? MotherContact { get; set; }
+        public string? MotherAadhar { get; set; }
+        public string? MotherEmail { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+    }
+
+    public class tblStudentAcademicDetails
+    {
+        public string? ID { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Syllabus { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public DateTime? JoinDate { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+    }
+
+    public class tblStudentTransportationDetails
+    {
+        public string? ID { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Route { get; set; }
+        public string? Stop { get; set; }
+        public string? Bus { get; set; }
+        public string? Fare { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+        public string? RouteName { get; set; }
+        public string? StopName { get; set; }
+        public string? BusName { get; set; }
+        public string? FareName { get; set; }
+    }
+
+
+
+    public class tblAllotClassTeacher
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public string? ClassTeacher { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? ClassName { get; set; }
+        public string? StaffName { get; set; }
+        public string? DivisionName { get; set; }        
+    }
+
+
+
 
     public class tblBus
     {
@@ -727,8 +896,7 @@ namespace SchoolManagementAPI.Models
         public string? RouteID { get; set; }
         public string? StopID { get; set; }
         public string? BusID { get; set; }
-        public string? Amount { get; set; }
-
+        public decimal? Amount { get; set; }   // or public decimal Amount { get; set; } = 0m;  if non-nullable + default
         //public string? Distance { get; set; }
         //public string? Description { get; set; }
 
@@ -801,6 +969,43 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? RouteName { get; set; }
     }
+    public class TblSession
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? SessionName { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? RouteName { get; set; }
+    }
     public class tblExamType
     {
         public string? ID { get; set; }
@@ -814,6 +1019,54 @@ namespace SchoolManagementAPI.Models
 
         public string? ExamDuration { get; set; }
         public string? NoofQuestion { get; set; }
+        public string? Instructions { get; set; }
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblSetExam
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Syllabus { get; set; }
+        public string? Class { get; set; }
+
+        public string? Divisions { get; set; }
+        public string? ExamType { get; set; }
+        public string? Subjects { get; set; }
+        public string? MaxMarks { get; set; }
+        public string? PassMarks { get; set; }
+        public string? ExamDateAndTime { get; set; }
+
+
+        public string? Duration { get; set; }
+        public string? NoOfQuestion { get; set; }
         public string? Instructions { get; set; }
 
         public string? IsActive { get; set; }
