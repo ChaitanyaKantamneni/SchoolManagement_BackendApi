@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using OfficeOpenXml;
@@ -30,13 +32,16 @@ namespace SchoolManagementAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly SchoolManagementDAL dbop;
+        private readonly IDbContextFactory<SchoolManagementDBContext> _contextFactory;
         private readonly ILogger<SchoolManagementController> _logger;
         private readonly SchoolManagementDBContext _dbContext;
+
 
         public SchoolManagementController(
             IConfiguration configuration,
             ILogger<SchoolManagementController> logger,
-            SchoolManagementDBContext dbContext)
+            SchoolManagementDBContext dbContext,
+            IDbContextFactory<SchoolManagementDBContext> contextFactory)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -47,6 +52,7 @@ namespace SchoolManagementAPI.Controllers
             dbop = new SchoolManagementDAL(connectionString);
 
             _dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
 
@@ -881,184 +887,377 @@ namespace SchoolManagementAPI.Controllers
             );
         }
 
+        //[HttpPost("ExportSyllabus")]
+        //public async Task<IActionResult> ExportSyllabus([FromBody] tblSyllabus filter, [FromQuery] string type)
+        //{
+        //    const int batchSize = 50000;
+        //    DateTime? lastCreatedDate = null;
+        //    int? lastID = null;
+
+        //    if (type == "excel")
+        //    {
+        //        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        //        var stream = new MemoryStream();
+        //        var package = new ExcelPackage(stream);
+        //        var ws = package.Workbook.Worksheets.Add("Syllabus");
+
+        //        // Headers
+        //        ws.Cells[1, 1].Value = "ID";
+        //        ws.Cells[1, 2].Value = "Name";
+        //        ws.Cells[1, 3].Value = "School Name";
+        //        ws.Cells[1, 4].Value = "Academic Year";
+        //        ws.Cells[1, 5].Value = "Available From";
+        //        ws.Cells[1, 6].Value = "Description";
+        //        ws.Cells[1, 7].Value = "Status";
+        //        ws.Cells[1, 8].Value = "Created Date";
+
+        //        int currentRow = 2;
+
+        //        while (true)
+        //        {
+        //            var batch = await _dbContext.Tbl_Syllabus
+        //                .FromSqlRaw(
+        //                    @"CALL Proc_Syllabus(
+        //                    NULL,
+        //                    {0}, {1}, {2},
+        //                    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        //                    {3}, {4}, {5}, {6},
+        //                    NULL, NULL, -1
+        //                )",
+        //                    filter.SchoolID,
+        //                    filter.AcademicYear,
+        //                    filter.Name,
+        //                    filter.Flag ?? "2",
+        //                    batchSize,
+        //                    lastCreatedDate,
+        //                    lastID
+        //                )
+        //                .AsNoTracking()
+        //                .ToListAsync();
+
+        //            if (!batch.Any()) break;
+
+        //            foreach (var item in batch)
+        //            {
+        //                ws.Cells[currentRow, 1].Value = item.ID ?? 0;
+        //                ws.Cells[currentRow, 2].Value = item.Name ?? "";
+        //                ws.Cells[currentRow, 3].Value = item.SchoolName ?? "";
+        //                ws.Cells[currentRow, 4].Value = item.AcademicYearName ?? "";
+        //                ws.Cells[currentRow, 5].Value = item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "";
+        //                ws.Cells[currentRow, 6].Value = item.Description ?? "";
+        //                ws.Cells[currentRow, 7].Value = (item.IsActive ?? false) ? "Active" : "Inactive";
+        //                ws.Cells[currentRow, 8].Value = item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+        //                currentRow++;
+        //            }
+
+        //            lastCreatedDate = batch.Last().CreatedDate;
+        //            lastID = batch.Last().ID;
+        //        }
+
+        //        ws.Cells[ws.Dimension.Address].AutoFitColumns();
+        //        package.Save();
+        //        stream.Position = 0;
+
+        //        return File(
+        //            stream,
+        //            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //            $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+        //        );
+        //    }
+        //    else if (type == "pdf" || type == "print")
+        //    {
+        //        var stream = new MemoryStream();
+        //        var allData = new List<tblSyllabus>();
+        //        while (true)
+        //        {
+        //            var batch = await _dbContext.Tbl_Syllabus
+        //                .FromSqlRaw(
+        //                    @"CALL Proc_Syllabus(
+        //        NULL,
+        //        {0}, {1}, {2},
+        //        NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        //        {3}, {4}, {5}, {6},
+        //        NULL, NULL, -1
+        //    )",
+        //                    filter.SchoolID,
+        //                    filter.AcademicYear,
+        //                    filter.Name,
+        //                    filter.Flag ?? "2",
+        //                    batchSize,
+        //                    lastCreatedDate,
+        //                    lastID
+        //                )
+        //                .AsNoTracking()
+        //                .ToListAsync();
+
+        //            if (!batch.Any()) break;
+
+        //            allData.AddRange(batch);
+        //            lastCreatedDate = batch.Last().CreatedDate;
+        //            lastID = batch.Last().ID;
+        //        }
+
+        //        // Generate PDF with borders & colors, no Description column
+        //        var doc = Document.Create(container =>
+        //        {
+        //            container.Page(page =>
+        //            {
+        //                page.Size(PageSizes.A4);
+        //                page.Margin(20);
+        //                page.DefaultTextStyle(x => x.FontSize(10));
+
+        //                page.Header().Text("Syllabus Report").SemiBold().FontSize(14);
+
+        //                page.Content().Table(table =>
+        //                {
+        //                    // Define 7 columns (without Description)
+        //                    table.ColumnsDefinition(columns =>
+        //                    {
+        //                        columns.RelativeColumn(); // ID
+        //                        columns.RelativeColumn(); // Name
+        //                        columns.RelativeColumn(); // School Name
+        //                        columns.RelativeColumn(); // Academic Year
+        //                        columns.RelativeColumn(); // Available From
+        //                        columns.RelativeColumn(); // Status
+        //                        columns.RelativeColumn(); // Created Date
+        //                    });
+
+        //                    // Header row with background color
+        //                    table.Header(header =>
+        //                    {
+        //                        var headerCells = new[] { "ID", "Name", "School Name", "Academic Year", "Available From", "Status", "Created Date" };
+        //                        foreach (var h in headerCells)
+        //                        {
+        //                            header.Cell()
+        //                                  .Background(Colors.Grey.Lighten2)
+        //                                  .Border(1)
+        //                                  .BorderColor(Colors.Black)
+        //                                  .Padding(3)
+        //                                  .Text(h)
+        //                                  .SemiBold();
+        //                        }
+        //                    });
+
+        //                    // Data rows with borders
+        //                    foreach (var item in allData)
+        //                    {
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.ID?.ToString() ?? "");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.Name ?? "");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.SchoolName ?? "");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AcademicYearName ?? "");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text((item.IsActive ?? false) ? "Active" : "Inactive");
+        //                        table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+        //                    }
+        //                });
+        //            });
+        //        });
+
+        //        doc.GeneratePdf(stream);
+        //        stream.Position = 0;
+
+        //        return File(
+        //            stream,
+        //            "application/pdf",
+        //            $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.pdf"
+        //        );
+        //    }
+
+
+        //    return BadRequest("Invalid export type");
+        //}
+
         [HttpPost("ExportSyllabus")]
-        public async Task<IActionResult> ExportSyllabus([FromBody] tblSyllabus filter, [FromQuery] string type)
+        public async Task<IActionResult> ExportSyllabus(
+    [FromBody] tblSyllabus filter,
+    [FromQuery] string type)
         {
             const int batchSize = 50000;
             DateTime? lastCreatedDate = null;
             int? lastID = null;
 
-            if (type == "excel")
+            try
             {
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                var stream = new MemoryStream();
-                var package = new ExcelPackage(stream);
-                var ws = package.Workbook.Worksheets.Add("Syllabus");
-
-                // Headers
-                ws.Cells[1, 1].Value = "ID";
-                ws.Cells[1, 2].Value = "Name";
-                ws.Cells[1, 3].Value = "School Name";
-                ws.Cells[1, 4].Value = "Academic Year";
-                ws.Cells[1, 5].Value = "Available From";
-                ws.Cells[1, 6].Value = "Description";
-                ws.Cells[1, 7].Value = "Status";
-                ws.Cells[1, 8].Value = "Created Date";
-
-                int currentRow = 2;
-
-                while (true)
+                if (type == "excel")
                 {
-                    var batch = await _dbContext.Tbl_Syllabus
-                        .FromSqlRaw(
-                            @"CALL Proc_Syllabus(
+                    using var stream = new MemoryStream();
+                    using var package = new ExcelPackage(stream);
+                    var ws = package.Workbook.Worksheets.Add("Syllabus");
+
+                    // Headers
+                    ws.Cells[1, 1].Value = "ID";
+                    ws.Cells[1, 2].Value = "Name";
+                    ws.Cells[1, 3].Value = "School Name";
+                    ws.Cells[1, 4].Value = "Academic Year";
+                    ws.Cells[1, 5].Value = "Available From";
+                    ws.Cells[1, 6].Value = "Description";
+                    ws.Cells[1, 7].Value = "Status";
+                    ws.Cells[1, 8].Value = "Created Date";
+
+                    int currentRow = 2;
+
+                    while (true)
+                    {
+                        using var context = _contextFactory.CreateDbContext();
+
+                        var batch = await context.Tbl_Syllabus
+                            .FromSqlRaw(
+                                @"CALL Proc_Syllabus(
                             NULL,
                             {0}, {1}, {2},
                             NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                             {3}, {4}, {5}, {6},
                             NULL, NULL, -1
                         )",
-                            filter.SchoolID,
-                            filter.AcademicYear,
-                            filter.Name,
-                            filter.Flag ?? "2",
-                            batchSize,
-                            lastCreatedDate,
-                            lastID
-                        )
-                        .AsNoTracking()
-                        .ToListAsync();
+                                filter.SchoolID,
+                                filter.AcademicYear,
+                                filter.Name,
+                                filter.Flag ?? "2",
+                                batchSize,
+                                lastCreatedDate,
+                                lastID
+                            )
+                            .AsNoTracking()
+                            .ToListAsync();
 
-                    if (!batch.Any()) break;
+                        if (!batch.Any())
+                            break;
 
-                    foreach (var item in batch)
-                    {
-                        ws.Cells[currentRow, 1].Value = item.ID ?? 0;
-                        ws.Cells[currentRow, 2].Value = item.Name ?? "";
-                        ws.Cells[currentRow, 3].Value = item.SchoolName ?? "";
-                        ws.Cells[currentRow, 4].Value = item.AcademicYearName ?? "";
-                        ws.Cells[currentRow, 5].Value = item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "";
-                        ws.Cells[currentRow, 6].Value = item.Description ?? "";
-                        ws.Cells[currentRow, 7].Value = (item.IsActive ?? false) ? "Active" : "Inactive";
-                        ws.Cells[currentRow, 8].Value = item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
-                        currentRow++;
+                        foreach (var item in batch)
+                        {
+                            ws.Cells[currentRow, 1].Value = item.ID ?? 0;
+                            ws.Cells[currentRow, 2].Value = item.Name ?? "";
+                            ws.Cells[currentRow, 3].Value = item.SchoolName ?? "";
+                            ws.Cells[currentRow, 4].Value = item.AcademicYearName ?? "";
+                            ws.Cells[currentRow, 5].Value = item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "";
+                            ws.Cells[currentRow, 6].Value = item.Description ?? "";
+                            ws.Cells[currentRow, 7].Value = (item.IsActive ?? false) ? "Active" : "Inactive";
+                            ws.Cells[currentRow, 8].Value = item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+                            currentRow++;
+                        }
+
+                        lastCreatedDate = batch.Last().CreatedDate;
+                        lastID = batch.Last().ID;
                     }
 
-                    lastCreatedDate = batch.Last().CreatedDate;
-                    lastID = batch.Last().ID;
+                    ws.Cells[ws.Dimension.Address].AutoFitColumns();
+                    package.Save();
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+                    );
                 }
 
-                ws.Cells[ws.Dimension.Address].AutoFitColumns();
-                package.Save();
-                stream.Position = 0;
-
-                return File(
-                    stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
-                );
-            }
-            else if (type == "pdf" || type == "print")
-            {
-                var stream = new MemoryStream();
-                var allData = new List<tblSyllabus>();
-                while (true)
+                else if (type == "pdf" || type == "print")
                 {
-                    var batch = await _dbContext.Tbl_Syllabus
-                        .FromSqlRaw(
-                            @"CALL Proc_Syllabus(
-                NULL,
-                {0}, {1}, {2},
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                {3}, {4}, {5}, {6},
-                NULL, NULL, -1
-            )",
-                            filter.SchoolID,
-                            filter.AcademicYear,
-                            filter.Name,
-                            filter.Flag ?? "2",
-                            batchSize,
-                            lastCreatedDate,
-                            lastID
-                        )
-                        .AsNoTracking()
-                        .ToListAsync();
+                    using var stream = new MemoryStream();
+                    var allData = new List<tblSyllabus>();
 
-                    if (!batch.Any()) break;
-
-                    allData.AddRange(batch);
-                    lastCreatedDate = batch.Last().CreatedDate;
-                    lastID = batch.Last().ID;
-                }
-
-                // Generate PDF with borders & colors, no Description column
-                var doc = Document.Create(container =>
-                {
-                    container.Page(page =>
+                    while (true)
                     {
-                        page.Size(PageSizes.A4);
-                        page.Margin(20);
-                        page.DefaultTextStyle(x => x.FontSize(10));
+                        using var context = _contextFactory.CreateDbContext();
 
-                        page.Header().Text("Syllabus Report").SemiBold().FontSize(14);
+                        var batch = await context.Tbl_Syllabus
+                            .FromSqlRaw(
+                                @"CALL Proc_Syllabus(
+                            NULL,
+                            {0}, {1}, {2},
+                            NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                            {3}, {4}, {5}, {6},
+                            NULL, NULL, -1
+                        )",
+                                filter.SchoolID,
+                                filter.AcademicYear,
+                                filter.Name,
+                                filter.Flag ?? "2",
+                                batchSize,
+                                lastCreatedDate,
+                                lastID
+                            )
+                            .AsNoTracking()
+                            .ToListAsync();
 
-                        page.Content().Table(table =>
+                        if (!batch.Any())
+                            break;
+
+                        allData.AddRange(batch);
+
+                        lastCreatedDate = batch.Last().CreatedDate;
+                        lastID = batch.Last().ID;
+                    }
+
+                    var doc = Document.Create(container =>
+                    {
+                        container.Page(page =>
                         {
-                            // Define 7 columns (without Description)
-                            table.ColumnsDefinition(columns =>
-                            {
-                                columns.RelativeColumn(); // ID
-                                columns.RelativeColumn(); // Name
-                                columns.RelativeColumn(); // School Name
-                                columns.RelativeColumn(); // Academic Year
-                                columns.RelativeColumn(); // Available From
-                                columns.RelativeColumn(); // Status
-                                columns.RelativeColumn(); // Created Date
-                            });
+                            page.Size(PageSizes.A4);
+                            page.Margin(20);
+                            page.DefaultTextStyle(x => x.FontSize(10));
 
-                            // Header row with background color
-                            table.Header(header =>
+                            page.Header().Text("Syllabus Report").SemiBold().FontSize(14);
+
+                            page.Content().Table(table =>
                             {
-                                var headerCells = new[] { "ID", "Name", "School Name", "Academic Year", "Available From", "Status", "Created Date" };
-                                foreach (var h in headerCells)
+                                table.ColumnsDefinition(columns =>
                                 {
-                                    header.Cell()
-                                          .Background(Colors.Grey.Lighten2)
-                                          .Border(1)
-                                          .BorderColor(Colors.Black)
-                                          .Padding(3)
-                                          .Text(h)
-                                          .SemiBold();
+                                    for (int i = 0; i < 7; i++)
+                                        columns.RelativeColumn();
+                                });
+
+                                table.Header(header =>
+                                {
+                                    var headers = new[]
+                                    {
+                                "ID","Name","School Name",
+                                "Academic Year","Available From",
+                                "Status","Created Date"
+                            };
+
+                                    foreach (var h in headers)
+                                    {
+                                        header.Cell()
+                                              .Background(Colors.Grey.Lighten2)
+                                              .Border(1)
+                                              .Padding(3)
+                                              .Text(h)
+                                              .SemiBold();
+                                    }
+                                });
+
+                                foreach (var item in allData)
+                                {
+                                    table.Cell().Border(1).Padding(3).Text(item.ID?.ToString() ?? "");
+                                    table.Cell().Border(1).Padding(3).Text(item.Name ?? "");
+                                    table.Cell().Border(1).Padding(3).Text(item.SchoolName ?? "");
+                                    table.Cell().Border(1).Padding(3).Text(item.AcademicYearName ?? "");
+                                    table.Cell().Border(1).Padding(3).Text(item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "");
+                                    table.Cell().Border(1).Padding(3).Text((item.IsActive ?? false) ? "Active" : "Inactive");
+                                    table.Cell().Border(1).Padding(3).Text(item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
                                 }
                             });
-
-                            // Data rows with borders
-                            foreach (var item in allData)
-                            {
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.ID?.ToString() ?? "");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.Name ?? "");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.SchoolName ?? "");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AcademicYearName ?? "");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.AvailableFrom?.ToString("yyyy-MM-dd") ?? "");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text((item.IsActive ?? false) ? "Active" : "Inactive");
-                                table.Cell().Border(1).BorderColor(Colors.Black).Padding(3).Text(item.CreatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
-                            }
                         });
                     });
-                });
 
-                doc.GeneratePdf(stream);
-                stream.Position = 0;
+                    doc.GeneratePdf(stream);
+                    stream.Position = 0;
 
-                return File(
-                    stream,
-                    "application/pdf",
-                    $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.pdf"
-                );
+                    return File(
+                        stream.ToArray(),
+                        "application/pdf",
+                        $"Syllabus_{DateTime.Now:yyyyMMddHHmmss}.pdf"
+                    );
+                }
+
+                return BadRequest("Invalid export type");
             }
-
-
-            return BadRequest("Invalid export type");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ExportSyllabus failed");
+                return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
+            }
         }
 
         [AllowAnonymous]
@@ -1257,7 +1456,6 @@ namespace SchoolManagementAPI.Controllers
                     Error = ex.Message
                 });
             }
-
         }
 
         [HttpPost("Tbl_Subject_CRUD_Operations")]
@@ -1333,44 +1531,59 @@ namespace SchoolManagementAPI.Controllers
         [HttpPost("Tbl_SubjectStaff_CRUD_Operations")]
         public IActionResult Tbl_SubjectStaff_CRUD_Operations([FromBody] tblSubjectStaff subjectStaff)
         {
-            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-            var schoolId = User.FindFirst("SchoolID")?.Value;
-
-            if (roleId != "1")
+            try
             {
-                subjectStaff.SchoolID = schoolId;
-            }
-            var result = dbop.Tbl_SubjectStaff_CRUD_Operations(subjectStaff);
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
 
-            if (result == null || result.Count == 0)
-            {
-                return BadRequest(new
+                if (roleId != "1")
                 {
-                    StatusCode = 400,
-                    Success = false,
-                    Message = "No result returned or operation failed."
+                    subjectStaff.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_SubjectStaff_CRUD_Operations(subjectStaff);
+
+                if (result == null || result.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = "No result returned or operation failed."
+                    });
+                }
+
+                var statusText = result.First().Status?.ToLower() ?? string.Empty;
+
+                if (statusText.Contains("error"))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
                 });
             }
-
-            var statusText = result.First().Status?.ToLower() ?? string.Empty;
-
-            if (statusText.Contains("error"))
+            catch (Exception ex)
             {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SubjectStaff_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(subjectStaff));
                 return BadRequest(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Success = false,
-                    Message = result.First().Status
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
                 });
             }
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Success = true,
-                Message = result.First().Status,
-                Data = result
-            });
         }
 
         [HttpPost("Tbl_Modules_CRUD_Operations")]
@@ -1781,6 +1994,14 @@ namespace SchoolManagementAPI.Controllers
         {
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    admission.SchoolID = schoolId;
+                }
+
                 var result = dbop.Tbl_StudentDetails_CRUD_Operations(admission);
 
                 if (result == null || result.Count == 0)
@@ -2057,6 +2278,14 @@ namespace SchoolManagementAPI.Controllers
         {
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    ClassTeacher.SchoolID = schoolId;
+                }
+
                 var result = dbop.Tbl_AllotClassTeacher_CRUD_Operations(ClassTeacher);
 
                 if (result == null || result.Count == 0)
@@ -2384,6 +2613,7 @@ namespace SchoolManagementAPI.Controllers
 
 
         //Time Table Module
+        
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -2419,6 +2649,17 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Working day already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -2440,7 +2681,140 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        
+        [HttpPost("Tbl_Session_CRUD_Operations")]
+        public IActionResult Tbl_Session_CRUD_Operations([FromBody] TblSession Session1)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    Session1.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_Session_CRUD_Operations(Session1);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Session already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Session_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(Session1));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_TimeTable_CRUD_Operations")]
+        public IActionResult Tbl_TimeTable_CRUD_Operations([FromBody] TblTimeTable model)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    model.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_TimeTable_CRUD(model);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.Any() && (result.First().Status == "TimeTable already exists for this Class & Division" || result.First().Status == "Staff already allocated for this time slot"))
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_TimeTable_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(model));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
         //Exam Module
         [HttpPost("Tbl_Examtype_CRUD_Operations")]
         public IActionResult Tbl_examtype_CRUD_Operations([FromBody] tblExamType fare)
@@ -2611,7 +2985,9 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        
         //Finance Module
+
         [HttpPost("Tbl_FeeCategory_CRUD_Operations")]
         public IActionResult Tbl_FeeCategory_CRUD_Operations([FromBody] feeCategory fee)
         {
@@ -2680,8 +3056,8 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [HttpPost("Tbl_FeeAllocation_CRUD_Operations")]
-        public IActionResult Tbl_FeeAllocation_CRUD_Operations([FromBody] FeeAllocation fee)
-        {
+        public IActionResult Tbl_feeAllocation_CRUD_Operations([FromBody] tblfeeAllocation fee)
+        {   
             try
             {
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -2692,7 +3068,7 @@ namespace SchoolManagementAPI.Controllers
                     fee.SchoolID = schoolId;
                 }
 
-                var result = dbop.Tbl_FeeAllocation_CRUD_Operations(fee);
+                var result = dbop.Tbl_feeallocation_CRUD_Operations(fee);
 
                 if (result == null)
                 {
@@ -2704,9 +3080,7 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                var error = result.FirstOrDefault(x =>
-                    x.Status?.ToLower().Contains("error") == true);
-
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
                 if (error != null)
                 {
                     return StatusCode(500, new
@@ -2717,32 +3091,184 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Fee already allocated for this category")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
                     Success = true,
-                    Message = result.FirstOrDefault()?.Status,
+                    Message = result.First().Status,
                     Data = result
                 });
             }
             catch (Exception ex)
             {
-                dbop.LogException(
-                    ex,
-                    "SchoolManagementController",
-                    "Tbl_FeeAllocation_CRUD_Operations",
-                    Newtonsoft.Json.JsonConvert.SerializeObject(fee)
-                );
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_feeallocation_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
 
                 return BadRequest(new
                 {
                     StatusCode = 500,
                     Success = false,
-                    Message = "Internal server error occurred.",
+                    Message = "Internal server error occurred. Please try again.",
                     Error = ex.Message
                 });
             }
         }
+
+        [HttpPost("Tbl_FeeDiscountCategory_CRUD_Operations")]
+        public IActionResult Tbl_FeeDiscountCategory_CRUD_Operations([FromBody] tblfeeDiscountCategory fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_FeeDiscountCategory_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Fee already Discount for this category")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_FeeDiscountCategory_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+
+
+        // Fee Doscount
+        [AllowAnonymous]
+        [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
+        public IActionResult Tbl_FeeDiscount_CRUD_Operations([FromBody] tblfeeDiscount fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_FeeDiscount_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Fee already Discount for this category")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_FeeDiscount_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+
+
+
 
     }
 
