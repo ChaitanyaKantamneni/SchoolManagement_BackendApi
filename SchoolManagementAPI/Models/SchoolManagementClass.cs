@@ -1117,11 +1117,16 @@ namespace SchoolManagementAPI.Models
         public string? MaxMarks { get; set; }
         public string? PassMarks { get; set; }
         public string? ExamDateAndTime { get; set; }
-
-
         public string? Duration { get; set; }
         public string? NoOfQuestion { get; set; }
         public string? Instructions { get; set; }
+
+        public string? ClassName { get; set; }
+        public string? SyllabusName { get; set; }
+        public string? DivisionName { get; set; }
+        public string? ExamTypeName { get; set; }
+        public string? SubjectName { get; set; }
+
 
         public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
@@ -1151,6 +1156,51 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+
+    public class tblExamAttendence
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Syllabus { get; set; }
+        public string? Class { get; set; }
+        public string? ExamType { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Attendance { get; set; }
+
+        public string? DivisionName { get; set; }
+        public string? ExamTypeName { get; set; }
+
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+
     public class feeCategory
     {
         public string? ID { get; set; }
