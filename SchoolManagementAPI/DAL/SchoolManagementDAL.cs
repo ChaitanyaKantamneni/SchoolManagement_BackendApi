@@ -33,7 +33,6 @@ namespace SchoolManagementAPI.DAL
             cmd.Parameters.AddWithValue("p_Controller", controller);
             cmd.Parameters.AddWithValue("p_Action", action);
             cmd.Parameters.AddWithValue("p_Data", data);
-
             conn.Open();
             cmd.ExecuteNonQuery();
         }
@@ -4332,6 +4331,7 @@ namespace SchoolManagementAPI.DAL
                                         ExamDuration = reader["ExamDuration"]?.ToString(),
                                         NoofQuestion = reader["NoofQuestion"]?.ToString(),
                                         Instructions = reader["Instructions"]?.ToString(),
+                                       
                                         IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
@@ -4483,6 +4483,11 @@ namespace SchoolManagementAPI.DAL
                                         Duration = reader["Duration"]?.ToString(),
                                         NoOfQuestion = reader["NoOfQuestion"]?.ToString(),
                                         Instructions = reader["Instructions"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        SyllabusName = reader["SyllabusName"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        ExamTypeName = reader["ExamTypeName"]?.ToString(),
+                                        SubjectName = reader["SubjectName"]?.ToString(),
                                         IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
@@ -4547,6 +4552,145 @@ namespace SchoolManagementAPI.DAL
                 return new List<tblSetExam>
                 {
                     new tblSetExam
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
+        public List<tblExamAttendence> Tbl_ExamAttendece_CRUD_Operations(tblExamAttendence examtype)
+        {
+            var ExamType = new List<tblExamAttendence>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Tbl_SetExam", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(examtype.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(examtype.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(examtype.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Syllabus", (object?)CleanParam(examtype.Syllabus) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Class", (object?)CleanParam(examtype.Class) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ExamType", (object?)CleanParam(examtype.ExamType) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AdmissionID", (object?)CleanParam(examtype.AdmissionID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Attendance", (object?)CleanParam(examtype.Attendance) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(examtype.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(examtype.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(examtype.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(examtype.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(examtype.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", examtype.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", examtype.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", examtype.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", examtype.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", examtype.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", examtype.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", examtype.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (examtype.Flag != null)
+                    {
+                        if (examtype.Flag == "6" || examtype.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var faress = new tblExamAttendence
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    };
+
+                                    ExamType.Add(faress);
+                                }
+                            }
+                        }
+                        else if (examtype.Flag == "2" || examtype.Flag == "3" || examtype.Flag == "7" || examtype.Flag == "4")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var examtypee = new tblExamAttendence
+                                    {
+                                        //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        Syllabus = reader["Syllabus"]?.ToString(),
+                                        Class = reader["Class"]?.ToString(),
+                                        ExamType = reader["ExamType"]?.ToString(),
+                                        AdmissionID = reader["AdmissionID"]?.ToString(),
+                                        Attendance = reader["Attendance"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        ExamTypeName = reader["ExamTypeName"]?.ToString(),
+                                        IsActive = reader["IsActive"].ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                    };
+
+                                    ExamType.Add(examtypee);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var examtypeee = new tblExamAttendence
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        Syllabus = reader["Syllabus"]?.ToString(),
+                                        Class = reader["Class"]?.ToString(),
+                                        ExamType = reader["ExamType"]?.ToString(),
+                                        AdmissionID = reader["AdmissionID"]?.ToString(),
+                                        Attendance = reader["Attendance"]?.ToString(),
+                                        IsActive = reader["IsActive"].ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    ExamType.Add(examtypeee);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return ExamType;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_ExamAttendece_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ExamType));
+                return new List<tblExamAttendence>
+                {
+                    new tblExamAttendence
                     {
                         Status = $"ERROR: {ex.Message}"
                     }
