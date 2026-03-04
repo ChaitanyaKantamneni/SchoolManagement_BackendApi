@@ -474,6 +474,8 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
+        public string? SubjectID { get; set; }
+        public string? ClassID { get; set; }
     }
 
     public class UserToken
@@ -588,7 +590,9 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
         public string? ClassName { get; set; }
-        public string? ClassDivisionName { get; set; }        
+        public string? ClassDivisionName { get; set; }
+        public string? DePromotionRemarks { get; set; }
+        
     }
 
     public class tblStudentAddressDetails
@@ -974,7 +978,7 @@ namespace SchoolManagementAPI.Models
         public string? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
-        public string? SessionName { get; set; }
+        public string? Session { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
         public string? IsActive { get; set; }
@@ -1006,6 +1010,56 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? RouteName { get; set; }
     }
+    public class TblTimeTable
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? ClassID { get; set; }
+        public string? DivisionID { get; set; }
+        public DateTime? DateFrom { get; set; }
+        public DateTime? DateTo { get; set; }
+        public int? NoOfPeriods { get; set; }
+        public string? IsActive { get; set; }
+
+        // JSON for Insert / Update
+        public string? TimetableJSON { get; set; }
+
+        // Audit
+        public string? CreatedBy { get; set; }
+        public string? CreatedIP { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIP { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // Fetch (Flag 4)
+        public List<TblTimeTableDetail>? TimeTableDetails { get; set; }
+
+        // Pagination
+        public string? Flag { get; set; }
+        public int? Limit { get; set; }
+        public int? Offset { get; set; }
+        public int? totalCount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public string? Status { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+    public class TblTimeTableDetail
+    {
+        public string? ID { get; set; }
+        public string? TimeTableID { get; set; }
+        public string? DayID { get; set; }
+        public int? PeriodNo { get; set; }
+        public string? SessionID { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public string? SubjectID { get; set; }
+        public string? StaffID { get; set; }
+    }
+
     public class tblExamType
     {
         public string? ID { get; set; }
