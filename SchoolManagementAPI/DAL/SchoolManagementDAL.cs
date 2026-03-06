@@ -5854,25 +5854,19 @@ namespace SchoolManagementAPI.DAL
                                         Division = reader["Division"]?.ToString(),
                                         Student = reader["Student"]?.ToString(),
                                         DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                        //Syllabus = reader["Syllabus"]?.ToString(),
-                                        //Class = reader["Class"]?.ToString(),
-                                        //Divisions = reader["Divisions"]?.ToString(),
-                                        //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                        //Amount = reader["Amount"]?.ToString(),
-                                        //StartDate = reader["StartDate"]?.ToString(),
-                                        //EndDate = reader["EndDate"]?.ToString(),
-                                        //IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
                                         CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                         ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                         ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                        //Status = reader["Message"]?.ToString(),
-                                        //SchoolName = reader["SchoolName"]?.ToString(),
-                                        //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                        //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                        //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        FeeDiscountCategoryName = reader["FeeDiscountCategoryName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        ClassDivisionName = reader["ClassDivisionName"]?.ToString(),
+                                        StudentFullName = reader["StudentFullName"]?.ToString()
                                     };
 
                                     Routes.Add(routesgs);
@@ -5885,7 +5879,7 @@ namespace SchoolManagementAPI.DAL
                             {
                                 while (reader.Read())
                                 {
-                                    if (reader["Message"]?.ToString() == "Fee already discount for this category")
+                                    if (reader["Message"]?.ToString() == "Discount already assigned to this student")
                                     {
                                         var routesgs = new tblfeeDiscount
                                         {
@@ -5905,25 +5899,13 @@ namespace SchoolManagementAPI.DAL
                                             Division = reader["Division"]?.ToString(),
                                             Student = reader["Student"]?.ToString(),
                                             DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                            //Syllabus = reader["Syllabus"]?.ToString(),
-                                            //Class = reader["Class"]?.ToString(),
-                                            //Divisions = reader["Divisions"]?.ToString(),
-                                            //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                            //Amount = reader["Amount"]?.ToString(),
-                                            //StartDate = reader["StartDate"]?.ToString(),
-                                            //EndDate = reader["EndDate"]?.ToString(),
-                                            //IsActive = reader["IsActive"].ToString(),
                                             CreatedBy = reader["CreatedBy"]?.ToString(),
                                             CreatedIp = reader["CreatedIp"]?.ToString(),
                                             CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                             ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                             ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                             ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                            //Status = reader["Message"]?.ToString(),
-                                            //SchoolName = reader["SchoolName"]?.ToString(),
-                                            //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                            //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                            //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                            Status = reader["Message"]?.ToString()
                                         };
 
                                         Routes.Add(routess);
@@ -5946,25 +5928,13 @@ namespace SchoolManagementAPI.DAL
                                         Division = reader["Division"]?.ToString(),
                                         Student = reader["Student"]?.ToString(),
                                         DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                        //Syllabus = reader["Syllabus"]?.ToString(),
-                                        //Class = reader["Class"]?.ToString(),
-                                        //Divisions = reader["Divisions"]?.ToString(),
-                                        //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                        //Amount = reader["Amount"]?.ToString(),
-                                        //StartDate = reader["StartDate"]?.ToString(),
-                                        //EndDate = reader["EndDate"]?.ToString(),
-                                        //IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
                                         CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                         ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                         ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                        //Status = reader["Message"]?.ToString(),
-                                        //SchoolName = reader["SchoolName"]?.ToString(),
-                                        //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                        //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                        //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                        Status = reader["Message"]?.ToString()
                                     };
 
                                     Routes.Add(routess);
@@ -5980,15 +5950,41 @@ namespace SchoolManagementAPI.DAL
             {
                 LogException(ex, "SchoolManagementDAL", "Tbl_FeeDiscount_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
                 return new List<tblfeeDiscount>
-                {
-                    new tblfeeDiscount
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
-                };
+        {
+            new tblfeeDiscount
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
             }
         }
 
+
+
+        //Dashboard
+        //public List<DashboardDataDetails> Proc_DashboardData_DAL(DashboardDataDetails fee)
+        //{
+        //    var resultList = new List<DashboardDataDetails>();
+
+        //    string CleanParam(string? value)
+        //    {
+        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+        //            ? null
+        //            : value;
+        //    }
+
+        //    try
+        //    {
+        //        using (var conn = new MySqlConnection(_connectionString))
+        //        using (var cmd = new MySqlCommand("Proc_DashboardData", conn))
+        //        {
+        //            cmd.CommandType = CommandType.StoredProcedure;
+
+        //            cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(fee.SchoolID) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(fee.AcademicYear) ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
+
+        //            conn.Open();
 
     }
 

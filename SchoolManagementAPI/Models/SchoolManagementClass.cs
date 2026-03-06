@@ -1390,6 +1390,54 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
         [NotMapped]
         public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? FeeDiscountCategoryName { get; set; }
+        public string? ClassName { get; set; }
+        public string? ClassDivisionName { get; set; }
+        public string? FeeCategoryName { get; set; }
+        public string? StudentFullName { get; set; }
+        
+    }
+
+    //public class DashboardDataDetails
+    //{
+    //    public string? SchoolID { get; set; }
+    //    public string? AcademicYear { get; set; }
+    //    public string? Flag { get; set; }
+
+    //    /* KPI Cards */
+    //    public string? ClassCount { get; set; }
+    //    public string? DivisionsCount { get; set; }
+    //    public string? StaffCount { get; set; }
+    //    public string? StudentsCount { get; set; }
+
+    //    /* Students Chart */
+    //    public string? Name { get; set; }
+    //    public string? StudentCount { get; set; }
+    //    public string? SchoolName { get; set; }
+    //    public string? SyllabusName { get; set; }
+
+    //    /* Staff Chart */
+    //    public string? StaffType { get; set; }
+    //    public string? Count { get; set; }
+
+    //    /* Attendance Chart */
+    //    public string? Month { get; set; }
+    //    public string? Attendance { get; set; }
+
+    //    /* Fee Chart */
+    //    public string? Amount { get; set; }
+
+    //    public string? Status { get; set; }
+    //}
+
+    public class DashboardRequest
+    {
+        public int? SchoolID { get; set; }
+        public int? AcademicYear { get; set; }
+        public int? ClassID { get; set; }
+        public int? DivisionID { get; set; }
 
     }
 

@@ -3218,7 +3218,7 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                if (result.First().Status == "Fee already Discount for this category")
+                if (result.First().Status == "Discount already assigned to this student")
                 {
                     return StatusCode(400, new
                     {
