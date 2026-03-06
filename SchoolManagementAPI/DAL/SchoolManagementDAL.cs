@@ -5775,25 +5775,19 @@ namespace SchoolManagementAPI.DAL
                                         Division = reader["Division"]?.ToString(),
                                         Student = reader["Student"]?.ToString(),
                                         DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                        //Syllabus = reader["Syllabus"]?.ToString(),
-                                        //Class = reader["Class"]?.ToString(),
-                                        //Divisions = reader["Divisions"]?.ToString(),
-                                        //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                        //Amount = reader["Amount"]?.ToString(),
-                                        //StartDate = reader["StartDate"]?.ToString(),
-                                        //EndDate = reader["EndDate"]?.ToString(),
-                                        //IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
                                         CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                         ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                         ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                        //Status = reader["Message"]?.ToString(),
-                                        //SchoolName = reader["SchoolName"]?.ToString(),
-                                        //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                        //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                        //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        FeeDiscountCategoryName = reader["FeeDiscountCategoryName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        ClassDivisionName = reader["ClassDivisionName"]?.ToString(),
+                                        StudentFullName = reader["StudentFullName"]?.ToString()
                                     };
 
                                     Routes.Add(routesgs);
@@ -5806,7 +5800,7 @@ namespace SchoolManagementAPI.DAL
                             {
                                 while (reader.Read())
                                 {
-                                    if (reader["Message"]?.ToString() == "Fee already discount for this category")
+                                    if (reader["Message"]?.ToString() == "Discount already assigned to this student")
                                     {
                                         var routesgs = new tblfeeDiscount
                                         {
@@ -5826,25 +5820,13 @@ namespace SchoolManagementAPI.DAL
                                             Division = reader["Division"]?.ToString(),
                                             Student = reader["Student"]?.ToString(),
                                             DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                            //Syllabus = reader["Syllabus"]?.ToString(),
-                                            //Class = reader["Class"]?.ToString(),
-                                            //Divisions = reader["Divisions"]?.ToString(),
-                                            //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                            //Amount = reader["Amount"]?.ToString(),
-                                            //StartDate = reader["StartDate"]?.ToString(),
-                                            //EndDate = reader["EndDate"]?.ToString(),
-                                            //IsActive = reader["IsActive"].ToString(),
                                             CreatedBy = reader["CreatedBy"]?.ToString(),
                                             CreatedIp = reader["CreatedIp"]?.ToString(),
                                             CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                             ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                             ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                             ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                            //Status = reader["Message"]?.ToString(),
-                                            //SchoolName = reader["SchoolName"]?.ToString(),
-                                            //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                            //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                            //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                            Status = reader["Message"]?.ToString()
                                         };
 
                                         Routes.Add(routess);
@@ -5867,25 +5849,13 @@ namespace SchoolManagementAPI.DAL
                                         Division = reader["Division"]?.ToString(),
                                         Student = reader["Student"]?.ToString(),
                                         DiscountCategory = reader["DiscountCategory"]?.ToString(),
-                                        //Syllabus = reader["Syllabus"]?.ToString(),
-                                        //Class = reader["Class"]?.ToString(),
-                                        //Divisions = reader["Divisions"]?.ToString(),
-                                        //FeeCategory = reader["FeeCategory"]?.ToString(),
-                                        //Amount = reader["Amount"]?.ToString(),
-                                        //StartDate = reader["StartDate"]?.ToString(),
-                                        //EndDate = reader["EndDate"]?.ToString(),
-                                        //IsActive = reader["IsActive"].ToString(),
                                         CreatedBy = reader["CreatedBy"]?.ToString(),
                                         CreatedIp = reader["CreatedIp"]?.ToString(),
                                         CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
                                         ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                         ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                        //Status = reader["Message"]?.ToString(),
-                                        //SchoolName = reader["SchoolName"]?.ToString(),
-                                        //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                        //SyllabusName = reader["SyllabusName"]?.ToString(),
-                                        //FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                        Status = reader["Message"]?.ToString()
                                     };
 
                                     Routes.Add(routess);
@@ -5901,12 +5871,12 @@ namespace SchoolManagementAPI.DAL
             {
                 LogException(ex, "SchoolManagementDAL", "Tbl_FeeDiscount_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
                 return new List<tblfeeDiscount>
-                {
-                    new tblfeeDiscount
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
-                };
+        {
+            new tblfeeDiscount
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
             }
         }
 
@@ -5959,219 +5929,6 @@ namespace SchoolManagementAPI.DAL
         //                        data.SyllabusName = reader["SyllabusName"]?.ToString();
         //                    }
 
-        //                    else if (fee.Flag == "3")
-        //                    {
-        //                        data.StaffType = reader["StaffType"]?.ToString();
-        //                        data.Count = reader["Count"]?.ToString();
-        //                    }
-
-        //                    else if (fee.Flag == "4")
-        //                    {
-        //                        data.Month = reader["Month"]?.ToString();
-        //                        data.Attendance = reader["Attendance"]?.ToString();
-        //                    }
-
-        //                    else if (fee.Flag == "5")
-        //                    {
-        //                        data.Month = reader["Month"]?.ToString();
-        //                        data.Amount = reader["Amount"]?.ToString();
-        //                    }
-
-        //                    resultList.Add(data);
-        //                }
-        //            }
-        //        }
-
-        //        return resultList;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogException(
-        //            ex,
-        //            "SchoolManagementDAL",
-        //            "Proc_DashboardData_DAL",
-        //            Newtonsoft.Json.JsonConvert.SerializeObject(fee)
-        //        );
-
-        //        return new List<DashboardDataDetails>
-        //{
-        //    new DashboardDataDetails
-        //    {
-        //        Status = $"ERROR: {ex.Message}"
-        //    }
-        //};
-        //    }
-        //}
-
-        public DashboardResponse GetDashboardData(DashboardRequest req)
-        {
-            DashboardResponse response = new DashboardResponse();
-
-            using (var conn = new MySqlConnection(_connectionString))
-            {
-                using (var cmd = new MySqlCommand("Proc_DashboardData", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
-                    cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
-                    cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
-                    cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-
-                        /* =========================
-                           COUNTS
-                        ========================= */
-
-                        response.counts = new DashboardCounts();
-
-                        if (reader.Read())
-                        {
-                            response.counts.ClassCount = Convert.ToInt32(reader["ClassCount"]);
-                            response.counts.DivisionsCount = Convert.ToInt32(reader["DivisionsCount"]);
-                            response.counts.StudentsCount = Convert.ToInt32(reader["StudentsCount"]);
-                            response.counts.StaffCount = Convert.ToInt32(reader["StaffCount"]);
-                        }
-
-
-                        /* =========================
-                           STUDENT CHART
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.studentChart = new List<StudentChart>();
-
-                        while (reader.Read())
-                        {
-                            response.studentChart.Add(new StudentChart
-                            {
-                                ID = reader["ID"].ToString(),
-                                Name = reader["Name"].ToString(),
-                                StudentCount = Convert.ToInt32(reader["StudentCount"])
-                            });
-                        }
-
-
-                        /* =========================
-                           STAFF CHART
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.staffChart = new List<StaffChart>();
-
-                        while (reader.Read())
-                        {
-                            response.staffChart.Add(new StaffChart
-                            {
-                                StaffType = reader["StaffType"].ToString(),
-                                Count = Convert.ToInt32(reader["Count"])
-                            });
-                        }
-
-
-                        /* =========================
-                           ATTENDANCE
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.attendance = new List<AttendanceChart>();
-
-                        while (reader.Read())
-                        {
-                            response.attendance.Add(new AttendanceChart
-                            {
-                                Month = reader["Month"].ToString(),
-                                Attendance = reader["Attendance"] == DBNull.Value ? 0 : Convert.ToDouble(reader["Attendance"])
-                            });
-                        }
-
-
-                        /* =========================
-                           FEES
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.fees = new List<FeeChart>();
-
-                        while (reader.Read())
-                        {
-                            response.fees.Add(new FeeChart
-                            {
-                                Month = reader["Month"].ToString(),
-                                Amount = reader["Amount"] == DBNull.Value ? 0 : Convert.ToDouble(reader["Amount"])
-                            });
-                        }
-
-
-                        /* =========================
-                           RECENT ADMISSIONS
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.recentAdmissions = new List<RecentAdmission>();
-
-                        while (reader.Read())
-                        {
-                            response.recentAdmissions.Add(new RecentAdmission
-                            {
-                                Name = reader["Name"].ToString(),
-                                Class = reader["Class"].ToString(),
-                                JoinDate = Convert.ToDateTime(reader["JoinDate"])
-                            });
-                        }
-
-
-                        /* =========================
-                           RECENT STAFF
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.recentStaff = new List<RecentStaff>();
-
-                        while (reader.Read())
-                        {
-                            response.recentStaff.Add(new RecentStaff
-                            {
-                                Name = reader["Name"].ToString(),
-                                StaffTypeName = reader["StaffTypeName"].ToString(),
-                                CreatedDate = Convert.ToDateTime(reader["CreatedDate"])
-                            });
-                        }
-
-
-                        /* =========================
-                           NOTICES
-                        ========================= */
-
-                        reader.NextResult();
-
-                        response.notices = new List<Notice>();
-
-                        while (reader.Read())
-                        {
-                            response.notices.Add(new Notice
-                            {
-                                Title = reader["Title"].ToString(),
-                                CreatedDate = Convert.ToDateTime(reader["CreatedDate"])
-                            });
-                        }
-
-                    }
-                }
-            }
-
-            return response;
-        }
     }
 
 }

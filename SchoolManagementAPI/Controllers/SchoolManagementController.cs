@@ -3193,9 +3193,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
-        // Fee Doscount
         [AllowAnonymous]
         [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
         public IActionResult Tbl_FeeDiscount_CRUD_Operations([FromBody] tblfeeDiscount fee)
@@ -3233,7 +3230,7 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                if (result.First().Status == "Fee already Discount for this category")
+                if (result.First().Status == "Discount already assigned to this student")
                 {
                     return StatusCode(400, new
                     {
@@ -3342,6 +3339,8 @@ namespace SchoolManagementAPI.Controllers
             });
 
         }
+    }
+
     }
 
 }

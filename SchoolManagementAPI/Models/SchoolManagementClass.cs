@@ -1374,6 +1374,13 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
         [NotMapped]
         public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? FeeDiscountCategoryName { get; set; }
+        public string? ClassName { get; set; }
+        public string? ClassDivisionName { get; set; }
+        public string? FeeCategoryName { get; set; }
+        public string? StudentFullName { get; set; }
         
     }
 
@@ -1491,4 +1498,6 @@ namespace SchoolManagementAPI.Models
         public List<Notice> notices { get; set; }
 
     }
+
+
 }
