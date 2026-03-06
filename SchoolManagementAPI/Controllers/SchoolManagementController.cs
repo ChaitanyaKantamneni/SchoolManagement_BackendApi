@@ -55,8 +55,6 @@ namespace SchoolManagementAPI.Controllers
             _contextFactory = contextFactory;
         }
 
-
-
         [AllowAnonymous]
         [HttpPost("Tbl_Users_CRUD_Operations")]
         public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
@@ -1987,7 +1985,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
         //Academic Module
         [HttpPost("Tbl_StudentDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentDetails_CRUD_Operations([FromBody] tblStudentDetails admission)
@@ -2336,10 +2333,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
-
-
         //Transportation Module
         [HttpPost("Tbl_Bus_CRUD_Operations")]
         public IActionResult Tbl_Bus_CRUD_Operations([FromBody] tblBus bus)
@@ -2609,11 +2602,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
-
-        //Time Table Module
-        
+        //Time Table Module        
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -2928,7 +2917,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        [HttpPost("Tbl_ExamAttendece_CRUD_Operations")]
+        [HttpPost("Tbl_ExamAttendence_CRUD_Operations")]
         public IActionResult Tbl_ExamAttendece_CRUD_Operations([FromBody] tblExamAttendence fare)
         {
             try
@@ -2984,8 +2973,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-        
         //Finance Module
 
         [HttpPost("Tbl_FeeCategory_CRUD_Operations")]
@@ -3193,8 +3180,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
         // Fee Doscount
         [AllowAnonymous]
         [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
@@ -3265,10 +3250,6 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-
-
-
-
 
     }
 
