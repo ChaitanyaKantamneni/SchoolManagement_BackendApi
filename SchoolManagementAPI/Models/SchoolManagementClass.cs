@@ -1377,8 +1377,118 @@ namespace SchoolManagementAPI.Models
         
     }
 
+    //public class DashboardDataDetails
+    //{
+    //    public string? SchoolID { get; set; }
+    //    public string? AcademicYear { get; set; }
+    //    public string? Flag { get; set; }
 
+    //    /* KPI Cards */
+    //    public string? ClassCount { get; set; }
+    //    public string? DivisionsCount { get; set; }
+    //    public string? StaffCount { get; set; }
+    //    public string? StudentsCount { get; set; }
 
+    //    /* Students Chart */
+    //    public string? Name { get; set; }
+    //    public string? StudentCount { get; set; }
+    //    public string? SchoolName { get; set; }
+    //    public string? SyllabusName { get; set; }
 
+    //    /* Staff Chart */
+    //    public string? StaffType { get; set; }
+    //    public string? Count { get; set; }
 
+    //    /* Attendance Chart */
+    //    public string? Month { get; set; }
+    //    public string? Attendance { get; set; }
+
+    //    /* Fee Chart */
+    //    public string? Amount { get; set; }
+
+    //    public string? Status { get; set; }
+    //}
+
+    public class DashboardRequest
+    {
+        public int? SchoolID { get; set; }
+        public int? AcademicYear { get; set; }
+        public int? ClassID { get; set; }
+        public int? DivisionID { get; set; }
+    }
+
+    public class DashboardCounts
+    {
+        public int ClassCount { get; set; }
+        public int DivisionsCount { get; set; }
+        public int StaffCount { get; set; }
+        public int StudentsCount { get; set; }
+    }
+
+    public class StudentChart
+    {
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public int StudentCount { get; set; }
+    }
+
+    public class StaffChart
+    {
+        public string StaffType { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class AttendanceChart
+    {
+        public string Month { get; set; }
+        public double Attendance { get; set; }
+    }
+
+    public class FeeChart
+    {
+        public string Month { get; set; }
+        public double Amount { get; set; }
+    }
+
+    public class RecentAdmission
+    {
+        public string Name { get; set; }
+        public string Class { get; set; }
+        public DateTime JoinDate { get; set; }
+    }
+
+    public class RecentStaff
+    {
+        public string Name { get; set; }
+        public string StaffTypeName { get; set; }
+        
+        public DateTime CreatedDate { get; set; }
+    }
+
+    public class Notice
+    {
+        public string Title { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
+    public class DashboardResponse
+    {
+
+        public DashboardCounts counts { get; set; }
+
+        public List<StudentChart> studentChart { get; set; }
+
+        public List<StaffChart> staffChart { get; set; }
+
+        public List<AttendanceChart> attendance { get; set; }
+
+        public List<FeeChart> fees { get; set; }
+
+        public List<RecentAdmission> recentAdmissions { get; set; }
+
+        public List<RecentStaff> recentStaff { get; set; }
+
+        public List<Notice> notices { get; set; }
+
+    }
 }

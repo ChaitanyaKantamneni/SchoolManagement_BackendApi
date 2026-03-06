@@ -3266,10 +3266,82 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        //Dashboard
+        //[HttpPost("Proc_DashboardData_Controller")]
+        //public IActionResult Proc_DashboardData_Controller([FromBody] DashboardDataDetails fee)
+        //{
+        //    try
+        //    {
+        //        var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+        //        var schoolId = User.FindFirst("SchoolID")?.Value;
 
+        //        if (roleId != "1")
+        //        {
+        //            fee.SchoolID = schoolId;
+        //        }
 
+        //        var result = dbop.Proc_DashboardData_DAL(fee);
 
+        //        if (result == null)
+        //        {
+        //            return StatusCode(500, new
+        //            {
+        //                StatusCode = 500,
+        //                Success = false,
+        //                Message = "Database returned null result."
+        //            });
+        //        }
 
+        //        var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+        //        if (error != null)
+        //        {
+        //            return StatusCode(500, new
+        //            {
+        //                StatusCode = 500,
+        //                Success = false,
+        //                Message = error.Status
+        //            });
+        //        }
+
+        //        return Ok(new
+        //        {
+        //            StatusCode = 200,
+        //            Success = true,
+        //            Message = result.First().Status,
+        //            Data = result
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        dbop.LogException(ex, "SchoolManagementController", "Proc_DashboardData_Controller", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+        //        return BadRequest(new
+        //        {
+        //            StatusCode = 500,
+        //            Success = false,
+        //            Message = "Internal server error occurred. Please try again.",
+        //            Error = ex.Message
+        //        });
+        //    }
+        //}
+
+        [HttpPost]
+        [Route("Dashboard_API")]
+
+        public IActionResult Dashboard_API([FromBody] DashboardRequest req)
+        {
+
+            var data = dbop.GetDashboardData(req);
+
+            return Ok(new
+            {
+
+                status = true,
+                data = data
+
+            });
+
+        }
     }
 
 }
