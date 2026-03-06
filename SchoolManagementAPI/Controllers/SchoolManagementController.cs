@@ -55,8 +55,6 @@ namespace SchoolManagementAPI.Controllers
             _contextFactory = contextFactory;
         }
 
-
-
         [AllowAnonymous]
         [HttpPost("Tbl_Users_CRUD_Operations")]
         public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
@@ -1987,7 +1985,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
         //Academic Module
         [HttpPost("Tbl_StudentDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentDetails_CRUD_Operations([FromBody] tblStudentDetails admission)
@@ -2336,10 +2333,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
-
-
         //Transportation Module
         [HttpPost("Tbl_Bus_CRUD_Operations")]
         public IActionResult Tbl_Bus_CRUD_Operations([FromBody] tblBus bus)
@@ -2609,11 +2602,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-
-
-        //Time Table Module
-        
+        //Time Table Module        
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -2928,7 +2917,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        [HttpPost("Tbl_ExamAttendece_CRUD_Operations")]
+        [HttpPost("Tbl_ExamAttendence_CRUD_Operations")]
         public IActionResult Tbl_ExamAttendece_CRUD_Operations([FromBody] tblExamAttendence fare)
         {
             try
@@ -2984,8 +2973,6 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
-        
         //Finance Module
 
         [HttpPost("Tbl_FeeCategory_CRUD_Operations")]
@@ -3193,6 +3180,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        // Fee Doscount
         [AllowAnonymous]
         [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
         public IActionResult Tbl_FeeDiscount_CRUD_Operations([FromBody] tblfeeDiscount fee)
@@ -3262,84 +3250,6 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-
-        //Dashboard
-        //[HttpPost("Proc_DashboardData_Controller")]
-        //public IActionResult Proc_DashboardData_Controller([FromBody] DashboardDataDetails fee)
-        //{
-        //    try
-        //    {
-        //        var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-        //        var schoolId = User.FindFirst("SchoolID")?.Value;
-
-        //        if (roleId != "1")
-        //        {
-        //            fee.SchoolID = schoolId;
-        //        }
-
-        //        var result = dbop.Proc_DashboardData_DAL(fee);
-
-        //        if (result == null)
-        //        {
-        //            return StatusCode(500, new
-        //            {
-        //                StatusCode = 500,
-        //                Success = false,
-        //                Message = "Database returned null result."
-        //            });
-        //        }
-
-        //        var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-        //        if (error != null)
-        //        {
-        //            return StatusCode(500, new
-        //            {
-        //                StatusCode = 500,
-        //                Success = false,
-        //                Message = error.Status
-        //            });
-        //        }
-
-        //        return Ok(new
-        //        {
-        //            StatusCode = 200,
-        //            Success = true,
-        //            Message = result.First().Status,
-        //            Data = result
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        dbop.LogException(ex, "SchoolManagementController", "Proc_DashboardData_Controller", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
-
-        //        return BadRequest(new
-        //        {
-        //            StatusCode = 500,
-        //            Success = false,
-        //            Message = "Internal server error occurred. Please try again.",
-        //            Error = ex.Message
-        //        });
-        //    }
-        //}
-
-        [HttpPost]
-        [Route("Dashboard_API")]
-
-        public IActionResult Dashboard_API([FromBody] DashboardRequest req)
-        {
-
-            var data = dbop.GetDashboardData(req);
-
-            return Ok(new
-            {
-
-                status = true,
-                data = data
-
-            });
-
-        }
-    }
 
     }
 
