@@ -3251,6 +3251,23 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("Dashboard_API")]
+        public IActionResult Dashboard_API([FromBody] DashboardRequest req)
+        {
+
+            var data = dbop.GetDashboardData(req);
+
+            return Ok(new
+            {
+
+                status = true,
+                data = data
+
+            });
+
+        }
+
     }
 
 }
