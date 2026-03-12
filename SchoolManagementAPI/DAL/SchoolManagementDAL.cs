@@ -5986,6 +5986,131 @@ namespace SchoolManagementAPI.DAL
 
         //            conn.Open();
 
+
+        public DashboardResponse GetDashboardData(DashboardRequest req)
+        {
+
+            DashboardResponse response = new DashboardResponse();
+
+            using (var conn = new MySqlConnection(_connectionString))
+            {
+
+                using (var cmd = new MySqlCommand("Proc_DashboardData", conn))
+                {
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
+                    cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
+                    cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+
+                        response.counts = new DashboardCounts();
+
+                        if (reader.Read())
+                        {
+
+                            response.counts.ClassCount = Convert.ToInt32(reader["ClassCount"]);
+                            response.counts.DivisionsCount = Convert.ToInt32(reader["DivisionsCount"]);
+                            response.counts.StudentsCount = Convert.ToInt32(reader["StudentsCount"]);
+                            response.counts.StaffCount = Convert.ToInt32(reader["StaffCount"]);
+
+                        }
+
+
+                        /* student chart */
+
+                        reader.NextResult();
+
+                        response.studentChart = new List<StudentChart>();
+
+                        while (reader.Read())
+                        {
+
+                            response.studentChart.Add(new StudentChart
+                            {
+
+                                Name = reader["Name"].ToString(),
+                                StudentCount = Convert.ToInt32(reader["StudentCount"])
+
+                            });
+
+                        }
+
+
+                        /* staff chart */
+
+                        reader.NextResult();
+
+                        response.staffChart = new List<StaffChart>();
+
+                        while (reader.Read())
+                        {
+
+                            response.staffChart.Add(new StaffChart
+                            {
+
+                                StaffType = reader["StaffType"].ToString(),
+                                Count = Convert.ToInt32(reader["Count"])
+
+                            });
+
+                        }
+
+
+                        /* attendance */
+
+                        reader.NextResult();
+
+                        response.attendance = new List<AttendanceChart>();
+
+                        while (reader.Read())
+                        {
+
+                            response.attendance.Add(new AttendanceChart
+                            {
+
+                                Month = reader["Month"].ToString(),
+                                Attendance = Convert.ToDouble(reader["Attendance"])
+
+                            });
+
+                        }
+
+
+                        /* fees */
+
+                        reader.NextResult();
+
+                        response.fees = new List<FeeChart>();
+
+                        while (reader.Read())
+                        {
+
+                            response.fees.Add(new FeeChart
+                            {
+
+                                Month = reader["Month"].ToString(),
+                                Amount = Convert.ToDouble(reader["Amount"])
+
+                            });
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return response;
+
+        }
     }
 
 }

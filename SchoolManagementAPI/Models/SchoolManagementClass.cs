@@ -1441,4 +1441,74 @@ namespace SchoolManagementAPI.Models
 
     }
 
+    public class DashboardResponse
+    {
+        public DashboardCounts counts { get; set; }
+
+        public List<StudentChart> studentChart { get; set; }
+
+        public List<StaffChart> staffChart { get; set; }
+
+        public List<AttendanceChart> attendance { get; set; }
+
+        public List<FeeChart> fees { get; set; }
+
+        public List<RecentAdmission> recentAdmissions { get; set; }
+
+        public List<RecentStaff> recentStaff { get; set; }
+
+        public List<Notice> notices { get; set; }
+    }
+
+    public class DashboardCounts
+    {
+        public int ClassCount { get; set; }
+        public int DivisionsCount { get; set; }
+        public int StaffCount { get; set; }
+        public int StudentsCount { get; set; }
+    }
+
+    public class StudentChart
+    {
+        public string Name { get; set; }
+        public int StudentCount { get; set; }
+    }
+
+    public class StaffChart
+    {
+        public string StaffType { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class AttendanceChart
+    {
+        public string Month { get; set; }
+        public double Attendance { get; set; }
+    }
+
+    public class FeeChart
+    {
+        public string Month { get; set; } public double Attendance { get; set; }
+        public double Amount { get; set; }
+    }
+
+    public class RecentAdmission
+    {
+        public string Name { get; set; }
+        public string Class { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
+    public class RecentStaff
+    {
+        public string Name { get; set; }
+        public DateTime JoiningDate { get; set; }
+    }
+
+    public class Notice
+    {
+        public string Title { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
 }
