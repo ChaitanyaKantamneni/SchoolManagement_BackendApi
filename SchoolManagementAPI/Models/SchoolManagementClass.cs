@@ -1119,6 +1119,7 @@ namespace SchoolManagementAPI.Models
         public DateTime? SubjectExamDateAndTime { get; set; }
         public string? IndividualSubjectName { get; set; }
         public string? AttendanceMarked { get; set; }
+        public string? ExamAttendancAndMarksMarked { get; set; }        
         public string? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
@@ -1169,10 +1170,15 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
         public string? DivisionList { get; set; }
-        
+
+        public string? AdmissionNo { get; set; }
+        public string? FirstName { get; set; }
+        public string? MiddleName { get; set; }
+
+        public string? LastName { get; set; }
+        public string? ClassDivisionName { get; set; }
+
     }
-
-
     public class tblExamAttendence
     {
         public string? ID { get; set; }
@@ -1187,9 +1193,7 @@ namespace SchoolManagementAPI.Models
 
         public string? AdmissionID { get; set; }
         public string? Attendance { get; set; }
-
-        
-
+        public string? Remarks { get; set; }
         public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIp { get; set; }
@@ -1233,8 +1237,236 @@ namespace SchoolManagementAPI.Models
         
         public string? ExamName { get; set; }
         public string? SubjectName { get; set; }
+        public List<AttendanceStudent>? Students { get; set; }  // received from frontend
+        public string? StudentsJson { get; set; }               // serialized before SP call
     }
+    public class AttendanceStudent
+    {
+        public string AdmissionID { get; set; }
+        public string Attendance { get; set; }
+        public string Remarks { get; set; }
+    }
+    public class tblExamMarks
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
 
+        public string? ExamID { get; set; }
+        public string? SubjectID { get; set; }
+
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+
+        public string? AdmissionID { get; set; }
+        public string? Marks { get; set; }
+        public string? Attendance { get; set; }
+
+
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StudentName { get; set; }
+        public string? DivisionName { get; set; }
+        public string? ClassName { get; set; }
+
+        public string? ExamName { get; set; }
+        public string? SubjectName { get; set; }
+        public string? SubjectMarks { get; set; }
+        public string? SubjectResult { get; set; }
+        public string? SubjectPercentage { get; set; }
+        public string? TotalMarks { get; set; }
+        public string? TotalMaxMarks { get; set; }
+        public string? TotalPercentage { get; set; }
+        public string? MaxMarks { get; set; }
+        public string? PassMarks { get; set; }
+        public List<ExamMarksStudent>? Students { get; set; }
+        public string? StudentsJson { get; set; }
+    }
+    public class ExamMarksStudent
+    {
+        public string? AdmissionID { get; set; }
+        public string? Marks { get; set; }
+    }
+    public class tblStudentAttendance
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public string? AttendanceDate { get; set; }
+        public string? LateInMinutes { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Attendance { get; set; }
+        public string? Remarks { get; set; }
+
+        public string? Session { get; set; }
+        public string? SessionName { get; set; }
+        public string? LeaveType { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StudentName { get; set; }
+        public string? DivisionName { get; set; }
+        public string? ClassName { get; set; }
+        public List<StudentAttendanceStudent>? Students { get; set; }
+        public string? StudentsJson { get; set; }
+        public class StudentAttendanceStudent
+        {
+            public string? AdmissionID { get; set; }
+            public string? Attendance { get; set; }
+            public string? LateInMinutes { get; set; }
+            public string? AttendanceDate { get; set; }  // ← ADD
+            public string? Session { get; set; }          // ← ADD
+            public string? Remarks { get; set; }          // ← ADD
+        }
+    }
+    public class tblStaffAttendance
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? StaffID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? AttendanceDate { get; set; }
+        public string? Remarks { get; set; }
+        public string? Role { get; set; }
+
+        public string? LateInMinutes { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Attendance { get; set; }
+        public string? Session { get; set; }
+        public string? leavetype { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StudentName { get; set; }
+        public string? DivisionName { get; set; }
+        public string? ClassName { get; set; }
+        public string? StaffName { get; set; }
+
+        // ← ADD THESE TWO
+        public List<StaffAttendanceItem>? Students { get; set; }
+        public string? StudentsJson { get; set; }
+
+        public class StaffAttendanceItem
+        {
+            public string? StaffID { get; set; }
+            public string? Attendance { get; set; }
+            public string? LateInMinutes { get; set; }
+            public string? leavetype { get; set; }
+            // needed for Flag 5 update JOIN:
+            public string? AttendanceDate { get; set; }
+            public string? Session { get; set; }
+            public string? Remarks { get; set; }   // add this
+        }
+    }
     public class feeCategory
     {
         public string? ID { get; set; }
