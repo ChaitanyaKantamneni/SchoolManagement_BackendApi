@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -3181,7 +3181,6 @@ namespace SchoolManagementAPI.Controllers
         }
 
         // Fee Doscount
-        [AllowAnonymous]
         [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
         public IActionResult Tbl_FeeDiscount_CRUD_Operations([FromBody] tblfeeDiscount fee)
         {
@@ -3251,6 +3250,64 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+
+        [HttpPost("Tbl_FeeCollection_CRUD_Operations")]
+        public IActionResult Tbl_FeeCollection_CRUD_Operations([FromBody] tblFeeCollection fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_FeeCollection_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_FeeCollection_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
     }
 
 }
