@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
@@ -5907,6 +5907,7 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_SortColumn", fee.SortColumn ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_SortDirection", fee.SortDirection ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Offset", fee.Offset ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_FeeCategory", (object?)CleanParam(fee.FeeCategory) ?? DBNull.Value);
 
                     conn.Open();
 
@@ -6002,6 +6003,62 @@ namespace SchoolManagementAPI.DAL
                                 }
                             }
                         }
+                        else if (fee.Flag == "10")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblfeeDiscount
+                                    {
+                                        //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        Student = reader["AdmissionNo"].ToString(),
+                                        StudentFullName = reader["StudentName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        ClassDivisionName = reader["DivisionName"]?.ToString(),
+                                        FeeCategoryName = reader["FeeCategoryName"]?.ToString(),
+                                        TotalFee = reader["TotalFee"]?.ToString(),
+                                        TotalDiscount = reader["TotalDiscount"]?.ToString(),
+                                        TotalPaid = reader["TotalPaid"]?.ToString(),
+                                        NetPayable = reader["NetPayable"]?.ToString(),
+                                        RemainingAmount = reader["RemainingAmount"]?.ToString()
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "11")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblfeeDiscount
+                                    {
+                                        ID = reader["FeeCategoryID"].ToString(),
+                                        FeeCategoryName = reader["FeeCategoryName"]?.ToString()
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "12")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblfeeDiscount
+                                    {
+                                        NewRecordNo = reader["NextReceiptNo"]?.ToString()
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
                         else
                         {
                             using (var reader = cmd.ExecuteReader())
@@ -6051,6 +6108,9 @@ namespace SchoolManagementAPI.DAL
         public List<tblStudentTransfer> Tbl_StudentTransfer_CRUD_Operations(tblStudentTransfer fee)
         {
             var Routes = new List<tblStudentTransfer>();
+        public List<tblFeeCollection> Tbl_FeeCollection_CRUD_Operations(tblFeeCollection fee)
+        {
+            var Routes = new List<tblFeeCollection>();
 
             string CleanParam(string? value)
             {
@@ -6100,6 +6160,199 @@ namespace SchoolManagementAPI.DAL
                                     {
                                         totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
                                     };
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_FeeCollection", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(fee.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ReceiptNo", (object?)CleanParam(fee.ReceiptNo) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(fee.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(fee.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Student", (object?)CleanParam(fee.Student) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Class", (object?)CleanParam(fee.Class) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Division", (object?)CleanParam(fee.Division) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_FeeCategory", (object?)CleanParam(fee.FeeCategory) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AmountPaid", (object?)CleanParam(fee.AmountPaid) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_PaymentMode", (object?)CleanParam(fee.PaymentMode) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_TransactionID", (object?)CleanParam(fee.TransactionID) ?? DBNull.Value);                    
+                    cmd.Parameters.AddWithValue("p_PaymentDate", fee.PaymentDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(fee.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", fee.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", fee.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", fee.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", fee.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", fee.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (fee.Flag != null)
+                    {
+                        if (fee.Flag == "5" )
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routess = new tblFeeCollection
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    };
+
+                                    Routes.Add(routess);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "2")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblFeeCollection
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        ReceiptNo = reader["ReceiptNo"]?.ToString(),
+                                        PaymentDate = reader["PaymentDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["PaymentDate"]),
+                                        AmountPaid = reader["AmountPaid"]?.ToString(),
+                                        PaymentMode = reader["PaymentMode"]?.ToString(),
+                                        TransactionID = reader["TransactionID"]?.ToString(),
+                                        Student = reader["Student"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        StudentName = reader["StudentName"]?.ToString(),
+                                        FeeCategoryName = reader["FeeCategoryName"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()                                                                              
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "3")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblFeeCollection
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        ReceiptNo = reader["ReceiptNo"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        Student = reader["Student"]?.ToString(),
+                                        Class = reader["Class"]?.ToString(),
+                                        Division = reader["Division"]?.ToString(),
+                                        FeeCategory = reader["FeeCategory"]?.ToString(),
+                                        AmountPaid = reader["AmountPaid"]?.ToString(),
+                                        PaymentDate = reader["PaymentDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["PaymentDate"]),
+                                        PaymentMode = reader["PaymentMode"]?.ToString(),
+                                        TransactionID = reader["TransactionID"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        StudentName = reader["StudentName"]?.ToString(),
+                                        FeeCategoryName = reader["FeeCategoryName"]?.ToString(),
+                                        TotalFee = reader["TotalFee"]?.ToString(),
+                                        TotalDiscount = reader["TotalDiscount"]?.ToString(),
+                                        TotalFeePaid = reader["TotalFeePaid"]?.ToString(),
+                                        FeePaid = reader["FeePaid"]?.ToString(),
+                                        NetPayable = reader["NetPayable"]?.ToString(),
+                                        RemainingAmount = reader["RemainingAmount"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblFeeCollection
+                                    {
+                                        SchoolName = reader["SchoolName"].ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        AdmissionNo = reader["AdmissionNo"]?.ToString(),
+                                        StudentName = reader["StudentName"]?.ToString(),
+                                        FeeCategoryName = reader["FeeCategoryName"]?.ToString(),
+                                        PendingAmount = reader["PendingAmount"]?.ToString(),
+                                        Status = reader["Message"]?.ToString(),
+                                        
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routess = new tblFeeCollection
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        ReceiptNo = reader["ReceiptNo"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        Student = reader["Student"]?.ToString(),
+                                        Class = reader["Class"]?.ToString(),
+                                        Division = reader["Division"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        FeeCategory = reader["FeeCategory"]?.ToString(),
+                                        AmountPaid = reader["AmountPaid"]?.ToString(),
+                                        PaymentDate = reader["PaymentDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["PaymentDate"]),
+                                        PaymentMode = reader["PaymentMode"]?.ToString(),
+                                        TransactionID = reader["TransactionID"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Routes.Add(routess);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Routes;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_FeeCollection_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+                return new List<tblFeeCollection>
+                {
+                    new tblFeeCollection
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
 
                                     Routes.Add(routess);
                                 }
