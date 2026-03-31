@@ -2840,6 +2840,17 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Exam Type already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -2893,6 +2904,17 @@ namespace SchoolManagementAPI.Controllers
                         StatusCode = 500,
                         Success = false,
                         Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Exam already created for this category")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
 
@@ -2963,6 +2985,193 @@ namespace SchoolManagementAPI.Controllers
             catch (Exception ex)
             {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_ExamAttendece_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_ExamMarks_CRUD_Operations")]
+        public IActionResult Tbl_ExamMarks_CRUD_Operations([FromBody] tblExamMarks fare)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fare.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_ExamMarks_CRUD_Operations(fare);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_ExamMarks_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fare));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_StudentAttendance_CRUD_Operations")]
+        public IActionResult Tbl_StudentAttendance_CRUD_Operations([FromBody] tblStudentAttendance attendance)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    attendance.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_StudentAttendance_CRUD_Operations(attendance);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+                // Duplicate check — catches both class-level and student-level messages
+                if (result.First().Status?.ToLower().Contains("already exists") == true)
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status
+                    });
+                }
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentAttendance_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(attendance));
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_StaffAttendance_CRUD_Operations")]
+        public IActionResult Tbl_StaffAttendance_CRUD_Operations([FromBody] tblStaffAttendance attendance)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    attendance.SchoolID = schoolId;
+                }
+                var result = dbop.Tbl_StaffAttendance_CRUD_Operations(attendance);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+                if (result.First().Status == "Already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_StaffAttendance_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(attendance));
                 return BadRequest(new
                 {
                     StatusCode = 500,
