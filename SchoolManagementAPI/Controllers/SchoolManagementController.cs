@@ -3276,6 +3276,41 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.First().Status,
+                    Data = result
+                });
+
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_FeeCollection_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        
+        }
+
         [HttpPost("Tbl_StudentTransfer_CRUD_Operations")]
         public IActionResult Tbl_StudentTransfer_CRUD_Operations([FromBody] tblStudentTransfer fare)
         {
@@ -3359,39 +3394,6 @@ namespace SchoolManagementAPI.Controllers
 
             });
 
-        }
-
-                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-                if (error != null)
-                {
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = error.Status
-                    });
-                }
-
-                return Ok(new
-                {
-                    StatusCode = 200,
-                    Success = true,
-                    Message = result.First().Status,
-                    Data = result
-                });
-            }
-            catch (Exception ex)
-            {
-                dbop.LogException(ex, "SchoolManagementController", "Tbl_FeeCollection_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
-
-                return BadRequest(new
-                {
-                    StatusCode = 500,
-                    Success = false,
-                    Message = "Internal server error occurred. Please try again.",
-                    Error = ex.Message
-                });
-            }
         }
     }
 
