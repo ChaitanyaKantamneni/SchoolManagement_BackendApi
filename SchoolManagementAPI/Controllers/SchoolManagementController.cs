@@ -1822,10 +1822,10 @@ namespace SchoolManagementAPI.Controllers
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
                 var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                if (roleId != "1")
-                {
-                    role.SchoolID = schoolId;
-                }
+                //if (roleId != "1")
+                //{
+                //    role.SchoolID = schoolId;
+                //}
 
                 var result = dbop.Tbl_Roles_CRUD_Operations(role);
 
