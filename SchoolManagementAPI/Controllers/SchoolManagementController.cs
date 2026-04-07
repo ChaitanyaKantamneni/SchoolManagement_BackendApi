@@ -56,6 +56,116 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("sendotp")]
+        public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+                return BadRequest(new { success = false, message = "Email required" });
+
+            // 🔍 Check user exists
+            var userCheck = new TblUser
+            {
+                Email = request.Email,
+                Flag = "3"
+            };
+
+            var dbUser = dbop.Tbl_Users_CRUD_Operations(userCheck).FirstOrDefault();
+
+            if (dbUser == null)
+                return BadRequest(new { success = false, message = "User not found" });
+
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            // Save OTP via SP
+            dbop.UserOTP_Operations(request.Email, otp, "1");
+
+            // Send email
+            await SendOtpEmail(request.Email, otp);
+
+            return Ok(new { success = true, message = "OTP sent successfully" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("verifyotp")]
+        public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
+        {
+            var dt = dbop.UserOTP_Operations(request.Email, request.OTP, "2");
+
+            if (dt.Rows.Count == 0)
+                return BadRequest(new { success = false, message = "Invalid or expired OTP" });
+
+            // Mark OTP as used
+            dbop.UserOTP_Operations(request.Email, request.OTP, "3");
+
+            // Get user again
+            var user = new TblUser
+            {
+                Email = request.Email,
+                Flag = "3"
+            };
+
+            var dbUser = dbop.Tbl_Users_CRUD_Operations(user).FirstOrDefault();
+
+            if (dbUser == null)
+                return BadRequest(new { success = false });
+
+            // 🔐 Generate token AFTER OTP
+            var tokenService = new TokenService(_configuration);
+
+            var (accessToken, refreshToken, _, _) =
+                tokenService.GenerateTokens(
+                    dbUser.Email,
+                    $"{dbUser.FirstName} {dbUser.LastName}",
+                    dbUser.RollId,
+                    dbUser.RollId != "1" ? dbUser.SchoolID : null
+                );
+
+            return Ok(new
+            {
+                success = true,
+                accessToken,
+                refreshToken,
+                role = dbUser.RollId,
+                email = dbUser.Email,
+                schoolId = dbUser.SchoolID,
+                schoolRouteName = string.IsNullOrEmpty(dbUser.SchoolName) ? "Admin" : dbUser.SchoolName.Replace(" ", "")
+        });
+        }
+
+        private async Task SendOtpEmail(string toEmail, string otp)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = "Your Login OTP";
+
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $@"
+            <h2>Login OTP Verification</h2>
+            <p>Your OTP is:</p>
+            <h1 style='color:#2d3093'>{otp}</h1>
+            <p>This OTP is valid for 5 minutes.</p>"
+            }.ToMessageBody();
+
+            using var smtp = new MailKit.Net.Smtp.SmtpClient();
+
+            await smtp.ConnectAsync(
+                _configuration["Smtp:Host"],
+                int.Parse(_configuration["Smtp:Port"]),
+                MailKit.Security.SecureSocketOptions.Auto
+            );
+
+            await smtp.AuthenticateAsync(
+                _configuration["Smtp:Username"],
+                _configuration["Smtp:Password"]
+            );
+
+            await smtp.SendAsync(message);
+            await smtp.DisconnectAsync(true);
+        }
+
+        [AllowAnonymous]
         [HttpPost("Tbl_Users_CRUD_Operations")]
         public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
         {
@@ -91,6 +201,7 @@ namespace SchoolManagementAPI.Controllers
                     user.FileName = uniqueFileName;
                     user.FilePath = "/" + relativePath;
                 }
+
                 var result = dbop.Tbl_Users_CRUD_Operations(user);
 
                 if (result == null)
@@ -121,35 +232,36 @@ namespace SchoolManagementAPI.Controllers
                     if (string.IsNullOrEmpty(dbUser.RollId))
                         return Unauthorized(new { message = "Invalid credentials" });
 
-                    var tokenService = new TokenService(_configuration);
-                    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+                    //var tokenService = new TokenService(_configuration);
+                    //string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
 
-                    var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
-                        tokenService.GenerateTokens(
-                            dbUser.Email,
-                            $"{dbUser.FirstName} {dbUser.LastName}",
-                            dbUser.RollId,
-                            schoolID
-                        );
+                    //var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
+                    //    tokenService.GenerateTokens(
+                    //        dbUser.Email,
+                    //        $"{dbUser.FirstName} {dbUser.LastName}",
+                    //        dbUser.RollId,
+                    //        schoolID
+                    //    );
 
-                    var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                    if (existingToken != null)
-                        dbop.RevokeUserToken(existingToken.RefreshToken);
+                    //var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
+                    //if (existingToken != null)
+                    //    dbop.RevokeUserToken(existingToken.RefreshToken);
 
-                    dbop.InsertUserToken(
-                        dbUser.Email,
-                        accessToken,
-                        refreshToken,
-                        accessExpiryUtc,
-                        refreshExpiryUtc
-                    );
+                    //dbop.InsertUserToken(
+                    //    dbUser.Email,
+                    //    accessToken,
+                    //    refreshToken,
+                    //    accessExpiryUtc,
+                    //    refreshExpiryUtc
+                    //);
 
                     string schoolRouteName = dbUser.SchoolName.Replace(" ", "");
 
                     return Ok(new
                     {
-                        accessToken,
-                        refreshToken,
+                        //accessToken,
+                        //refreshToken,
+                        success = true,
                         role = dbUser.RollId,
                         email = dbUser.Email,
                         schoolId = dbUser.SchoolID,
