@@ -1193,7 +1193,7 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(staff.SortColumn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(staff.SortDirection) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Offset", staff.Offset ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(staff.FirstName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(staff.Name) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_SubjectID", (object?)CleanParam(staff.SubjectID) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ClassID", (object?)CleanParam(staff.ClassID) ?? DBNull.Value);
 
@@ -1471,7 +1471,7 @@ namespace SchoolManagementAPI.DAL
                         {
                             while (reader.Read())
                             {
-                                if (reader["Message"]?.ToString() == "Subject name already exists")
+                                if (reader["Message"]?.ToString() == "Subject already exists for one or more selected classes")
                                 {
                                     Subjects.Add(new tblSubjects
                                     {
@@ -1615,11 +1615,45 @@ namespace SchoolManagementAPI.DAL
                                     ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                     ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
                                     Status = reader["Message"]?.ToString(),
-                                    SchoolName = reader["SchoolName"]?.ToString(),
+                                    SchoolName = reader["SchoolName"]?.ToString(),                                    
                                     AcademicYearName = reader["AcademicYearName"]?.ToString(),
                                     ClassName = reader["ClassName"]?.ToString(),
                                     StaffFullName = reader["StaffFullName"]?.ToString()
                                 });
+                            }
+                        }
+                    }
+                    else if (subjectStaff.Flag == "1" || subjectStaff.Flag == "5")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader["Message"]?.ToString() == "Staff already Allocated for this school and academic year")
+                                {
+                                    SubjectStaffs.Add(new tblSubjectStaff
+                                    {
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                                else
+                                {
+                                    SubjectStaffs.Add(new tblSubjectStaff
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        Class = reader["Class"]?.ToString(),
+                                        StaffName = reader["StaffName"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
                             }
                         }
                     }
