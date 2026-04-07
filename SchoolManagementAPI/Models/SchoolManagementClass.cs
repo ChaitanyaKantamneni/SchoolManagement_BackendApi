@@ -476,6 +476,7 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? SubjectID { get; set; }
         public string? ClassID { get; set; }
+        public string? Name { get; set; }
     }
 
     public class UserToken

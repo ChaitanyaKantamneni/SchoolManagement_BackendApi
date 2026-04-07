@@ -749,6 +749,7 @@ namespace SchoolManagementAPI.Controllers
                 {
                     syllabus.SchoolID = schoolId;
                 }
+
                 var result = dbop.Tbl_Syllabus_CRUD_Operations(syllabus);
 
                 if (result == null)
@@ -1076,6 +1077,14 @@ namespace SchoolManagementAPI.Controllers
 
             try
             {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    filter.SchoolID = schoolId;
+                }
+
                 if (type == "excel")
                 {
                     using var stream = new MemoryStream();
@@ -1493,7 +1502,7 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                if (result.First().Status == "Subject name already exists")
+                if (result.First().Status == "Subject already exists for one or more selected classes")
                 {
                     return StatusCode(400, new
                     {
@@ -1560,6 +1569,17 @@ namespace SchoolManagementAPI.Controllers
                         StatusCode = 400,
                         Success = false,
                         Message = result.First().Status
+                    });
+                }
+
+                if (result.First().Status == "Staff already Allocated for this school and academic year")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
 
@@ -1822,10 +1842,10 @@ namespace SchoolManagementAPI.Controllers
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
                 var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                if (roleId != "1")
-                {
-                    role.SchoolID = schoolId;
-                }
+                //if (roleId != "1")
+                //{
+                //    role.SchoolID = schoolId;
+                //}
 
                 var result = dbop.Tbl_Roles_CRUD_Operations(role);
 
