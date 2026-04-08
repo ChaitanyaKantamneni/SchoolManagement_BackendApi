@@ -7452,6 +7452,170 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        public List<TblPaymentMode> Tbl_PaymentMode_CRUD_Operations(TblPaymentMode ph)
+        {
+            var PayrollHeads = new List<TblPaymentMode>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_PaymentMode", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", ph.ID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", ph.SchoolID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", ph.AcademicYear ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_PaymentMode", (object?)CleanParam(ph.PaymentMode) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Account", (object?)CleanParam(ph.Account) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(ph.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", ph.IsActive ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", ph.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(ph.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", ph.ModifiedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(ph.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(ph.Flag) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", ph.Limit ?? 100);
+                    cmd.Parameters.AddWithValue("p_Offset", ph.Offset ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", ph.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", ph.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(ph.SortDirection) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SearchName", (object?)CleanParam(ph.SearchName) ?? DBNull.Value);
+
+                    conn.Open();
+
+                    if (ph.Flag != null)
+                    {
+                        // COUNT
+                        if (ph.Flag == "6" || ph.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    PayrollHeads.Add(new TblPaymentMode
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                    });
+                                }
+                            }
+                        }
+
+                        // FETCH / SEARCH
+                        else if (ph.Flag == "2" || ph.Flag == "3" || ph.Flag == "4" || ph.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    PayrollHeads.Add(new TblPaymentMode
+                                    {
+                                        ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                        AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                        PaymentMode = reader["PaymentMode"]?.ToString(),
+                                        Account = reader["Account"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                        CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+
+                        // INSERT / UPDATE
+                        else if (ph.Flag == "1" || ph.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["Message"]?.ToString() == "Payment mode already exists")
+                                    {
+                                        PayrollHeads.Add(new TblPaymentMode
+                                        {
+                                            Status = reader["Message"]?.ToString()
+                                        });
+                                    }
+                                    else
+                                    {
+                                        PayrollHeads.Add(new TblPaymentMode
+                                        {
+                                            ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                            SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                            AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                            PaymentMode = reader["PaymentMode"]?.ToString(),
+                                            Account = reader["Account"]?.ToString(),
+                                            Description = reader["Description"]?.ToString(),
+                                            IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                            CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                            ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                            Status = reader["Message"]?.ToString()
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
+                        // DEFAULT
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    PayrollHeads.Add(new TblPaymentMode
+                                    {
+                                        ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                        AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                        PaymentMode = reader["PaymentMode"]?.ToString(),
+                                        Account = reader["Account"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return PayrollHeads;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_PaymentMode_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ph));
+
+                return new List<TblPaymentMode>
+                {
+                    new TblPaymentMode
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
     }
 
 
