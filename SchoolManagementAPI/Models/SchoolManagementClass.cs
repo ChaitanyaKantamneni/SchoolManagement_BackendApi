@@ -62,37 +62,8 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
     }
 
-    //public class tblUsers
-    //{
-    //    public string? SchoolID { get; set; }
-    //    public string? FirstName { get; set; }
-    //    public string? LastName { get; set; }
-    //    public string? Email { get; set; }
-    //    public string? MobileNo { get; set; }
-    //    public string? Password { get; set; }
-    //    public string? RollId { get; set; }
-    //    public string? IsActive { get; set; }
-    //    public string? CreatedBy { get; set; }
-    //    public string? CreatedIP { get; set; }
-    //    public DateTime? CreatedDate { get; set; }
-    //    public string? ModifiedBy { get; set; }
-    //    public string? ModifiedIP { get; set; }
-    //    public DateTime? ModifiedDate { get; set; }        
-    //    public string? Flag { get; set; }
-    //    public string? OldPassword { get; set; }
-    //    public string? NewPassword { get; set; }
-    //    public string? Status { get; set; }
-    //    public string? FileName { get; set; }
-    //    public string? FilePath { get; set; }
-    //    public string? AccessToken { get; set; }
-
-
-    //}
-
     public class TblUser
     {
-        // ===== Table Columns =====
-
         public long ID { get; set; }
 
         public string? FirstName { get; set; }
@@ -167,7 +138,7 @@ namespace SchoolManagementAPI.Models
     {
         public string Email { get; set; }
         public string OTP { get; set; }
-        public string NewPassword { get; set; }
+        public string? NewPassword { get; set; }
     }
 
     public class tblAcademicYear

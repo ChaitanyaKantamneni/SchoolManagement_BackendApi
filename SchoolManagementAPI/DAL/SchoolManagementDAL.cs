@@ -39,83 +39,6 @@ namespace SchoolManagementAPI.DAL
             cmd.ExecuteNonQuery();
         }
 
-        //public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
-        //{
-        //    var schools = new List<SchoolDetails>();
-
-        //    string CleanParam(string? value)
-        //    {
-        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
-        //    }
-
-        //    try
-        //    {
-        //        using (var conn = new MySqlConnection(_connectionString))
-        //        using (var cmd = new MySqlCommand("Proc_Tbl_SchoolDetails", conn))
-        //        {
-        //            cmd.CommandType = CommandType.StoredProcedure;
-
-        //            cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(school.Email) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Website", (object?)CleanParam(school.Website) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(school.Address) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(school.CreatedBy) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(school.CreatedIP) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(school.ModifiedBy) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(school.ModifiedIP) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(school.Flag) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Limit", school.Limit ?? 100);
-        //            cmd.Parameters.AddWithValue("p_Offset", school.Offset ?? 0);
-
-        //            conn.Open();
-
-        //            if (!string.IsNullOrEmpty(school.Flag))
-        //            {
-        //                using (var reader = cmd.ExecuteReader())
-        //                {
-        //                    while (reader.Read())
-        //                    {
-        //                        var s = new SchoolDetails
-        //                        {
-        //                            ID = reader["ID"]?.ToString(),
-        //                            Name = reader["Name"]?.ToString(),
-        //                            MobileNo = reader["MobileNo"]?.ToString(),
-        //                            Email = reader["Email"]?.ToString(),
-        //                            Website = reader["Website"]?.ToString(),
-        //                            Address = reader["Address"]?.ToString(),
-        //                            CreatedBy = reader["CreatedBy"]?.ToString(),
-        //                            CreatedIP = reader["CreatedIp"]?.ToString(),
-        //                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-        //                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
-        //                            ModifiedIP = reader["ModifiedIp"]?.ToString(),
-        //                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-        //                            Status = reader["Message"]?.ToString()
-        //                        };
-
-        //                        schools.Add(s);
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        return schools;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD", Newtonsoft.Json.JsonConvert.SerializeObject(school));
-        //        return new List<SchoolDetails>
-        //        {
-        //            new SchoolDetails
-        //            {
-        //                Status = $"ERROR: {ex.Message}"
-        //            }
-        //        };
-        //    }
-        //}
-
-
         public static class DateTimeHelper
         {
             private static readonly TimeZoneInfo IstTimeZone =
@@ -137,6 +60,27 @@ namespace SchoolManagementAPI.DAL
 
                 return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, IstTimeZone);
             }
+        }
+
+        public DataTable UserOTP_Operations(string email, string otp, string flag)
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("Proc_UserOTP", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("p_Email", email);
+            cmd.Parameters.AddWithValue("p_OTP", otp);
+            cmd.Parameters.AddWithValue("p_Flag", flag);
+
+            var dt = new DataTable();
+            using var da = new MySqlDataAdapter(cmd);
+
+            conn.Open();
+            da.Fill(dt);
+
+            return dt;
         }
 
         public List<TblUser> Tbl_Users_CRUD_Operations(TblUser user)
