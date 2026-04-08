@@ -339,7 +339,7 @@ namespace SchoolManagementAPI.Controllers
 
         private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin, string? schoolName = null, string? schoolUrl = null, string? Roleid = null)
         {
-            if (Roleid=="14")
+            if (Roleid=="5")
             {
                 string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
                 string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
@@ -444,7 +444,7 @@ namespace SchoolManagementAPI.Controllers
                     throw;
                 }
             }
-            else if(Roleid == "15")
+            else if(Roleid == "6")
             {
                 string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
                 string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
