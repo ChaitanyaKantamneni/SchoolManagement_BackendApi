@@ -1837,4 +1837,38 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public int? totalcount { get; set; }
     }
 
+    public class TblPaymentMode
+    {
+        public int? ID { get; set; }
+        public int? SchoolID { get; set; }
+        public int? AcademicYear { get; set; }
+
+        public string? PaymentMode { get; set; }
+        public string? Account { get; set; }
+        public string? Description { get; set; }
+        public int? IsActive { get; set; }
+
+        public int? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public int? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+
+        public string? Status { get; set; }
+
+        [NotMapped] public string? Flag { get; set; }
+        [NotMapped] public int? Limit { get; set; }
+        [NotMapped] public int? Offset { get; set; }
+        [NotMapped] public int? LastID { get; set; }
+        [NotMapped] public DateTime? LastCreatedDate { get; set; }
+        [NotMapped] public string? SortDirection { get; set; }
+        [NotMapped] public string? SearchName { get; set; }
+        [NotMapped] public int? totalcount { get; set; }
+    }
+
 }

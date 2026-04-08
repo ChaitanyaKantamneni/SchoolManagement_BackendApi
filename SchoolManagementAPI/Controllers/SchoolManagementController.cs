@@ -341,318 +341,318 @@ namespace SchoolManagementAPI.Controllers
         {
             if (Roleid=="5")
             {
-                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
+    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+    //            string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
 
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                emailMessage.Subject = subject;
+    //            var emailMessage = new MimeMessage();
+    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+    //            emailMessage.Subject = subject;
 
-                var builder = new BodyBuilder();
+    //            var builder = new BodyBuilder();
 
-                // Attach images only if they exist
-                if (System.IO.File.Exists(imagePath))
-                {
-                    var headerImage = builder.LinkedResources.Add(imagePath);
-                    headerImage.ContentId = "CompanyLogo";
-                }
+    //            // Attach images only if they exist
+    //            if (System.IO.File.Exists(imagePath))
+    //            {
+    //                var headerImage = builder.LinkedResources.Add(imagePath);
+    //                headerImage.ContentId = "CompanyLogo";
+    //            }
 
-                if (System.IO.File.Exists(logoPath))
-                {
-                    var footerLogo = builder.LinkedResources.Add(logoPath);
-                    footerLogo.ContentId = "FooterLogo";
-                }
+    //            if (System.IO.File.Exists(logoPath))
+    //            {
+    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+    //                footerLogo.ContentId = "FooterLogo";
+    //            }
 
-                // Choose URL and footer based on school
-                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+    //            // Choose URL and footer based on school
+    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
 
-                string htmlBody = isAdmin
-                    ? $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='content'>
-                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                <h2>New Student Registration</h2>
-                <p><strong>Name:</strong> {userName}</p>
-                <p><strong>Email:</strong> {toEmail}</p>
-                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-            </div>
-            <p class='footer'>{footerText}</p>
-        </div>
-    </body>
-    </html>"
-                    : $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-            <h2>Welcome, {userName}!</h2>
-            <p>Congratulations! Your Student account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-            <div class='content'>
-                <h3>Login Details:</h3>
-                <div class='credentials'>
-                    <p><strong>Email / UserID:</strong> {toEmail}</p>
-                    <p><strong>Password:</strong> {userPassword}</p>
-                </div>
-            </div>
-            <p>{loginText}</p>
-            <p>If you face any issues, contact your system administrator.</p>
-            <p class='footer'>{footerText}</p>
-            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-        </div>
-    </body>
-    </html>";
+    //            string htmlBody = isAdmin
+    //                ? $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        <div class='content'>
+    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //            <h2>New Student Registration</h2>
+    //            <p><strong>Name:</strong> {userName}</p>
+    //            <p><strong>Email:</strong> {toEmail}</p>
+    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //        </div>
+    //        <p class='footer'>{footerText}</p>
+    //    </div>
+    //</body>
+    //</html>"
+    //                : $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //        <h2>Welcome, {userName}!</h2>
+    //        <p>Congratulations! Your Student account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+    //        <div class='content'>
+    //            <h3>Login Details:</h3>
+    //            <div class='credentials'>
+    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+    //                <p><strong>Password:</strong> {userPassword}</p>
+    //            </div>
+    //        </div>
+    //        <p>{loginText}</p>
+    //        <p>If you face any issues, contact your system administrator.</p>
+    //        <p class='footer'>{footerText}</p>
+    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //    </div>
+    //</body>
+    //</html>";
 
-                builder.HtmlBody = htmlBody;
-                emailMessage.Body = builder.ToMessageBody();
+    //            builder.HtmlBody = htmlBody;
+    //            emailMessage.Body = builder.ToMessageBody();
 
-                try
-                {
-                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                    await smtpClient.SendAsync(emailMessage);
-                    await smtpClient.DisconnectAsync(true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending email: {ex.Message}");
-                    throw;
-                }
+    //            try
+    //            {
+    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+    //                await smtpClient.SendAsync(emailMessage);
+    //                await smtpClient.DisconnectAsync(true);
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                Console.WriteLine($"Error sending email: {ex.Message}");
+    //                throw;
+    //            }
             }
             else if(Roleid == "6")
             {
-                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
+    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+    //            string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
 
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                emailMessage.Subject = subject;
+    //            var emailMessage = new MimeMessage();
+    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+    //            emailMessage.Subject = subject;
 
-                var builder = new BodyBuilder();
+    //            var builder = new BodyBuilder();
 
-                // Attach images only if they exist
-                if (System.IO.File.Exists(imagePath))
-                {
-                    var headerImage = builder.LinkedResources.Add(imagePath);
-                    headerImage.ContentId = "CompanyLogo";
-                }
+    //            // Attach images only if they exist
+    //            if (System.IO.File.Exists(imagePath))
+    //            {
+    //                var headerImage = builder.LinkedResources.Add(imagePath);
+    //                headerImage.ContentId = "CompanyLogo";
+    //            }
 
-                if (System.IO.File.Exists(logoPath))
-                {
-                    var footerLogo = builder.LinkedResources.Add(logoPath);
-                    footerLogo.ContentId = "FooterLogo";
-                }
+    //            if (System.IO.File.Exists(logoPath))
+    //            {
+    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+    //                footerLogo.ContentId = "FooterLogo";
+    //            }
 
-                // Choose URL and footer based on school
-                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+    //            // Choose URL and footer based on school
+    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
 
-                string htmlBody = isAdmin
-                    ? $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='content'>
-                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                <h2>New Parent Registration</h2>
-                <p><strong>Name:</strong> {userName}</p>
-                <p><strong>Email:</strong> {toEmail}</p>
-                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-            </div>
-            <p class='footer'>{footerText}</p>
-        </div>
-    </body>
-    </html>"
-                    : $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-            <h2>Welcome, {userName}!</h2>
-            <p>Congratulations! Your Parent account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-            <div class='content'>
-                <h3>Login Details:</h3>
-                <div class='credentials'>
-                    <p><strong>Email / UserID:</strong> {toEmail}</p>
-                    <p><strong>Password:</strong> {userPassword}</p>
-                </div>
-            </div>
-            <p>{loginText}</p>
-            <p>If you face any issues, contact your system administrator.</p>
-            <p class='footer'>{footerText}</p>
-            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-        </div>
-    </body>
-    </html>";
+    //            string htmlBody = isAdmin
+    //                ? $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        <div class='content'>
+    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //            <h2>New Parent Registration</h2>
+    //            <p><strong>Name:</strong> {userName}</p>
+    //            <p><strong>Email:</strong> {toEmail}</p>
+    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //        </div>
+    //        <p class='footer'>{footerText}</p>
+    //    </div>
+    //</body>
+    //</html>"
+    //                : $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //        <h2>Welcome, {userName}!</h2>
+    //        <p>Congratulations! Your Parent account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+    //        <div class='content'>
+    //            <h3>Login Details:</h3>
+    //            <div class='credentials'>
+    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+    //                <p><strong>Password:</strong> {userPassword}</p>
+    //            </div>
+    //        </div>
+    //        <p>{loginText}</p>
+    //        <p>If you face any issues, contact your system administrator.</p>
+    //        <p class='footer'>{footerText}</p>
+    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //    </div>
+    //</body>
+    //</html>";
 
-                builder.HtmlBody = htmlBody;
-                emailMessage.Body = builder.ToMessageBody();
+    //            builder.HtmlBody = htmlBody;
+    //            emailMessage.Body = builder.ToMessageBody();
 
-                try
-                {
-                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                    await smtpClient.SendAsync(emailMessage);
-                    await smtpClient.DisconnectAsync(true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending email: {ex.Message}");
-                    throw;
-                }
+    //            try
+    //            {
+    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+    //                await smtpClient.SendAsync(emailMessage);
+    //                await smtpClient.DisconnectAsync(true);
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                Console.WriteLine($"Error sending email: {ex.Message}");
+    //                throw;
+    //            }
             }
             else
             {
-                string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
+    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+    //            string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
 
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                emailMessage.Subject = subject;
+    //            var emailMessage = new MimeMessage();
+    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+    //            emailMessage.Subject = subject;
 
-                var builder = new BodyBuilder();
+    //            var builder = new BodyBuilder();
 
-                // Attach images only if they exist
-                if (System.IO.File.Exists(imagePath))
-                {
-                    var headerImage = builder.LinkedResources.Add(imagePath);
-                    headerImage.ContentId = "CompanyLogo";
-                }
+    //            // Attach images only if they exist
+    //            if (System.IO.File.Exists(imagePath))
+    //            {
+    //                var headerImage = builder.LinkedResources.Add(imagePath);
+    //                headerImage.ContentId = "CompanyLogo";
+    //            }
 
-                if (System.IO.File.Exists(logoPath))
-                {
-                    var footerLogo = builder.LinkedResources.Add(logoPath);
-                    footerLogo.ContentId = "FooterLogo";
-                }
+    //            if (System.IO.File.Exists(logoPath))
+    //            {
+    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+    //                footerLogo.ContentId = "FooterLogo";
+    //            }
 
-                // Choose URL and footer based on school
-                string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+    //            // Choose URL and footer based on school
+    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
 
-                string htmlBody = isAdmin
-                    ? $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='content'>
-                {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                <h2>New Employee Registration</h2>
-                <p><strong>Name:</strong> {userName}</p>
-                <p><strong>Email:</strong> {toEmail}</p>
-                {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-            </div>
-            <p class='footer'>{footerText}</p>
-        </div>
-    </body>
-    </html>"
-                    : $@"
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; }}
-            .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-            .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-            .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-            .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-            <h2>Welcome, {userName}!</h2>
-            <p>Congratulations! Your employee account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-            <div class='content'>
-                <h3>Login Details:</h3>
-                <div class='credentials'>
-                    <p><strong>Email / UserID:</strong> {toEmail}</p>
-                    <p><strong>Password:</strong> {userPassword}</p>
-                </div>
-            </div>
-            <p>{loginText}</p>
-            <p>If you face any issues, contact your system administrator.</p>
-            <p class='footer'>{footerText}</p>
-            {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-        </div>
-    </body>
-    </html>";
+    //            string htmlBody = isAdmin
+    //                ? $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        <div class='content'>
+    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //            <h2>New Employee Registration</h2>
+    //            <p><strong>Name:</strong> {userName}</p>
+    //            <p><strong>Email:</strong> {toEmail}</p>
+    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //        </div>
+    //        <p class='footer'>{footerText}</p>
+    //    </div>
+    //</body>
+    //</html>"
+    //                : $@"
+    //<html>
+    //<head>
+    //    <style>
+    //        body {{ font-family: Arial, sans-serif; }}
+    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+    //    </style>
+    //</head>
+    //<body>
+    //    <div class='container'>
+    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+    //        <h2>Welcome, {userName}!</h2>
+    //        <p>Congratulations! Your employee account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+    //        <div class='content'>
+    //            <h3>Login Details:</h3>
+    //            <div class='credentials'>
+    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+    //                <p><strong>Password:</strong> {userPassword}</p>
+    //            </div>
+    //        </div>
+    //        <p>{loginText}</p>
+    //        <p>If you face any issues, contact your system administrator.</p>
+    //        <p class='footer'>{footerText}</p>
+    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+    //    </div>
+    //</body>
+    //</html>";
 
-                builder.HtmlBody = htmlBody;
-                emailMessage.Body = builder.ToMessageBody();
+    //            builder.HtmlBody = htmlBody;
+    //            emailMessage.Body = builder.ToMessageBody();
 
-                try
-                {
-                    using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                    await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                    await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                    await smtpClient.SendAsync(emailMessage);
-                    await smtpClient.DisconnectAsync(true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending email: {ex.Message}");
-                    throw;
-                }
+    //            try
+    //            {
+    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+    //                await smtpClient.SendAsync(emailMessage);
+    //                await smtpClient.DisconnectAsync(true);
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                Console.WriteLine($"Error sending email: {ex.Message}");
+    //                throw;
+    //            }
             }
         }
 
@@ -3738,7 +3738,7 @@ namespace SchoolManagementAPI.Controllers
         }
     
 
-    [HttpPost("Tbl_PayrollHead_CRUD_Operations")]
+        [HttpPost("Tbl_PayrollHead_CRUD_Operations")]
         public IActionResult Tbl_PayrollHead_CRUD_Operations([FromBody] tblPayrollHead ph)
         {
             try
@@ -3774,6 +3774,17 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
+                if (result.First().Status == "Payroll head already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
                 return Ok(new
                 {
                     StatusCode = 200,
@@ -3785,6 +3796,75 @@ namespace SchoolManagementAPI.Controllers
             catch (Exception ex)
             {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_PayrollHead_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ph));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_PaymentMode_CRUD_Operations")]
+        public IActionResult Tbl_PaymentMode_CRUD_Operations([FromBody] TblPaymentMode ph)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    ph.SchoolID = Convert.ToInt32(schoolId);
+                }
+
+                var result = dbop.Tbl_PaymentMode_CRUD_Operations(ph);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Payment mode already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_PaymentMode_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ph));
 
                 return BadRequest(new
                 {
