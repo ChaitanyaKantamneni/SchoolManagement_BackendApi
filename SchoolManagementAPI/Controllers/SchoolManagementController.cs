@@ -2174,7 +2174,7 @@ namespace SchoolManagementAPI.Controllers
                     Data = result
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 dbop.LogException(ex, "SchoolManagementController", "Tbl_StudentDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(admission));
                 return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error.", Error = ex.Message });
@@ -3351,14 +3351,14 @@ namespace SchoolManagementAPI.Controllers
                     });
                 }
 
-                if (result.First().Status== "Fee Category Already Exists")
+                if (result.First().Status == "Fee Category Already Exists")
                 {
                     return StatusCode(400, new
                     {
                         StatusCode = 400,
                         Success = false,
                         Message = result.First().Status,
-                        Data=result
+                        Data = result
                     });
                 }
 
@@ -3385,7 +3385,7 @@ namespace SchoolManagementAPI.Controllers
 
         [HttpPost("Tbl_FeeAllocation_CRUD_Operations")]
         public IActionResult Tbl_feeAllocation_CRUD_Operations([FromBody] tblfeeAllocation fee)
-        {   
+        {
             try
             {
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -3649,7 +3649,7 @@ namespace SchoolManagementAPI.Controllers
                     Error = ex.Message
                 });
             }
-        
+
         }
 
         [HttpPost("Tbl_StudentTransfer_CRUD_Operations")]
@@ -3736,6 +3736,66 @@ namespace SchoolManagementAPI.Controllers
             });
 
         }
+    
+
+    [HttpPost("Tbl_PayrollHead_CRUD_Operations")]
+        public IActionResult Tbl_PayrollHead_CRUD_Operations([FromBody] tblPayrollHead ph)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    ph.SchoolID = Convert.ToInt32(schoolId);
+                }
+
+                var result = dbop.Tbl_PayrollHead_CRUD_Operations(ph);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_PayrollHead_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(ph));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
     }
 
 }
