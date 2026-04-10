@@ -178,7 +178,8 @@ namespace SchoolManagementAPI.DAL
                                 ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
                                 FileName = reader["FileName"]?.ToString(),
                                 FilePath = reader["FilePath"]?.ToString(),
-                                Message = reader["Message"]?.ToString()
+                                Message = reader["Message"]?.ToString(),
+                                SchoolName = reader["SchoolName"]?.ToString()
                             });
                         }
                     }
