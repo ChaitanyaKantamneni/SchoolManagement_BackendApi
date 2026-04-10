@@ -1020,7 +1020,7 @@ namespace SchoolManagementAPI.Models
         public string? TimeSlot { get; set; }
         public string? SubjectID { get; set; }
         public string? StaffID { get; set; }
-        public string? TimeTableID { get; set; }        
+        public string? TimeTableID { get; set; }
         public string? StaffName { get; set; }
         public string? StaffEmail { get; set; }
         public string? ClassName { get; set; }
@@ -1091,7 +1091,7 @@ namespace SchoolManagementAPI.Models
         public DateTime? SubjectExamDateAndTime { get; set; }
         public string? IndividualSubjectName { get; set; }
         public string? AttendanceMarked { get; set; }
-        public string? ExamAttendancAndMarksMarked { get; set; }        
+        public string? ExamAttendancAndMarksMarked { get; set; }
         public string? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
@@ -1206,7 +1206,7 @@ namespace SchoolManagementAPI.Models
         public string? StudentName { get; set; }
         public string? DivisionName { get; set; }
         public string? ClassName { get; set; }
-        
+
         public string? ExamName { get; set; }
         public string? SubjectName { get; set; }
         public List<AttendanceStudent>? Students { get; set; }  // received from frontend
@@ -1625,6 +1625,8 @@ namespace SchoolManagementAPI.Models
         public string? FeeCategory { get; set; }
     }
 
+
+
     public class tblStudentTransfer
     {
         public string? ID { get; set; }
@@ -1635,7 +1637,7 @@ namespace SchoolManagementAPI.Models
         public string? Class { get; set; }
         public string? Division { get; set; }
         public DateTime? TransferDate { get; set; }
-        public string?  TransferReason { get; set; }
+        public string? TransferReason { get; set; }
         public string? CreatedBy { get; set; }
         public string? CreatedIp { get; set; }
         public DateTime? CreatedDate { get; set; }
@@ -1780,7 +1782,8 @@ namespace SchoolManagementAPI.Models
 
     public class FeeChart
     {
-        public string Month { get; set; } public double Attendance { get; set; }
+        public string Month { get; set; }
+        public double Attendance { get; set; }
         public double Amount { get; set; }
     }
 
@@ -1870,5 +1873,95 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public string? SearchName { get; set; }
         [NotMapped] public int? totalcount { get; set; }
     }
+    public class tblLeavepolicy
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? LeaveType { get; set; }
+        public string? MaxDays { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+
+        public string? Discription { get; set; }
+
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        [NotMapped]
+        public string? Flag { get; set; }
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
+        public int? Limit { get; set; }
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
+        public int? LastID { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
+        public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+    }
+
+    public class tblLeaveManagement
+    {
+        public int? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public string? ApplicantID { get; set; }
+        public int? ApplicantRoleID { get; set; }
+        public string? ApplicantName { get; set; }
+
+        public string? ClassID { get; set; }
+        public string? DivisionID { get; set; }
+
+        public string? LeaveType { get; set; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
+        public string? Reason { get; set; }
+
+        public string? CurrentApproverID { get; set; }
+        public int? CurrentApproverRoleID { get; set; }
+
+        public string? Status { get; set; }
+        public string? ApprovalRemarks { get; set; }
+
+        public int? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // FLAGS
+        public string? Flag { get; set; }
+
+        // PAGINATION
+        public int? Limit { get; set; }
+        public int? Offset { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public string? SortDirection { get; set; }
+
+        // SEARCH
+        public string? Search { get; set; }
+
+        // RESPONSE
+        public int? totalCount { get; set; }
+        public string? Message { get; set; }
+    }
+
 
 }
