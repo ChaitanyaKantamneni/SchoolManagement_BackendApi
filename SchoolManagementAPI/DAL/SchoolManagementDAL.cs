@@ -7137,6 +7137,8 @@ namespace SchoolManagementAPI.DAL
 
 
 
+
+
         //Dashboard
         //public List<DashboardDataDetails> Proc_DashboardData_DAL(DashboardDataDetails fee)
         //{
@@ -7287,9 +7289,9 @@ namespace SchoolManagementAPI.DAL
             return response;
 
         }
-    
 
-    public List<tblPayrollHead> Tbl_PayrollHead_CRUD_Operations(tblPayrollHead ph)
+
+        public List<tblPayrollHead> Tbl_PayrollHead_CRUD_Operations(tblPayrollHead ph)
         {
             var PayrollHeads = new List<tblPayrollHead>();
 
@@ -7616,9 +7618,264 @@ namespace SchoolManagementAPI.DAL
                 };
             }
         }
+        public List<tblLeavepolicy> Tbl_leavePolicy_CRUD_Operations(tblLeavepolicy fee)
+        {
+            var Routes = new List<tblLeavepolicy>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_LeavePolicy", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(fee.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(fee.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(fee.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LeaveType", (object?)CleanParam(fee.LeaveType) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_MaxDays", (object?)CleanParam(fee.MaxDays) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Discription", (object?)CleanParam(fee.Discription) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(fee.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(fee.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(fee.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(fee.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", fee.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", fee.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", fee.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", fee.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", fee.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", fee.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (fee.Flag != null)
+                    {
+                        if (fee.Flag == "6" || fee.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routess = new tblLeavepolicy
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    };
+
+                                    Routes.Add(routess);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "2" || fee.Flag == "4" || fee.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routesgs = new tblLeavepolicy
+                                    {
+                                        //ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        LeaveType = reader["LeaveType"]?.ToString(),
+                                        MaxDays = reader["MaxDays"]?.ToString(),
+
+                                        Discription = reader["Discription"]?.ToString(),
+                                        IsActive = reader["IsActive"].ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString()
+                                    };
+
+                                    Routes.Add(routesgs);
+                                }
+                            }
+                        }
+                        else if (fee.Flag == "1" || fee.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["Message"]?.ToString() == "Leave Policy Already Exists")
+                                    {
+                                        var routesgs = new tblLeavepolicy
+                                        {
+                                            Status = reader["Message"]?.ToString(),
+                                        };
+
+                                        Routes.Add(routesgs);
+                                    }
+                                    else
+                                    {
+                                        var routess = new tblLeavepolicy
+                                        {
+                                            ID = reader["ID"].ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                            LeaveType = reader["LeaveType"]?.ToString(),
+                                            MaxDays = reader["MaxDays"]?.ToString(),
+
+                                            Discription = reader["Discription"]?.ToString(),
+                                            IsActive = reader["IsActive"].ToString(),
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                            Status = reader["Message"]?.ToString()
+                                        };
+
+                                        Routes.Add(routess);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var routess = new tblLeavepolicy
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        LeaveType = reader["LeaveType"]?.ToString(),
+                                        MaxDays = reader["MaxDays"]?.ToString(),
+
+                                        Discription = reader["Discription"]?.ToString(),
+                                        IsActive = reader["IsActive"].ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Routes.Add(routess);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Routes;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_leavePolicy_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+                return new List<tblLeavepolicy>
+          {
+              new tblLeavepolicy
+              {
+                  Status = $"ERROR: {ex.Message}"
+              }
+          };
+            }
+        }
+        public List<tblLeaveManagement> LeaveManagement_CRUD(tblLeaveManagement obj)
+        {
+            var list = new List<tblLeaveManagement>();
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_LeaveManagement", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", obj.ID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", obj.SchoolID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", obj.AcademicYear ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ApplicantID", obj.ApplicantID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ApplicantRoleID", obj.ApplicantRoleID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ApplicantName", obj.ApplicantName ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ClassID", obj.ClassID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_DivisionID", obj.DivisionID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LeaveType", obj.LeaveType ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_FromDate", obj.FromDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ToDate", obj.ToDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Reason", obj.Reason ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ActionBy", obj.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ActionRoleID", obj.ApplicantRoleID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Status", obj.Status ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Remarks", obj.ApprovalRemarks ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", obj.Flag ?? (object)DBNull.Value);
+
+                    // Pagination
+                    cmd.Parameters.AddWithValue("p_Limit", obj.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", obj.Offset ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", obj.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", obj.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", obj.SortDirection ?? (object)DBNull.Value);
+
+                    // Search
+                    cmd.Parameters.AddWithValue("p_Search", obj.Search ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new tblLeaveManagement
+                            {
+                                ID = reader["ID"] != DBNull.Value ? Convert.ToInt32(reader["ID"]) : (int?)null,
+                                SchoolID = reader["SchoolID"]?.ToString(),
+                                AcademicYear = reader["AcademicYear"]?.ToString(),
+                                ApplicantID = reader["ApplicantID"]?.ToString(),
+                                ApplicantName = reader["ApplicantName"]?.ToString(),
+                                LeaveType = reader["LeaveType"]?.ToString(),
+                                Status = reader["Status"]?.ToString(),
+                                ApprovalRemarks = reader["ApprovalRemarks"]?.ToString(),
+                                CreatedDate = reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
+                                Message = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new List<tblLeaveManagement>
+  {
+      new tblLeaveManagement { Message = "ERROR: " + ex.Message }
+  };
+            }
+
+            return list;
+        }
+
 
     }
 
 
 
-    }
+}
