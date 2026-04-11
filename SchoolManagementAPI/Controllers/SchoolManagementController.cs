@@ -3724,6 +3724,23 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        //[HttpPost]
+        //[Route("Dashboard_API")]
+        //public IActionResult Dashboard_API([FromBody] DashboardRequest req)
+        //{
+
+        //    var data = dbop.GetDashboardData(req);
+
+        //    return Ok(new
+        //    {
+
+        //        status = true,
+        //        data = data
+
+        //    });
+
+        //}
+
         [HttpPost]
         [Route("Dashboard_API")]
         public IActionResult Dashboard_API([FromBody] DashboardRequest req)
@@ -3739,6 +3756,189 @@ namespace SchoolManagementAPI.Controllers
 
             });
 
+        }
+
+
+        [HttpPost("Tbl_SalarySettings_CRUD_Operations")]
+        public IActionResult Tbl_SalarySettings_CRUD_Operations([FromBody] TblSalarySetting req)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1" && int.TryParse(schoolId, out var sid))
+                {
+                    req.SchoolID = sid;
+                }
+
+                var result = dbop.Tbl_SalarySettings_CRUD_Operations(req);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                if (result.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Success = true,
+                        Message = "No data found.",
+                        Data = result
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase) == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                var duplicate = result.FirstOrDefault(x => x.Status == "Salary setting already exists for this staff");
+                if (duplicate != null)
+                {
+                    return StatusCode(409, new
+                    {
+                        StatusCode = 409,
+                        Success = false,
+                        Message = duplicate.Status,
+                        Data = result
+                    });
+                }
+
+                var notFound = result.FirstOrDefault(x => x.Status == "Salary setting not found");
+                if (notFound != null)
+                {
+                    return NotFound(new
+                    {
+                        StatusCode = 404,
+                        Success = false,
+                        Message = notFound.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status ?? "Success",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SalarySettings_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+
+                return StatusCode(500, new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+
+        [HttpPost("Tbl_SalaryPay_CRUD_Operations")]
+        public IActionResult Tbl_SalaryPay_CRUD_Operations([FromBody] TblSalaryPay req)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1" && int.TryParse(schoolId, out var sid))
+                    req.SchoolID = sid;
+
+                var result = dbop.Tbl_SalaryPay_CRUD_Operations(req);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                if (result.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Success = true,
+                        Message = "No data found.",
+                        Data = result
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase) == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                var duplicate = result.FirstOrDefault(x => x.Status == "Salary already paid for this staff and month");
+                if (duplicate != null)
+                {
+                    return StatusCode(409, new
+                    {
+                        StatusCode = 409,
+                        Success = false,
+                        Message = duplicate.Status,
+                        Data = result
+                    });
+                }
+
+                var notFound = result.FirstOrDefault(x => x.Status == "Salary pay record not found");
+                if (notFound != null)
+                {
+                    return NotFound(new
+                    {
+                        StatusCode = 404,
+                        Success = false,
+                        Message = notFound.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status ?? "Success",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_SalaryPay_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                return StatusCode(500, new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
         }
 
 
@@ -3879,12 +4079,6 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-
-
-
-
-
-
 
 
         [HttpPost("Tbl_leavePolicy_CRUD_Operations")]
