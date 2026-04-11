@@ -1726,6 +1726,86 @@ namespace SchoolManagementAPI.Models
         public int? totalcount { get; set; }
     }
 
+    //public class DashboardRequest
+    //{
+    //    public int? SchoolID { get; set; }
+    //    public int? AcademicYear { get; set; }
+    //    public int? ClassID { get; set; }
+    //    public int? DivisionID { get; set; }
+
+    //}
+
+    //public class DashboardResponse
+    //{
+    //    public DashboardCounts counts { get; set; }
+
+    //    public List<StudentChart> studentChart { get; set; }
+
+    //    public List<StaffChart> staffChart { get; set; }
+
+    //    public List<AttendanceChart> attendance { get; set; }
+
+    //    public List<FeeChart> fees { get; set; }
+
+    //    public List<RecentAdmission> recentAdmissions { get; set; }
+
+    //    public List<RecentStaff> recentStaff { get; set; }
+
+    //    public List<Notice> notices { get; set; }
+    //}
+
+    //public class DashboardCounts
+    //{
+    //    public int ClassCount { get; set; }
+    //    public int DivisionsCount { get; set; }
+    //    public int StaffCount { get; set; }
+    //    public int StudentsCount { get; set; }
+    //}
+
+    //public class StudentChart
+    //{
+    //    public string Name { get; set; }
+    //    public int StudentCount { get; set; }
+    //}
+
+    //public class StaffChart
+    //{
+    //    public string StaffType { get; set; }
+    //    public int Count { get; set; }
+    //}
+
+    //public class AttendanceChart
+    //{
+    //    public string Month { get; set; }
+    //    public double Attendance { get; set; }
+    //}
+
+    //public class FeeChart
+    //{
+    //    public string Month { get; set; }
+    //    public double Attendance { get; set; }
+    //    public double Amount { get; set; }
+    //}
+
+    //public class RecentAdmission
+    //{
+    //    public string Name { get; set; }
+    //    public string Class { get; set; }
+    //    public DateTime CreatedDate { get; set; }
+    //}
+
+    //public class RecentStaff
+    //{
+    //    public string Name { get; set; }
+    //    public DateTime JoiningDate { get; set; }
+    //}
+
+    //public class Notice
+    //{
+    //    public string Title { get; set; }
+    //    public DateTime CreatedDate { get; set; }
+    //}
+
     public class DashboardRequest
     {
         public int? SchoolID { get; set; }
@@ -1733,25 +1813,45 @@ namespace SchoolManagementAPI.Models
         public int? ClassID { get; set; }
         public int? DivisionID { get; set; }
 
+        public int? UserID { get; set; }
+        public string RoleKey { get; set; } = "school_admin";
+        public int? BranchID { get; set; }
+        public string DateRangeKey { get; set; } = "academic_year";
+        public string CompareMode { get; set; } = "previous_period";
+        public string DrillLevel { get; set; } = "network";
+        public int? DrillEntityID { get; set; }
     }
 
     public class DashboardResponse
     {
-        public DashboardCounts counts { get; set; }
+        public DashboardCounts Counts { get; set; }
 
-        public List<StudentChart> studentChart { get; set; }
+        public List<StudentChart> StudentChart { get; set; }
 
-        public List<StaffChart> staffChart { get; set; }
+        public List<StaffChart> StaffChart { get; set; }
 
-        public List<AttendanceChart> attendance { get; set; }
+        public List<AttendanceChart> Attendance { get; set; }
 
-        public List<FeeChart> fees { get; set; }
+        public List<FeeChart> Fees { get; set; }
 
-        public List<RecentAdmission> recentAdmissions { get; set; }
+        public List<RecentAdmission> RecentAdmissions { get; set; }
 
-        public List<RecentStaff> recentStaff { get; set; }
+        public List<RecentStaff> RecentStaff { get; set; }
 
         public List<Notice> notices { get; set; }
+        public DashboardCounts counts { get; set; } = new();
+        public List<StudentChart> studentChart { get; set; } = new();
+        public List<StaffChart> staffChart { get; set; } = new();
+        public List<AttendanceChart> attendance { get; set; } = new();
+        public List<FeeChart> fees { get; set; } = new();
+        public List<RecentAdmission> recentAdmissions { get; set; } = new();
+        public List<RecentStaff> recentStaff { get; set; } = new();
+
+        public MiniKpis miniKpis { get; set; } = new();
+        public Dictionary<string, object> roleKpis { get; set; } = new();
+        public Dictionary<string, List<RoleActivityItem>> roleActivities { get; set; } = new();
+        public List<DashboardAlert> alerts { get; set; } = new();
+        public DashboardMeta meta { get; set; } = new();
     }
 
     public class DashboardCounts
@@ -1760,12 +1860,6 @@ namespace SchoolManagementAPI.Models
         public int DivisionsCount { get; set; }
         public int StaffCount { get; set; }
         public int StudentsCount { get; set; }
-    }
-
-    public class StudentChart
-    {
-        public string Name { get; set; }
-        public int StudentCount { get; set; }
     }
 
     public class StaffChart
@@ -1780,6 +1874,19 @@ namespace SchoolManagementAPI.Models
         public double Attendance { get; set; }
     }
 
+    public class StudentChart
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public int StudentCount { get; set; }
+    }
+
+    public class Notice
+    {
+        public string Title { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
     public class FeeChart
     {
         public string Month { get; set; }
@@ -1792,18 +1899,121 @@ namespace SchoolManagementAPI.Models
         public string Name { get; set; }
         public string Class { get; set; }
         public DateTime CreatedDate { get; set; }
+        public DateTime? JoinDate { get; set; }
     }
 
     public class RecentStaff
     {
         public string Name { get; set; }
         public DateTime JoiningDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string RoleName { get; set; }   // your proc returns RoleName
     }
 
-    public class Notice
+    public class MiniKpis
+    {
+        public double attendancePercent { get; set; }
+        public double activeUsers { get; set; }
+        public double totalCollection { get; set; }  // IMPORTANT: from proc
+        public double upcomingExams { get; set; }
+    }
+
+    public class RoleActivityItem
     {
         public string Title { get; set; }
         public DateTime CreatedDate { get; set; }
+        public string title { get; set; }
+        public string meta { get; set; }
+        public DateTime? activityDate { get; set; }
+    }
+
+    public class DashboardAlert
+    {
+        public string severity { get; set; }
+        public string title { get; set; }
+        public string reasonText { get; set; }
+        public string actionText { get; set; }
+    }
+
+    public class DashboardMeta
+    {
+        public DateTime? generatedAt { get; set; }
+    }
+
+    public class TblSalarySetting
+    {
+        public int? ID { get; set; }
+        public int? SchoolID { get; set; }
+        public int? AcademicYear { get; set; }
+        public int? StaffID { get; set; }
+
+        public string? PayHeadJson { get; set; }   // single-table JSON payload
+        public string? Description { get; set; }
+        public int? IsActive { get; set; }
+
+        public int? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public int? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StaffName { get; set; }
+
+        public string? Status { get; set; }
+
+        [NotMapped] public string? Flag { get; set; }
+        [NotMapped] public int? Limit { get; set; }
+        [NotMapped] public int? Offset { get; set; }
+        [NotMapped] public string? SearchName { get; set; }
+        [NotMapped] public int? TotalCount { get; set; }
+    }
+
+
+    // =============================================
+    // 3) MODEL: TblSalaryPay
+    // =============================================
+    public class TblSalaryPay
+    {
+        public int? ID { get; set; }
+        public int? SchoolID { get; set; }
+        public int? AcademicYear { get; set; }
+        public int? StaffID { get; set; }
+        public DateTime? PayMonth { get; set; }
+
+        public string? PaymentMode { get; set; }
+        public string? ReferenceNo { get; set; }
+        public string? PayHeadJson { get; set; }
+
+        public decimal? GrossAmount { get; set; }
+        public decimal? DeductionAmount { get; set; }
+        public decimal? NetAmount { get; set; }
+
+        public string? Description { get; set; }
+        public int? IsActive { get; set; }
+
+        public int? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public int? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StaffName { get; set; }
+
+        public string? Status { get; set; }
+
+        [NotMapped] public string? Flag { get; set; }
+        [NotMapped] public int? Limit { get; set; }
+        [NotMapped] public int? Offset { get; set; }
+        [NotMapped] public string? SearchName { get; set; }
+        [NotMapped] public int? TotalCount { get; set; }
     }
 
     public class tblPayrollHead
