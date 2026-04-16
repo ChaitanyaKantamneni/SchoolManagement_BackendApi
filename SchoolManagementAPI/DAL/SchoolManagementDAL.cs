@@ -13,6 +13,8 @@ using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace SchoolManagementAPI.DAL
 {
@@ -7257,128 +7259,468 @@ namespace SchoolManagementAPI.DAL
 
         public DashboardResponse GetDashboardData(DashboardRequest req)
         {
+            var response = new DashboardResponse();
 
-            DashboardResponse response = new DashboardResponse();
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("Proc_DashboardData_RoleAware", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
 
-            using (var conn = new MySqlConnection(_connectionString))
+            // Parameters (keeping your structure)
+            cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
+            cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
+            cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
+            cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
+            cmd.Parameters.AddWithValue("p_UserID", req.UserID);
+            cmd.Parameters.AddWithValue("p_RoleKey", req.RoleKey);
+            cmd.Parameters.AddWithValue("p_BranchID", req.BranchID);
+            cmd.Parameters.AddWithValue("p_DateRangeKey", req.DateRangeKey);
+            cmd.Parameters.AddWithValue("p_CompareMode", req.CompareMode);
+            cmd.Parameters.AddWithValue("p_DrillLevel", req.DrillLevel);
+            cmd.Parameters.AddWithValue("p_DrillEntityID", req.DrillEntityID);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+
+            // 1) counts
+            if (reader.Read())
             {
+                response.counts.ClassCount = SafeInt(reader, "ClassCount");
+                response.counts.DivisionsCount = SafeInt(reader, "DivisionsCount");
+                response.counts.StudentsCount = SafeInt(reader, "StudentsCount");
+                response.counts.StaffCount = SafeInt(reader, "StaffCount");
+            }
 
-                using (var cmd = new MySqlCommand("Proc_DashboardData", conn))
+            // 2) studentChart
+            if (reader.NextResult())
+            {
+                while (reader.Read())
                 {
-
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
-                    cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
-                    cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
-                    cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
+                    response.studentChart.Add(new StudentChart
                     {
+                        ID = SafeInt(reader, "ID"),
+                        Name = SafeString(reader, "Name"),
+                        StudentCount = SafeInt(reader, "StudentCount")
+                    });
+                }
+            }
 
-                        response.counts = new DashboardCounts();
+            // 3) staffChart
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.staffChart.Add(new StaffChart
+                    {
+                        StaffType = SafeString(reader, "StaffType"),
+                        Count = SafeInt(reader, "Count")
+                    });
+                }
+            }
 
+            // 4) attendance
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.attendance.Add(new AttendanceChart
+                    {
+                        Month = SafeString(reader, "Month"),
+                        Attendance = SafeDouble(reader, "Attendance")
+                    });
+                }
+            }
+
+            // 5) fees
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.fees.Add(new FeeChart
+                    {
+                        Month = SafeString(reader, "Month"),
+                        Amount = SafeDouble(reader, "Amount")
+                    });
+                }
+            }
+
+            // 6) recentAdmissions
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.recentAdmissions.Add(new RecentAdmission
+                    {
+                        Name = SafeString(reader, "Name"),
+                        Class = SafeStringSafe(reader, "Class"), // safe fallback
+                        JoinDate = SafeDateTimeNullable(reader, "JoinDate")
+                    });
+                }
+            }
+
+            // 7) recentStaff
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.recentStaff.Add(new RecentStaff
+                    {
+                        Name = SafeString(reader, "Name"),
+                        CreatedDate = SafeDateTimeNullable(reader, "CreatedDate"),
+                        RoleName = SafeStringSafe(reader, "RoleName")
+                    });
+                }
+            }
+
+            // 8) Skip NOTICES safely
+            if (reader.NextResult())
+            {
+                // do nothing (just skip)
+            }
+
+            // 9) MINI KPIs (SAFE COLUMN DETECTION)
+            bool kpiFound = false;
+
+            while (reader.NextResult())
+            {
+                if (reader.FieldCount > 0)
+                {
+                    var cols = Enumerable.Range(0, reader.FieldCount)
+                                         .Select(reader.GetName)
+                                         .ToList();
+
+                    if (cols.Contains("attendancePercent"))
+                    {
                         if (reader.Read())
                         {
-
-                            response.counts.ClassCount = Convert.ToInt32(reader["ClassCount"]);
-                            response.counts.DivisionsCount = Convert.ToInt32(reader["DivisionsCount"]);
-                            response.counts.StudentsCount = Convert.ToInt32(reader["StudentsCount"]);
-                            response.counts.StaffCount = Convert.ToInt32(reader["StaffCount"]);
-
-                        }
-
-
-                        /* student chart */
-
-                        reader.NextResult();
-
-                        response.studentChart = new List<StudentChart>();
-
-                        while (reader.Read())
-                        {
-
-                            response.studentChart.Add(new StudentChart
+                            response.miniKpis = new MiniKpis
                             {
-
-                                Name = reader["Name"].ToString(),
-                                StudentCount = Convert.ToInt32(reader["StudentCount"])
-
-                            });
-
+                                attendancePercent = SafeDouble(reader, "attendancePercent"),
+                                activeUsers = SafeDouble(reader, "activeUsers"),
+                                totalCollection = SafeDouble(reader, "totalCollection"),
+                                upcomingExams = SafeDouble(reader, "upcomingExams")
+                            };
                         }
 
-
-                        /* staff chart */
-
-                        reader.NextResult();
-
-                        response.staffChart = new List<StaffChart>();
-
-                        while (reader.Read())
-                        {
-
-                            response.staffChart.Add(new StaffChart
-                            {
-
-                                StaffType = reader["StaffType"].ToString(),
-                                Count = Convert.ToInt32(reader["Count"])
-
-                            });
-
-                        }
-
-
-                        /* attendance */
-
-                        reader.NextResult();
-
-                        response.attendance = new List<AttendanceChart>();
-
-                        while (reader.Read())
-                        {
-
-                            response.attendance.Add(new AttendanceChart
-                            {
-
-                                Month = reader["Month"].ToString(),
-                                Attendance = Convert.ToDouble(reader["Attendance"])
-
-                            });
-
-                        }
-
-
-                        /* fees */
-
-                        reader.NextResult();
-
-                        response.fees = new List<FeeChart>();
-
-                        while (reader.Read())
-                        {
-
-                            response.fees.Add(new FeeChart
-                            {
-
-                                Month = reader["Month"].ToString(),
-                                Amount = Convert.ToDouble(reader["Amount"])
-
-                            });
-
-                        }
-
+                        kpiFound = true;
+                        break;
                     }
-
                 }
+            }
 
+            // 10) ROLE KPIs
+            if (kpiFound && reader.NextResult() && reader.Read())
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var col = reader.GetName(i);
+                    response.roleKpis[col] = reader.IsDBNull(i) ? 0 : reader.GetValue(i);
+                }
+            }
+
+            // 11) ACTIVITIES
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    var key = SafeString(reader, "activityKey");
+
+                    if (!response.roleActivities.ContainsKey(key))
+                        response.roleActivities[key] = new List<RoleActivityItem>();
+
+                    response.roleActivities[key].Add(new RoleActivityItem
+                    {
+                        title = SafeString(reader, "title"),
+                        meta = SafeStringSafe(reader, "meta"),
+                        activityDate = SafeDateTimeNullable(reader, "activityDate")
+                    });
+                }
+            }
+
+            // 12) ALERTS
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    response.alerts.Add(new DashboardAlert
+                    {
+                        severity = SafeStringSafe(reader, "severity"),
+                        title = SafeStringSafe(reader, "title"),
+                        reasonText = SafeStringSafe(reader, "reasonText"),
+                        actionText = SafeStringSafe(reader, "actionText")
+                    });
+                }
+            }
+
+            // 13) META
+            if (reader.NextResult() && reader.Read())
+            {
+                response.meta.generatedAt = SafeDateTimeNullable(reader, "generatedAt");
             }
 
             return response;
-
         }
+
+        private static int SafeInt(IDataRecord r, string c)
+        {
+            try
+            {
+                int i = r.GetOrdinal(c);
+                return r.IsDBNull(i) ? 0 : Convert.ToInt32(r.GetValue(i));
+            }
+            catch { return 0; }
+        }
+
+        private static double SafeDouble(IDataRecord r, string c)
+        {
+            try
+            {
+                int i = r.GetOrdinal(c);
+                return r.IsDBNull(i) ? 0 : Convert.ToDouble(r.GetValue(i));
+            }
+            catch { return 0; }
+        }
+
+        private static string SafeString(IDataRecord r, string c)
+        {
+            try
+            {
+                int i = r.GetOrdinal(c);
+                return r.IsDBNull(i) ? "" : r.GetValue(i).ToString();
+            }
+            catch { return ""; }
+        }
+
+        private static string SafeStringSafe(IDataRecord r, string c)
+        {
+            try
+            {
+                int i = r.GetOrdinal(c);
+                return r.IsDBNull(i) ? "" : r.GetString(i);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static DateTime? SafeDateTimeNullable(IDataRecord r, string c)
+        {
+            try
+            {
+                int i = r.GetOrdinal(c);
+                return r.IsDBNull(i) ? (DateTime?)null : Convert.ToDateTime(r.GetValue(i));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public List<TblSalarySetting> Tbl_SalarySettings_CRUD_Operations(TblSalarySetting req)
+        {
+            var result = new List<TblSalarySetting>();
+
+            string? Clean(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+            }
+
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_SalarySettings", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("p_ID", req.ID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_StaffID", req.StaffID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_PayHeadJson", (object?)Clean(req.PayHeadJson) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Description", (object?)Clean(req.Description) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", req.IsActive ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedBy", req.CreatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIP", (object?)Clean(req.CreatedIp) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", req.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)Clean(req.ModifiedIp) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", (object?)Clean(req.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Limit", req.Limit ?? 100);
+                cmd.Parameters.AddWithValue("p_Offset", req.Offset ?? 0);
+                cmd.Parameters.AddWithValue("p_SearchName", (object?)Clean(req.SearchName) ?? DBNull.Value);
+
+                conn.Open();
+
+                using var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    if (HasColumn(reader, "totalCount"))
+                    {
+                        result.Add(new TblSalarySetting
+                        {
+                            TotalCount = reader["totalCount"] == DBNull.Value ? null : Convert.ToInt32(reader["totalCount"])
+                        });
+                    }
+                    else if (HasColumn(reader, "Message") && !HasColumn(reader, "ID"))
+                    {
+                        result.Add(new TblSalarySetting
+                        {
+                            Status = reader["Message"]?.ToString()
+                        });
+                    }
+                    else
+                    {
+                        result.Add(new TblSalarySetting
+                        {
+                            ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                            SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                            AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                            StaffID = reader["StaffID"] == DBNull.Value ? null : Convert.ToInt32(reader["StaffID"]),
+                            PayHeadJson = reader["PayHeadJson"]?.ToString(),
+                            Description = reader["Description"]?.ToString(),
+                            IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                            CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                            ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                            SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null,
+                            AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null,
+                            StaffName = HasColumn(reader, "StaffName") ? reader["StaffName"]?.ToString() : null,
+                            Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                        });
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_SalarySettings_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                return new List<TblSalarySetting>
+                {
+                    new TblSalarySetting { Status = $"ERROR: {ex.Message}" }
+                };
+            }
+
+            static bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        // =============================================
+        // 4) DAL METHOD
+        // =============================================
+        public List<TblSalaryPay> Tbl_SalaryPay_CRUD_Operations(TblSalaryPay req)
+        {
+            var result = new List<TblSalaryPay>();
+
+            string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_SalaryPay", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("p_ID", req.ID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_StaffID", req.StaffID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_PayMonth", req.PayMonth ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_PaymentMode", (object?)Clean(req.PaymentMode) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ReferenceNo", (object?)Clean(req.ReferenceNo) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_PayHeadJson", (object?)Clean(req.PayHeadJson) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_GrossAmount", req.GrossAmount ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_DeductionAmount", req.DeductionAmount ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_NetAmount", req.NetAmount ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Description", (object?)Clean(req.Description) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", req.IsActive ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedBy", req.CreatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIP", (object?)Clean(req.CreatedIp) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", req.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)Clean(req.ModifiedIp) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", (object?)Clean(req.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Limit", req.Limit ?? 100);
+                cmd.Parameters.AddWithValue("p_Offset", req.Offset ?? 0);
+                cmd.Parameters.AddWithValue("p_SearchName", (object?)Clean(req.SearchName) ?? DBNull.Value);
+
+                conn.Open();
+                using var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    if (HasColumn(reader, "totalCount"))
+                    {
+                        result.Add(new TblSalaryPay
+                        {
+                            TotalCount = reader["totalCount"] == DBNull.Value ? null : Convert.ToInt32(reader["totalCount"])
+                        });
+                    }
+                    else if (HasColumn(reader, "Message") && !HasColumn(reader, "ID"))
+                    {
+                        result.Add(new TblSalaryPay
+                        {
+                            Status = reader["Message"]?.ToString()
+                        });
+                    }
+                    else
+                    {
+                        result.Add(new TblSalaryPay
+                        {
+                            ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt32(reader["ID"]),
+                            SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                            AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                            StaffID = reader["StaffID"] == DBNull.Value ? null : Convert.ToInt32(reader["StaffID"]),
+                            PayMonth = reader["PayMonth"] == DBNull.Value ? null : Convert.ToDateTime(reader["PayMonth"]),
+                            PaymentMode = HasColumn(reader, "PaymentMode") ? reader["PaymentMode"]?.ToString() : null,
+                            ReferenceNo = HasColumn(reader, "ReferenceNo") ? reader["ReferenceNo"]?.ToString() : null,
+                            PayHeadJson = HasColumn(reader, "PayHeadJson") ? reader["PayHeadJson"]?.ToString() : null,
+                            GrossAmount = HasColumn(reader, "GrossAmount") && reader["GrossAmount"] != DBNull.Value ? Convert.ToDecimal(reader["GrossAmount"]) : null,
+                            DeductionAmount = HasColumn(reader, "DeductionAmount") && reader["DeductionAmount"] != DBNull.Value ? Convert.ToDecimal(reader["DeductionAmount"]) : null,
+                            NetAmount = HasColumn(reader, "NetAmount") && reader["NetAmount"] != DBNull.Value ? Convert.ToDecimal(reader["NetAmount"]) : null,
+                            Description = HasColumn(reader, "Description") ? reader["Description"]?.ToString() : null,
+                            IsActive = HasColumn(reader, "IsActive") && reader["IsActive"] != DBNull.Value ? Convert.ToInt32(reader["IsActive"]) : null,
+                            CreatedBy = HasColumn(reader, "CreatedBy") && reader["CreatedBy"] != DBNull.Value ? Convert.ToInt32(reader["CreatedBy"]) : null,
+                            CreatedIp = HasColumn(reader, "CreatedIp") ? reader["CreatedIp"]?.ToString() : null,
+                            CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : null,
+                            ModifiedBy = HasColumn(reader, "ModifiedBy") && reader["ModifiedBy"] != DBNull.Value ? Convert.ToInt32(reader["ModifiedBy"]) : null,
+                            ModifiedIp = HasColumn(reader, "ModifiedIp") ? reader["ModifiedIp"]?.ToString() : null,
+                            ModifiedDate = HasColumn(reader, "ModifiedDate") && reader["ModifiedDate"] != DBNull.Value ? Convert.ToDateTime(reader["ModifiedDate"]) : null,
+                            SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null,
+                            AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null,
+                            StaffName = HasColumn(reader, "StaffName") ? reader["StaffName"]?.ToString() : null,
+                            Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                        });
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_SalaryPay_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                return new List<TblSalaryPay> { new TblSalaryPay { Status = $"ERROR: {ex.Message}" } };
+            }
+
+            static bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                return false;
+            }
+        }
+
 
 
         public List<tblPayrollHead> Tbl_PayrollHead_CRUD_Operations(tblPayrollHead ph)
@@ -7706,6 +8048,135 @@ namespace SchoolManagementAPI.DAL
                         Status = $"ERROR: {ex.Message}"
                     }
                 };
+            }
+        }
+
+
+        public List<TblAdvanceSalary> Tbl_AdvanceSalary_CRUD_Operations(TblAdvanceSalary a)
+        {
+            var result = new List<TblAdvanceSalary>();
+
+            string? CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Tbl_AdvanceSalary", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", a.ID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", a.SchoolID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", a.AcademicYear ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_StaffID", a.StaffID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Amount", a.Amount ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AdvanceDate", a.AdvanceDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_TenureMonths", a.TenureMonths ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(a.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", a.IsActive ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", a.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(a.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", a.ModifiedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(a.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(a.Flag) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", a.Limit ?? 100);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", a.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", a.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(a.SortDirection) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", a.Offset ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_PayMonth", a.PayMonth ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (a.Flag == "6" || a.Flag == "8")
+                        {
+                            while (reader.Read())
+                            {
+                                result.Add(new TblAdvanceSalary
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                });
+                            }
+                        }
+                        if (a.Flag == "9")
+                        {
+                            while (reader.Read())
+                            {
+                                result.Add(new TblAdvanceSalary
+                                {
+                                    ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt64(reader["ID"]),
+                                    StaffID = reader["StaffID"] == DBNull.Value ? null : Convert.ToInt64(reader["StaffID"]),
+                                    
+                                    Amount = reader["Amount"] == DBNull.Value ? null : Convert.ToDecimal(reader["Amount"]),
+                                    AdvanceDate = reader["AdvanceDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["AdvanceDate"]),
+                                    TenureMonths = reader["TenureMonths"] == DBNull.Value ? null : Convert.ToInt32(reader["TenureMonths"]),
+                                    MonthlyDeduction = reader["MonthlyDeduction"] == DBNull.Value ? null: Convert.ToInt32(reader["MonthlyDeduction"]),
+                                    MonthsElapsed = reader["MonthsElapsed"] == DBNull.Value ? null : Convert.ToInt32(reader["MonthsElapsed"]),
+                                    RemainingMonths = reader["RemainingMonths"] == DBNull.Value ? null : Convert.ToInt32(reader["RemainingMonths"]),
+                                    DeductionForCurrentMonth = reader["DeductionForCurrentMonth"] == DBNull.Value ? null : Convert.ToInt32(reader["DeductionForCurrentMonth"]),
+                                    //Description = reader["Description"]?.ToString(),
+                                    //IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                    //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt64(reader["CreatedBy"]),
+                                    //CreatedIp = reader["CreatedIp"]?.ToString(),
+                                    //CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                    //ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt64(reader["ModifiedBy"]),
+                                    //ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                    //ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                    //SchoolName = reader["SchoolName"] == DBNull.Value ? null : reader["SchoolName"].ToString(),
+                                    //AcademicYearName = reader["AcademicYearName"] == DBNull.Value ? null : reader["AcademicYearName"].ToString(),
+                                    //StaffName = reader["StaffName"] == DBNull.Value ? null : reader["StaffName"].ToString(),
+                                    //Status = reader["Message"] == DBNull.Value ? null : reader["Message"].ToString()
+                                });
+                            }
+                        }
+                        else
+                        {
+                            while (reader.Read())
+                            {
+                                result.Add(new TblAdvanceSalary
+                                {
+                                    ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt64(reader["ID"]),
+                                    SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt64(reader["SchoolID"]),
+                                    AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt64(reader["AcademicYear"]),
+                                    StaffID = reader["StaffID"] == DBNull.Value ? null : Convert.ToInt64(reader["StaffID"]),
+                                    Amount = reader["Amount"] == DBNull.Value ? null : Convert.ToDecimal(reader["Amount"]),
+                                    AdvanceDate = reader["AdvanceDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["AdvanceDate"]),
+                                    TenureMonths = reader["TenureMonths"] == DBNull.Value ? null : Convert.ToInt32(reader["TenureMonths"]),
+                                    Description = reader["Description"]?.ToString(),
+                                    IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                    CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt64(reader["CreatedBy"]),
+                                    CreatedIp = reader["CreatedIp"]?.ToString(),
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                    ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt64(reader["ModifiedBy"]),
+                                    ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                    SchoolName = reader["SchoolName"] == DBNull.Value ? null : reader["SchoolName"].ToString(),
+                                    AcademicYearName = reader["AcademicYearName"] == DBNull.Value ? null : reader["AcademicYearName"].ToString(),
+                                    StaffName = reader["StaffName"] == DBNull.Value ? null : reader["StaffName"].ToString(),
+                                    Status = reader["Message"] == DBNull.Value ? null : reader["Message"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_AdvanceSalary_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(a));
+
+                return new List<TblAdvanceSalary>
+        {
+            new TblAdvanceSalary { Status = $"ERROR: {ex.Message}" }
+        };
             }
         }
         public List<tblLeavepolicy> Tbl_leavePolicy_CRUD_Operations(tblLeavepolicy fee)
