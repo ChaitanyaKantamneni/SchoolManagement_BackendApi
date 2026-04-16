@@ -614,6 +614,8 @@ namespace SchoolManagementAPI.Models
         public string? ID { get; set; }
         public string? AdmissionID { get; set; }
         public string? FatherName { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
         public string? FatherQualification { get; set; }
         public string? FatherOccupation { get; set; }
         public string? FatherContact { get; set; }
@@ -640,6 +642,7 @@ namespace SchoolManagementAPI.Models
         public int? totalcount { get; set; }
         public string? SortColumn { get; set; }
         public string? SortDirection { get; set; }
+        public string AcademicYear { get; set; }
         public int? Offset { get; set; }
     }
 
@@ -1149,6 +1152,9 @@ namespace SchoolManagementAPI.Models
 
         public string? LastName { get; set; }
         public string? ClassDivisionName { get; set; }
+        
+                    public string? StaffID { get; set; }
+
 
     }
     public class tblExamAttendence
@@ -2161,56 +2167,134 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
     }
 
-    public class tblLeaveManagement
-    {
-        public int? ID { get; set; }
+    //public class tblLeaveManagement
+    //{
+    //    public int? ID { get; set; }
 
+    //    public string? SchoolID { get; set; }
+    //    public string? AcademicYear { get; set; }
+
+    //    public string? ApplicantID { get; set; }
+    //    public int? ApplicantRoleID { get; set; }
+    //    public string? ApplicantName { get; set; }
+
+    //    public string? ClassID { get; set; }
+    //    public string? DivisionID { get; set; }
+
+    //    public string? LeaveType { get; set; }
+    //    public DateTime? FromDate { get; set; }
+    //    public DateTime? ToDate { get; set; }
+    //    public string? Reason { get; set; }
+
+    //    public string? CurrentApproverID { get; set; }
+    //    public int? CurrentApproverRoleID { get; set; }
+
+    //    public string? Status { get; set; }
+    //    public string? ApprovalRemarks { get; set; }
+
+    //    public int? IsActive { get; set; }
+
+    //    public string? CreatedBy { get; set; }
+    //    public DateTime? CreatedDate { get; set; }
+
+    //    public string? ModifiedBy { get; set; }
+    //    public DateTime? ModifiedDate { get; set; }
+
+    //    // FLAGS
+    //    public string? Flag { get; set; }
+
+    //    // PAGINATION
+    //    public int? Limit { get; set; }
+    //    public int? Offset { get; set; }
+    //    public DateTime? LastCreatedDate { get; set; }
+    //    public int? LastID { get; set; }
+    //    public string? SortDirection { get; set; }
+
+    //    // SEARCH
+    //    public string? Search { get; set; }
+
+    //    // RESPONSE
+    //    public int? totalCount { get; set; }
+    //    public string? Message { get; set; }
+    //}
+
+
+public class tblLeaveApplication
+    {
+        public string? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
 
-        public string? ApplicantID { get; set; }
-        public int? ApplicantRoleID { get; set; }
-        public string? ApplicantName { get; set; }
+        // Core Distinguishers
+        public string? UserType { get; set; }     // 'Staff' or 'Student'
+        public string? StaffID { get; set; }
+        public string? AdmissionNo { get; set; }
 
-        public string? ClassID { get; set; }
-        public string? DivisionID { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public string? LeavePolicyID { get; set; }
 
-        public string? LeaveType { get; set; }
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
+        // Common Leave Fields
+        public string? FromDate { get; set; }
+        public string? ToDate { get; set; }
+        public string? NoOfDays { get; set; }
         public string? Reason { get; set; }
+        public string? ApplicationStatus { get; set; }
+        public string? ApprovedBy { get; set; }
+        public string? AdminRemarks { get; set; }
 
-        public string? CurrentApproverID { get; set; }
-        public int? CurrentApproverRoleID { get; set; }
-
-        public string? Status { get; set; }
-        public string? ApprovalRemarks { get; set; }
-
-        public int? IsActive { get; set; }
-
+        // Standard Auditing
+        public string? IsActive { get; set; }
         public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
         public DateTime? CreatedDate { get; set; }
-
         public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
         public DateTime? ModifiedDate { get; set; }
 
-        // FLAGS
+        // Pagination & Search Flags
+        [NotMapped]
         public string? Flag { get; set; }
-
-        // PAGINATION
+        [NotMapped]
+        public string? Status { get; set; }
+        [NotMapped]
         public int? Limit { get; set; }
-        public int? Offset { get; set; }
+        [NotMapped]
         public DateTime? LastCreatedDate { get; set; }
+        [NotMapped]
         public int? LastID { get; set; }
+        [NotMapped]
+        public string? SortColumn { get; set; }
+        [NotMapped]
         public string? SortDirection { get; set; }
+        [NotMapped]
+        public int? Offset { get; set; }
+        [NotMapped]
+        public int? totalcount { get; set; }
 
-        // SEARCH
-        public string? Search { get; set; }
-
-        // RESPONSE
-        public int? totalCount { get; set; }
-        public string? Message { get; set; }
+        // Display Fields (Dynamic JOINs)
+        [NotMapped]
+        public string? ApplicantName { get; set; }
+        [NotMapped]
+        public string? SchoolName { get; set; }
+        [NotMapped]
+        public string? AcademicYearName { get; set; }
+        [NotMapped]
+        public string? LeaveType { get; set; }
+        [NotMapped]
+        public string? ClassName { get; set; }
+        [NotMapped]
+        public string? DivisionName { get; set; }
+        [NotMapped]
+        public string? ApprovedByName { get; set; }
+        [NotMapped]
+        public string? UsedOrPendingDays { get; set; }
+        [NotMapped]
+        public string? RemainingDays { get; set; }
+        [NotMapped]
+        public string? MaxDays { get; set; }
     }
+
 
 
 }

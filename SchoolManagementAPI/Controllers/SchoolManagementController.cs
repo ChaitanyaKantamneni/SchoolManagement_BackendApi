@@ -166,7 +166,8 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Tbl_Users_CRUD_Operations")]
+        [HttpPost("Tbl_Users" +
+            "_CRUD_Operations")]
         public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
         {
             try
@@ -1521,7 +1522,8 @@ namespace SchoolManagementAPI.Controllers
             try
             {
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                var schoolId = User.FindFirst("SchoolID")?.Value;
+                var schoolId = 
+                    User.FindFirst("SchoolID")?.Value;
 
                 if (roleId != "1")
                 {
@@ -4220,60 +4222,53 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        [HttpPost("LeaveManagement")]
-        public IActionResult LeaveManagement([FromBody] tblLeaveManagement obj)
+      
+
+        [HttpPost("Tbl_LeaveApplication_Operations")]
+        public IActionResult Tbl_LeaveApplication_Operations([FromBody] tblLeaveApplication fee)
         {
             try
             {
-                var userId = User.FindFirst("UserID")?.Value;
-                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var roleId = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                 var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                obj.CreatedBy = userId;
-                obj.SchoolID = schoolId;
-                obj.ApplicantRoleID = Convert.ToInt32(roleId);
-
-                var result = dbop.LeaveManagement_CRUD(obj);
-
-                if (result == null || !result.Any())
+                if (roleId != "1")
                 {
-                    return Ok(new
-                    {
-                        StatusCode = 200,
-                        Success = true,
-                        Message = "No Data",
-                        Data = result
-                    });
+                    fee.SchoolID = schoolId;
                 }
 
-                if (result.First().Message != null && result.First().Message.Contains("ERROR"))
+                var result = dbop.Tbl_LeaveApplication_CRUD_Operations(fee);
+
+                if (result == null)
                 {
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = result.First().Message
-                    });
+                    return StatusCode(500, new { StatusCode = 500, Success = false, Message = "Database connection failed." });
                 }
 
-                return Ok(new
+                if (!result.Any())
                 {
-                    StatusCode = 200,
-                    Success = true,
-                    Message = result.First().Message,
-                    Data = result
-                });
+                    return Ok(new { StatusCode = 200, Success = true, Message = "No records found.", Data = new List<tblLeaveApplication>() });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new { StatusCode = 500, Success = false, Message = error.Status });
+                }
+
+                if (result.First().Status != null && result.First().Status.Contains("Insufficient"))
+                {
+                    return BadRequest(new { StatusCode = 400, Success = false, Message = result.First().Status, Data = result });
+                }
+
+                return Ok(new { StatusCode = 200, Success = true, Message = result.First().Status, Data = result });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    StatusCode = 500,
-                    Success = false,
-                    Message = ex.Message
-                });
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_LeaveApplication_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+                return BadRequest(new { StatusCode = 500, Success = false, Message = "Internal server error occurred.", Error = ex.Message });
             }
         }
+
 
 
     }
