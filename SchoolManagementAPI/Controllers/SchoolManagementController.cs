@@ -4080,6 +4080,78 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        [HttpPost("Tbl_AdvanceSalary_CRUD_Operations")]
+        public IActionResult Tbl_AdvanceSalary_CRUD_Operations([FromBody] TblAdvanceSalary a)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    a.SchoolID = Convert.ToInt64(schoolId);
+                }
+
+                // Optional server-side validation for insert/update
+                if ((a.Flag == "1" || a.Flag == "5") && a.TenureMonths.HasValue)
+                {
+                    if (a.TenureMonths < 1 || a.TenureMonths > 24)
+                    {
+                        return BadRequest(new
+                        {
+                            StatusCode = 400,
+                            Success = false,
+                            Message = "Tenure in months must be between 1 and 24."
+                        });
+                    }
+                }
+
+                var result = dbop.Tbl_AdvanceSalary_CRUD_Operations(a);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_AdvanceSalary_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(a));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
 
         [HttpPost("Tbl_leavePolicy_CRUD_Operations")]
         public IActionResult Tbl_leavePolicy_CRUD_Operations([FromBody] tblLeavepolicy fee)

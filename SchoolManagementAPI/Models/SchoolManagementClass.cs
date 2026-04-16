@@ -2083,6 +2083,45 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public string? SearchName { get; set; }
         [NotMapped] public int? totalcount { get; set; }
     }
+
+
+    public class TblAdvanceSalary
+    {
+        public long? ID { get; set; }
+        public long? SchoolID { get; set; }
+        public long? AcademicYear { get; set; }
+        public long? StaffID { get; set; }
+        public decimal? Amount { get; set; }
+        public DateTime? AdvanceDate { get; set; }
+        public int? TenureMonths { get; set; }
+        public int? MonthlyDeduction { get; set; }
+        public int? MonthsElapsed { get; set; }
+        public int? RemainingMonths { get; set; }
+        public int? DeductionForCurrentMonth { get; set; }
+
+        public string? Description { get; set; }
+        public int? IsActive { get; set; }
+        public long? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public long? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+        public string? StaffName { get; set; }
+        public string? Status { get; set; }
+
+        public DateTime? PayMonth { get; set; }
+
+        [NotMapped] public string? Flag { get; set; }
+        [NotMapped] public int? Limit { get; set; }
+        [NotMapped] public int? Offset { get; set; }
+        [NotMapped] public long? LastID { get; set; }
+        [NotMapped] public DateTime? LastCreatedDate { get; set; }
+        [NotMapped] public string? SortDirection { get; set; }
+        [NotMapped] public int? totalcount { get; set; }
+    }
     public class tblLeavepolicy
     {
         public string? ID { get; set; }
