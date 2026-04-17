@@ -4254,6 +4254,21 @@ namespace SchoolManagementAPI.Controllers
                 {
                     return StatusCode(500, new { StatusCode = 500, Success = false, Message = error.Status });
                 }
+                if (result.First().Status != null)
+                {
+                    var msg = result.First().Status;
+
+                    if (msg.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Conflict(new { StatusCode = 409, Success = false, Message = msg, Data = result });
+                    }
+
+                    if (msg.Contains("Insufficient", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return BadRequest(new { StatusCode = 400, Success = false, Message = msg, Data = result });
+                    }
+                }
+
 
                 if (result.First().Status != null && result.First().Status.Contains("Insufficient"))
                 {
