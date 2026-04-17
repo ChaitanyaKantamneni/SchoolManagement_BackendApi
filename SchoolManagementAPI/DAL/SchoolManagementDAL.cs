@@ -5771,6 +5771,9 @@ namespace SchoolManagementAPI.DAL
                                 LateInMinutes = reader["LateInMinutes"]?.ToString(),
                                 SessionName = reader["SessionName"]?.ToString(),
                                 //LeaveType = reader["LeaveType"]?.ToString(),
+                                Class = reader["Class"]?.ToString(),
+                                Division = reader["Division"]?.ToString(),
+
                                 Remarks = reader["Remarks"]?.ToString(),
                                 Session = reader["Session"]?.ToString(),
                                 AdmissionID = reader["AdmissionID"]?.ToString(),
@@ -8113,11 +8116,11 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     ID = reader["ID"] == DBNull.Value ? null : Convert.ToInt64(reader["ID"]),
                                     StaffID = reader["StaffID"] == DBNull.Value ? null : Convert.ToInt64(reader["StaffID"]),
-                                    
+
                                     Amount = reader["Amount"] == DBNull.Value ? null : Convert.ToDecimal(reader["Amount"]),
                                     AdvanceDate = reader["AdvanceDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["AdvanceDate"]),
                                     TenureMonths = reader["TenureMonths"] == DBNull.Value ? null : Convert.ToInt32(reader["TenureMonths"]),
-                                    MonthlyDeduction = reader["MonthlyDeduction"] == DBNull.Value ? null: Convert.ToInt32(reader["MonthlyDeduction"]),
+                                    MonthlyDeduction = reader["MonthlyDeduction"] == DBNull.Value ? null : Convert.ToInt32(reader["MonthlyDeduction"]),
                                     MonthsElapsed = reader["MonthsElapsed"] == DBNull.Value ? null : Convert.ToInt32(reader["MonthsElapsed"]),
                                     RemainingMonths = reader["RemainingMonths"] == DBNull.Value ? null : Convert.ToInt32(reader["RemainingMonths"]),
                                     DeductionForCurrentMonth = reader["DeductionForCurrentMonth"] == DBNull.Value ? null : Convert.ToInt32(reader["DeductionForCurrentMonth"]),
@@ -8355,7 +8358,7 @@ namespace SchoolManagementAPI.DAL
           };
             }
         }
-      
+
 
         public List<tblLeaveApplication> Tbl_LeaveApplication_CRUD_Operations(tblLeaveApplication fee)
         {
@@ -8364,6 +8367,16 @@ namespace SchoolManagementAPI.DAL
             string? CleanParam(string? value)
             {
                 return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                return false;
             }
 
             try
@@ -8405,82 +8418,83 @@ namespace SchoolManagementAPI.DAL
 
                     conn.Open();
 
-                    if (fee.Flag != null)
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        using (var reader = cmd.ExecuteReader())
+                        while (reader.Read())
                         {
-                            while (reader.Read())
+                            if (fee.Flag == "6" || fee.Flag == "8")
                             {
-                                if (fee.Flag == "6" || fee.Flag == "8") // Count
+                                Routes.Add(new tblLeaveApplication
                                 {
-                                    Routes.Add(new tblLeaveApplication
-                                    {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
-                                    });
-                                }
-
-                                else if (fee.Flag == "9") // Leave Balances
-                                {
-                                    Routes.Add(new tblLeaveApplication
-                                    {
-                                        LeavePolicyID = reader["LeavePolicyID"]?.ToString(),
-                                        LeaveType = reader["LeaveType"]?.ToString(),
-                                        MaxDays = reader["MaxDays"]?.ToString(),
-                                        UsedOrPendingDays = reader["UsedOrPendingDays"]?.ToString(),
-                                        RemainingDays = reader["RemainingDays"]?.ToString(),
-                                        Status = reader["Message"]?.ToString()
-                                    });
-                                }
-
-
-                                else // Insert, Update, Fetch
-                                {
-                                    if (reader["Message"]?.ToString() != null && reader["Message"].ToString().Contains("Insufficient"))
-                                    {
-                                        Routes.Add(new tblLeaveApplication { Status = reader["Message"]?.ToString() });
-                                    }
-                                    else
-                                    {
-                                        var app = new tblLeaveApplication
-                                        {
-                                            ID = reader["ID"].ToString(),
-                                            SchoolID = reader["SchoolID"]?.ToString(),
-                                            AcademicYear = reader["AcademicYear"]?.ToString(),
-                                            UserType = reader["UserType"]?.ToString(),
-                                            StaffID = reader["StaffID"]?.ToString(),
-                                            AdmissionNo = reader["AdmissionNo"]?.ToString(),
-                                            Class = reader["Class"]?.ToString(),
-                                            Division = reader["Division"]?.ToString(),
-                                            LeavePolicyID = reader["LeavePolicyID"]?.ToString(),
-                                            FromDate = reader["FromDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["FromDate"]).ToString("yyyy-MM-dd"),
-                                            ToDate = reader["ToDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ToDate"]).ToString("yyyy-MM-dd"),
-                                            NoOfDays = reader["NoOfDays"]?.ToString(),
-                                            Reason = reader["Reason"]?.ToString(),
-                                            ApplicationStatus = reader["ApplicationStatus"]?.ToString(),
-                                            ApprovedBy = reader["ApprovedBy"]?.ToString(),
-                                            AdminRemarks = reader["AdminRemarks"]?.ToString(),
-                                            IsActive = reader["IsActive"]?.ToString(),
-                                            CreatedBy = reader["CreatedBy"]?.ToString(),
-                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-                                            Status = reader["Message"]?.ToString()
-                                        };
-
-                                        // Dynamically map joined strings (Applicant Name, School Name, Class, etc.)
-                                        if (Enumerable.Range(0, reader.FieldCount).Any(i => reader.GetName(i) == "ApplicantName"))
-                                        {
-                                            app.ApplicantName = reader["ApplicantName"]?.ToString();
-                                            app.SchoolName = reader["SchoolName"]?.ToString();
-                                            app.AcademicYearName = reader["AcademicYearName"]?.ToString();
-                                            app.LeaveType = reader["LeaveType"]?.ToString();
-                                            app.ClassName = reader["ClassName"]?.ToString();
-                                            app.DivisionName = reader["DivisionName"]?.ToString();
-                                            app.ApprovedByName = reader["ApprovedByName"]?.ToString();
-                                        }
-
-                                        Routes.Add(app);
-                                    }
-                                }
+                                    totalcount = HasColumn(reader, "totalCount") && reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                });
+                                continue;
                             }
+
+                            if (fee.Flag == "9")
+                            {
+                                Routes.Add(new tblLeaveApplication
+                                {
+                                    LeavePolicyID = HasColumn(reader, "LeavePolicyID") ? reader["LeavePolicyID"]?.ToString() : null,
+                                    LeaveType = HasColumn(reader, "LeaveType") ? reader["LeaveType"]?.ToString() : null,
+                                    MaxDays = HasColumn(reader, "MaxDays") ? reader["MaxDays"]?.ToString() : null,
+                                    UsedOrPendingDays = HasColumn(reader, "UsedOrPendingDays") ? reader["UsedOrPendingDays"]?.ToString() : null,
+                                    RemainingDays = HasColumn(reader, "RemainingDays") ? reader["RemainingDays"]?.ToString() : null,
+                                    Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                                });
+                                continue;
+                            }
+
+                            // Key fix: handle message-only result sets (duplicate/insufficient/policy warnings)
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Routes.Add(new tblLeaveApplication
+                                {
+                                    Status = HasColumn(reader, "Message")
+                                        ? reader["Message"]?.ToString()
+                                        : "Operation completed."
+                                });
+                                continue;
+                            }
+
+                            var app = new tblLeaveApplication
+                            {
+                                ID = reader["ID"]?.ToString(),
+                                SchoolID = HasColumn(reader, "SchoolID") ? reader["SchoolID"]?.ToString() : null,
+                                AcademicYear = HasColumn(reader, "AcademicYear") ? reader["AcademicYear"]?.ToString() : null,
+                                UserType = HasColumn(reader, "UserType") ? reader["UserType"]?.ToString() : null,
+                                StaffID = HasColumn(reader, "StaffID") ? reader["StaffID"]?.ToString() : null,
+                                AdmissionNo = HasColumn(reader, "AdmissionNo") ? reader["AdmissionNo"]?.ToString() : null,
+                                Class = HasColumn(reader, "Class") ? reader["Class"]?.ToString() : null,
+                                Division = HasColumn(reader, "Division") ? reader["Division"]?.ToString() : null,
+                                LeavePolicyID = HasColumn(reader, "LeavePolicyID") ? reader["LeavePolicyID"]?.ToString() : null,
+                                FromDate = HasColumn(reader, "FromDate") && reader["FromDate"] != DBNull.Value ? Convert.ToDateTime(reader["FromDate"]).ToString("yyyy-MM-dd") : null,
+                                ToDate = HasColumn(reader, "ToDate") && reader["ToDate"] != DBNull.Value ? Convert.ToDateTime(reader["ToDate"]).ToString("yyyy-MM-dd") : null,
+                                NoOfDays = HasColumn(reader, "NoOfDays") ? reader["NoOfDays"]?.ToString() : null,
+                                Reason = HasColumn(reader, "Reason") ? reader["Reason"]?.ToString() : null,
+                                ApplicationStatus = HasColumn(reader, "ApplicationStatus") ? reader["ApplicationStatus"]?.ToString() : null,
+                                ApprovedBy = HasColumn(reader, "ApprovedBy") ? reader["ApprovedBy"]?.ToString() : null,
+                                AdminRemarks = HasColumn(reader, "AdminRemarks") ? reader["AdminRemarks"]?.ToString() : null,
+                                IsActive = HasColumn(reader, "IsActive") ? reader["IsActive"]?.ToString() : null,
+                                CreatedBy = HasColumn(reader, "CreatedBy") ? reader["CreatedBy"]?.ToString() : null,
+                                CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
+                                Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                            };
+
+                            if (HasColumn(reader, "ApplicantName"))
+                            {
+                                app.ApplicantName = reader["ApplicantName"]?.ToString();
+                                app.SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null;
+                                app.AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null;
+                                app.LeaveType = HasColumn(reader, "LeaveType") ? reader["LeaveType"]?.ToString() : null;
+                                app.ClassName = HasColumn(reader, "ClassName") ? reader["ClassName"]?.ToString() : null;
+                                app.DivisionName = HasColumn(reader, "DivisionName") ? reader["DivisionName"]?.ToString() : null;
+                                app.ApprovedByName = HasColumn(reader, "ApprovedByName") ? reader["ApprovedByName"]?.ToString() : null;
+                            }
+
+                            Routes.Add(app);
                         }
                     }
 
@@ -8493,9 +8507,8 @@ namespace SchoolManagementAPI.DAL
                 return new List<tblLeaveApplication> { new tblLeaveApplication { Status = $"ERROR: {ex.Message}" } };
             }
         }
-
     }
 
 
 
-}
+    }
