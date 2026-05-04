@@ -3784,6 +3784,13 @@ namespace SchoolManagementAPI.Controllers
         [Route("Dashboard_API")]
         public IActionResult Dashboard_API([FromBody] DashboardRequest req)
         {
+            var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+            var schoolId = User.FindFirst("SchoolID")?.Value;
+
+            if (roleId != "1" && int.TryParse(schoolId, out var sid))
+            {
+                req.SchoolID = sid;
+            }
 
             var data = dbop.GetDashboardData(req);
 
@@ -4259,7 +4266,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-
+      
 
         [HttpPost("Tbl_LeaveApplication_Operations")]
         public IActionResult Tbl_LeaveApplication_Operations([FromBody] tblLeaveApplication fee)
@@ -4291,21 +4298,6 @@ namespace SchoolManagementAPI.Controllers
                 {
                     return StatusCode(500, new { StatusCode = 500, Success = false, Message = error.Status });
                 }
-                if (result.First().Status != null)
-                {
-                    var msg = result.First().Status;
-
-                    if (msg.Contains("already exists", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return Conflict(new { StatusCode = 409, Success = false, Message = msg, Data = result });
-                    }
-
-                    if (msg.Contains("Insufficient", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return BadRequest(new { StatusCode = 400, Success = false, Message = msg, Data = result });
-                    }
-                }
-
 
                 if (result.First().Status != null && result.First().Status.Contains("Insufficient"))
                 {
@@ -4794,6 +4786,159 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
 
+        }
+
+        
+        [HttpPost("Tbl_HolidayCalendar_CRUD_Operations")]
+        public IActionResult Tbl_HolidayCalendar_CRUD_Operations([FromBody] TblHolidayCalendar fee)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    fee.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_HolidayCalendar_CRUD_Operations(fee);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                var msg = result.First().Status;
+
+                if (msg == "Holiday already exists" ||
+                    msg == "Holiday date range overlaps with existing holiday")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = msg,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = msg,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_HolidayCalendar_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_Notices_CRUD_Operations")]
+        public IActionResult Tbl_Notices_CRUD_Operations([FromBody] TblNotices req)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    req.SchoolID = Convert.ToInt32(schoolId);
+                }
+
+                var result = dbop.Tbl_Notices_CRUD_Operations(req);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                if (result.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Success = true,
+                        Message = "No data found.",
+                        Data = result
+                    });
+                }
+
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                if (result.First().Status == "Notice already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = result.First().Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = result.FirstOrDefault()?.Status ?? "Success",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_Notices_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
         }
     }
 }
