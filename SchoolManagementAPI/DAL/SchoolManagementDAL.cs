@@ -157,6 +157,34 @@ namespace SchoolManagementAPI.DAL
                             });
                         }
                     }
+                    else if (user.Flag == "11")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            users.Add(new TblUser
+                            {
+                                ID = reader["ID"] == DBNull.Value ? 0 : Convert.ToInt64(reader["ID"]),
+                                SchoolID = reader["SchoolID"]?.ToString(),
+                                FirstName = reader["FirstName"]?.ToString(),
+                                LastName = reader["LastName"]?.ToString(),
+                                Email = reader["Email"]?.ToString(),
+                                MobileNo = reader["MobileNo"]?.ToString(),
+                                RollId = reader["RollId"]?.ToString(),
+                                IsActive = reader["IsActive"].ToString(),
+                                CreatedBy = reader["CreatedBy"]?.ToString(),
+                                CreatedIP = reader["CreatedIP"]?.ToString(),
+                                CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                FileName = reader["FileName"]?.ToString(),
+                                FilePath = reader["FilePath"]?.ToString(),
+                                Message = reader["Message"]?.ToString(),
+                                //SchoolName = reader["SchoolName"]?.ToString()
+                            });
+                        }
+                    }
                     else
                     {
                         using var reader = cmd.ExecuteReader();
@@ -328,7 +356,9 @@ namespace SchoolManagementAPI.DAL
                         {
                             schools.Add(new SchoolDetails
                             {
-                                totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                             });
                         }
                     }
@@ -457,7 +487,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var Academicyear = new tblAcademicYear
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     AcademicYears.Add(Academicyear);
@@ -622,7 +654,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var Syllabus = new tblSyllabus
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Syllabuses.Add(Syllabus);
@@ -790,7 +824,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var classs = new tblClass
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Classes.Add(classs);
@@ -977,7 +1013,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var ClassDivision = new tblClassDivision
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     ClassDivisions.Add(ClassDivision);
@@ -2275,7 +2313,22 @@ namespace SchoolManagementAPI.DAL
                             }
                         }
                     }
-                    else if (admission.Flag == "6" || admission.Flag == "8")
+                    else if (admission.Flag == "6")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Admissions.Add(new tblStudentDetails
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                    activeCount= reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                    inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
+                                });
+                            }
+                        }
+                    }
+                    else if(admission.Flag == "8")
                     {
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -8507,8 +8560,69 @@ namespace SchoolManagementAPI.DAL
                 return new List<tblLeaveApplication> { new tblLeaveApplication { Status = $"ERROR: {ex.Message}" } };
             }
         }
+
+        public List<StudentDocumentsUpload> Tbl_StudentDocumentsUpload_CRUD(StudentDocumentsUpload doc)
+        {
+            var list = new List<StudentDocumentsUpload>();
+
+            string Clean(string value)
+                => string.IsNullOrWhiteSpace(value) ? null : value;
+
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_Tbl_StudentDocumentsUpload", conn)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                cmd.Parameters.AddWithValue("p_ID", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AdmissionID", Clean(doc.AdmissionID) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FileName", Clean(doc.FileName) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FileType", Clean(doc.FileType) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FilePath", Clean(doc.FilePath) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", 1);
+                cmd.Parameters.AddWithValue("p_CreatedBy", Clean(doc.CreatedBy) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIp", Clean(doc.CreatedIp) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIp", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", Clean(doc.Flag) ?? (object)DBNull.Value);
+
+                cmd.Parameters.AddWithValue("p_Limit", 100);
+                cmd.Parameters.AddWithValue("p_LastCreatedDate", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_LastID", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortColumn", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortDirection", DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Offset", DBNull.Value);
+
+                conn.Open();
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(new StudentDocumentsUpload
+                    {
+                        AdmissionID = reader["AdmissionID"]?.ToString(),
+                        FileName = reader["FileName"]?.ToString(),
+                        FileType = reader["FileType"]?.ToString(),
+                        FilePath = reader["FilePath"]?.ToString(),
+                        //Flag = reader.HasColumn("Message") ? reader["Message"]?.ToString() : null
+                    });
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "DAL", "Tbl_StudentDocumentsUpload_CRUD", JsonConvert.SerializeObject(doc));
+
+                return new List<StudentDocumentsUpload>
+                {
+                    new StudentDocumentsUpload { Flag = $"ERROR: {ex.Message}" }
+                };
+            }
+        }
+
     }
 
-
-
-    }
+}

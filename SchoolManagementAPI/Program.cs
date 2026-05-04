@@ -181,7 +181,7 @@ builder.Services.AddCors(options =>
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 QuestPDF.Settings.License = LicenseType.Community;
 
-// 🔥 Database (Primary DbContext)
+// Database (Primary DbContext)
 builder.Services.AddDbContext<SchoolManagementDBContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -193,7 +193,7 @@ builder.Services.AddDbContext<SchoolManagementDBContext>(options =>
     );
 });
 
-// 🔥 ADD THIS (Factory for Export / Batch Operations)
+// ADD THIS (Factory for Export / Batch Operations)
 // Normal DbContext (used everywhere)
 builder.Services.AddDbContext<SchoolManagementDBContext>(options =>
 {
@@ -288,6 +288,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<FileService>();
 
 var app = builder.Build();
 

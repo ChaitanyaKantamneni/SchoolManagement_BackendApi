@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 using static SchoolManagementAPI.DAL.SchoolManagementDAL;
 
 namespace SchoolManagementAPI.Controllers
@@ -35,13 +37,14 @@ namespace SchoolManagementAPI.Controllers
         private readonly IDbContextFactory<SchoolManagementDBContext> _contextFactory;
         private readonly ILogger<SchoolManagementController> _logger;
         private readonly SchoolManagementDBContext _dbContext;
-
+        private readonly FileService _fileService;
 
         public SchoolManagementController(
             IConfiguration configuration,
             ILogger<SchoolManagementController> logger,
             SchoolManagementDBContext dbContext,
-            IDbContextFactory<SchoolManagementDBContext> contextFactory)
+            IDbContextFactory<SchoolManagementDBContext> contextFactory,
+            FileService fileService)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -53,6 +56,7 @@ namespace SchoolManagementAPI.Controllers
 
             _dbContext = dbContext;
             _contextFactory = contextFactory;
+            _fileService = fileService;
         }
 
         [AllowAnonymous]
@@ -112,13 +116,28 @@ namespace SchoolManagementAPI.Controllers
             // 🔐 Generate token AFTER OTP
             var tokenService = new TokenService(_configuration);
 
-            var (accessToken, refreshToken, _, _) =
+            string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
+            var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
                 tokenService.GenerateTokens(
                     dbUser.Email,
                     $"{dbUser.FirstName} {dbUser.LastName}",
                     dbUser.RollId,
-                    dbUser.RollId != "1" ? dbUser.SchoolID : null
+                    schoolID
                 );
+
+            var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
+            if (existingToken != null)
+                dbop.RevokeUserToken(existingToken.RefreshToken);
+
+            dbop.InsertUserToken(
+                dbUser.Email,
+                accessToken,
+                refreshToken,
+                accessExpiryUtc,
+                refreshExpiryUtc
+            );
+
 
             return Ok(new
             {
@@ -233,35 +252,51 @@ namespace SchoolManagementAPI.Controllers
                     if (string.IsNullOrEmpty(dbUser.RollId))
                         return Unauthorized(new { message = "Invalid credentials" });
 
-                    //var tokenService = new TokenService(_configuration);
-                    //string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+                    if (dbUser.RollId == "1" || dbUser.RollId == "2" || dbUser.RollId == "8")
+                    {
+                        // NO TOKEN → frontend will trigger OTP
+                        string schoolRouteName1 = dbUser.SchoolName?.Replace(" ", "");
 
-                    //var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
-                    //    tokenService.GenerateTokens(
-                    //        dbUser.Email,
-                    //        $"{dbUser.FirstName} {dbUser.LastName}",
-                    //        dbUser.RollId,
-                    //        schoolID
-                    //    );
+                        return Ok(new
+                        {
+                            success = true,
+                            role = dbUser.RollId,
+                            email = dbUser.Email,
+                            schoolId = dbUser.SchoolID,
+                            schoolName = schoolRouteName1,
+                            requireOtp = true   // IMPORTANT FLAG
+                        });
+                    }
 
-                    //var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                    //if (existingToken != null)
-                    //    dbop.RevokeUserToken(existingToken.RefreshToken);
+                    var tokenService = new TokenService(_configuration);
+                    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
 
-                    //dbop.InsertUserToken(
-                    //    dbUser.Email,
-                    //    accessToken,
-                    //    refreshToken,
-                    //    accessExpiryUtc,
-                    //    refreshExpiryUtc
-                    //);
+                    var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
+                        tokenService.GenerateTokens(
+                            dbUser.Email,
+                            $"{dbUser.FirstName} {dbUser.LastName}",
+                            dbUser.RollId,
+                            schoolID
+                        );
+
+                    var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
+                    if (existingToken != null)
+                        dbop.RevokeUserToken(existingToken.RefreshToken);
+
+                    dbop.InsertUserToken(
+                        dbUser.Email,
+                        accessToken,
+                        refreshToken,
+                        accessExpiryUtc,
+                        refreshExpiryUtc
+                    );
 
                     string schoolRouteName = dbUser.SchoolName.Replace(" ", "");
 
                     return Ok(new
                     {
-                        //accessToken,
-                        //refreshToken,
+                        accessToken,
+                        refreshToken,
                         success = true,
                         role = dbUser.RollId,
                         email = dbUser.Email,
@@ -713,6 +748,7 @@ namespace SchoolManagementAPI.Controllers
             });
         }
 
+        
 
         //Masters Module
         [HttpPost("Tbl_SchoolDetails_CRUD")]
@@ -1522,7 +1558,7 @@ namespace SchoolManagementAPI.Controllers
             try
             {
                 var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                var schoolId = 
+                var schoolId =
                     User.FindFirst("SchoolID")?.Value;
 
                 if (roleId != "1")
@@ -4222,7 +4258,7 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-      
+
 
         [HttpPost("Tbl_LeaveApplication_Operations")]
         public IActionResult Tbl_LeaveApplication_Operations([FromBody] tblLeaveApplication fee)
@@ -4284,7 +4320,303 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        //    [AllowAnonymous]
+        //    [HttpPost("upload-student-docs")]
+        //    [Consumes("multipart/form-data")]
+        //    public async Task<IActionResult> UploadStudentDocs([FromForm] StudentUploadRequest request)
+        //    {
+        //        // PROFILE
+        //        if (request.FileType == "Profile")
+        //        {
+        //            if (request.File == null)
+        //                return BadRequest("No profile file");
 
+        //            // delete old profile
+        //            dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+        //            {
+        //                AdmissionID = request.AdmissionId,
+        //                FileType = "Profile",
+        //                Flag = "6"
+        //            });
 
+        //            var result = await _fileService.SaveStudentFile(
+        //                request.File,
+        //                request.SchoolId,
+        //                request.AdmissionId
+        //            );
+
+        //            dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+        //            {
+        //                AdmissionID = request.AdmissionId,
+        //                FileName = result.fileName,
+        //                FileType = "Profile",
+        //                FilePath = result.url,
+        //                Flag = "1"
+        //            });
+
+        //            return Ok(result.url);
+        //        }
+
+        //        // DOCUMENTS
+        //        if (request.Files == null || request.Files.Count == 0)
+        //            return BadRequest("No files");
+
+        //        foreach (var file in request.Files)
+        //        {
+        //            var result = await _fileService.SaveStudentFile(
+        //                file,
+        //                request.SchoolId,
+        //                request.AdmissionId
+        //            );
+
+        //            dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+        //            {
+        //                AdmissionID = request.AdmissionId,
+        //                FileName = result.fileName,
+        //                FileType = "Document",
+        //                FilePath = result.url,
+        //                Flag = "1"
+        //            });
+        //        }
+
+        //        return Ok("Uploaded");
+        //    }
+
+        //    [HttpPost("upload-school-logo")]
+        //    [Consumes("multipart/form-data")]
+        //    public async Task<IActionResult> UploadSchoolLogo([FromForm] LogoUploadRequest request)
+        //    {
+        //        if (request.File == null)
+        //            return BadRequest("No file uploaded");
+
+        //        var result = await _fileService.SaveSchoolLogo(request.File, request.SchoolId);
+
+        //        var school = new SchoolDetails
+        //        {
+        //            SchoolID = request.SchoolId,
+        //            Flag = "5"
+        //        };
+
+        //        dbop.Tbl_SchoolDetails_CRUD(school);
+
+        //        return Ok(new { url = result.url });
+        //    }
+
+        //    [HttpGet("get-student-files/{admissionId}")]
+        //    public IActionResult GetStudentFiles(string admissionId)
+        //    {
+        //        var data = dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+        //        {
+        //            AdmissionID = admissionId,
+        //            Flag = "4" // GET
+        //        });
+
+        //        return Ok(data);
+        //    }
+
+        //    [HttpGet("student/{schoolId}/{admissionId}/{fileName}")]
+        //    public IActionResult GetStudentFile(string schoolId, string admissionId, string fileName)
+        //    {
+        //        try
+        //        {
+        //            // 🔥 Decode URL (handles spaces like %20)
+        //            fileName = Uri.UnescapeDataString(fileName);
+
+        //            // 🔥 Build full physical path
+        //            var path = Path.Combine(
+        //                Directory.GetCurrentDirectory(),
+        //                "Uploads",
+        //                schoolId,
+        //                "Students",
+        //                admissionId,
+        //                fileName
+        //            );
+
+        //            if (!System.IO.File.Exists(path))
+        //                return NotFound($"File not found: {path}");
+
+        //            // 🔥 Return correct content type (image/pdf preview works)
+        //            var provider = new FileExtensionContentTypeProvider();
+        //            if (!provider.TryGetContentType(fileName, out var contentType))
+        //                contentType = "application/octet-stream";
+
+        //            return PhysicalFile(path, contentType);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return StatusCode(500, ex.Message);
+        //        }
+        //    }
+
+        //    [HttpGet("logo/{schoolId}/{fileName}")]
+        //    public IActionResult GetLogo(string schoolId, string fileName)
+        //    {
+        //        var path = _fileService.GetFilePath(schoolId, "LOGO", fileName);
+
+        //        if (!System.IO.File.Exists(path))
+        //            return NotFound();
+
+        //        return PhysicalFile(path, "image/png");
+        //    }
+
+        //    [HttpDelete("delete-student-file")]
+        //    public IActionResult DeleteStudentFile(
+        //string schoolId,
+        //string admissionId,
+        //string fileName)
+        //    {
+        //        try
+        //        {
+        //            var path = _fileService.GetFilePath(schoolId, "Students", fileName, admissionId);
+
+        //            if (System.IO.File.Exists(path))
+        //                System.IO.File.Delete(path);
+
+        //            // 👉 Update DB (soft delete or flag-based)
+        //            var doc = new StudentDocumentsUpload
+        //            {
+        //                AdmissionID = admissionId,
+        //                FileName = fileName,
+        //                Flag = "5" // update/delete
+        //            };
+
+        //            dbop.Tbl_StudentDocumentsUpload_CRUD(doc);
+
+        //            return Ok("Deleted successfully");
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.LogError(ex, "Delete failed");
+        //            return BadRequest(ex.Message);
+        //        }
+        //    }
+
+        [HttpPost("upload-student-docs")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadStudentDocs([FromForm] StudentUploadRequest request)
+        {
+            if (string.IsNullOrEmpty(request.SchoolId) ||
+                string.IsNullOrEmpty(request.AdmissionId))
+                return BadRequest("Invalid data");
+
+            // ===== PROFILE =====
+            if (request.FileType == "Profile")
+            {
+                if (request.File == null)
+                    return BadRequest("Profile file missing");
+
+                var result = await _fileService.SaveStudentFile(
+                    request.File,
+                    request.SchoolId,
+                    request.AdmissionId
+                );
+
+                dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+                {
+                    AdmissionID = request.AdmissionId,
+                    FileName = result.fileName,
+                    FileType = "Profile",
+                    FilePath = result.url,
+                    Flag = "1"
+                });
+
+                return Ok(result.url);
+            }
+
+            // ===== DOCUMENTS =====
+            if (request.Files == null || request.Files.Count == 0)
+                return BadRequest("No files");
+
+            foreach (var file in request.Files)
+            {
+                var result = await _fileService.SaveStudentFile(
+                    file,
+                    request.SchoolId,
+                    request.AdmissionId
+                );
+
+                dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+                {
+                    AdmissionID = request.AdmissionId,
+                    FileName = result.fileName,
+                    FileType = "Document",
+                    FilePath = result.url,
+                    Flag = "1"
+                });
+            }
+
+            return Ok("Uploaded");
+        }
+
+        // ================= GET FILES =================
+        [HttpGet("get-student-files/{admissionId}")]
+        public IActionResult GetStudentFiles(string admissionId)
+        {
+            var data = dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+            {
+                AdmissionID = admissionId,
+                Flag = "3" // only active
+            });
+
+            return Ok(data);
+        }
+
+        // ================= DELETE =================
+        [HttpDelete("delete-student-file")]
+        public IActionResult DeleteStudentFile([FromBody] DeleteFileRequest req)
+        {
+            try
+            {
+                var path = _fileService.GetFilePath(
+                    req.SchoolId,
+                    "Students",
+                    req.FileName,
+                    req.AdmissionId
+                );
+
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+
+                dbop.Tbl_StudentDocumentsUpload_CRUD(new StudentDocumentsUpload
+                {
+                    AdmissionID = req.AdmissionId,
+                    FileName = req.FileName,
+                    IsActive = "0",
+                    Flag = "9"
+                });
+
+                return Ok("Deleted");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // ================= SERVE FILE =================
+        [AllowAnonymous]
+        [HttpGet("student/{schoolId}/{admissionId}/{fileName}")]
+        public IActionResult GetStudentFile(string schoolId, string admissionId, string fileName)
+        {
+            fileName = Uri.UnescapeDataString(fileName);
+
+            var path = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "Uploads",
+                schoolId,
+                "Students",
+                admissionId,
+                fileName
+            );
+
+            if (!System.IO.File.Exists(path))
+                return NotFound();
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fileName, out var contentType))
+                contentType = "application/octet-stream";
+
+            return PhysicalFile(path, contentType);
+        }
     }
 }

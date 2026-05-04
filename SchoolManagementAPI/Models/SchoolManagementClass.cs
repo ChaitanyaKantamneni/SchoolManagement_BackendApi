@@ -60,6 +60,8 @@ namespace SchoolManagementAPI.Models
         public string? SortColumn { get; set; }
         public string? SortDirection { get; set; }
         public int? Offset { get; set; }
+        public int? inactiveCount { get; set; }
+        public int? activeCount { get; set; }
     }
 
     public class TblUser
@@ -166,6 +168,8 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
         public int? Offset { get; set; }
         public string? SchoolName { get; set; }
+        public int? inactiveCount { get; set; }
+        public int? activeCount { get; set; }
     }
 
     public class tblSyllabus
@@ -203,6 +207,10 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
+        [NotMapped]
+        public int? inactiveCount { get; set; }
+        [NotMapped]
+        public int? activeCount { get; set; }
     }
 
     public class tblClass
@@ -232,6 +240,8 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
         public string? SyllabusName { get; set; }
+        public int? inactiveCount { get; set; }
+        public int? activeCount { get; set; }
     }
 
     public class tblClassDivision
@@ -264,6 +274,8 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
         public string? ClassName { get; set; }
+        public int? inactiveCount { get; set; }
+        public int? activeCount { get; set; }
     }
 
     public class tblSubjects
@@ -555,6 +567,8 @@ namespace SchoolManagementAPI.Models
         public DateTime? LastCreatedDate { get; set; }
         public int? LastID { get; set; }
         public int? totalcount { get; set; }
+        public int? inactiveCount { get; set; }
+        public int? activeCount { get; set; }
         public string? SortColumn { get; set; }
         public string? SortDirection { get; set; }
         public int? Offset { get; set; }
@@ -642,35 +656,7 @@ namespace SchoolManagementAPI.Models
         public int? totalcount { get; set; }
         public string? SortColumn { get; set; }
         public string? SortDirection { get; set; }
-        public string AcademicYear { get; set; }
-        public int? Offset { get; set; }
-    }
-
-    public class tblStudentAcademicDetails
-    {
-        public string? ID { get; set; }
-        public string? AdmissionID { get; set; }
-        public string? Syllabus { get; set; }
-        public string? Class { get; set; }
-        public string? Division { get; set; }
-        public DateTime? JoinDate { get; set; }
-        public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
-        public string? IsActive { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? CreatedIp { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public string? ModifiedBy { get; set; }
-        public string? ModifiedIp { get; set; }
-        public DateTime? ModifiedDate { get; set; }
-        public string? Flag { get; set; }
-        public string? Status { get; set; }
-        public int? Limit { get; set; }
-        public DateTime? LastCreatedDate { get; set; }
-        public int? LastID { get; set; }
-        public int? totalcount { get; set; }
-        public string? SortColumn { get; set; }
-        public string? SortDirection { get; set; }
         public int? Offset { get; set; }
     }
 
@@ -704,6 +690,36 @@ namespace SchoolManagementAPI.Models
         public string? BusName { get; set; }
         public string? FareName { get; set; }
     }
+    
+    public class tblStudentAcademicDetails
+    {
+        public string? ID { get; set; }
+        public string? AdmissionID { get; set; }
+        public string? Syllabus { get; set; }
+        public string? Class { get; set; }
+        public string? Division { get; set; }
+        public DateTime? JoinDate { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public string? Flag { get; set; }
+        public string? Status { get; set; }
+        public int? Limit { get; set; }
+        public DateTime? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public int? totalcount { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+    }
+
+    
     public class tblAllotClassTeacher
     {
         public string? ID { get; set; }
@@ -1830,21 +1846,8 @@ namespace SchoolManagementAPI.Models
 
     public class DashboardResponse
     {
-        public DashboardCounts Counts { get; set; }
+        public List<Notice> notices { get; set; } = new();
 
-        public List<StudentChart> StudentChart { get; set; }
-
-        public List<StaffChart> StaffChart { get; set; }
-
-        public List<AttendanceChart> Attendance { get; set; }
-
-        public List<FeeChart> Fees { get; set; }
-
-        public List<RecentAdmission> RecentAdmissions { get; set; }
-
-        public List<RecentStaff> RecentStaff { get; set; }
-
-        public List<Notice> notices { get; set; }
         public DashboardCounts counts { get; set; } = new();
         public List<StudentChart> studentChart { get; set; } = new();
         public List<StaffChart> staffChart { get; set; } = new();
@@ -1926,7 +1929,6 @@ namespace SchoolManagementAPI.Models
 
     public class RoleActivityItem
     {
-        public string Title { get; set; }
         public DateTime CreatedDate { get; set; }
         public string title { get; set; }
         public string meta { get; set; }
@@ -2295,6 +2297,38 @@ public class tblLeaveApplication
         public string? MaxDays { get; set; }
     }
 
+    public class StudentDocumentsUpload
+    {
+        public string? AdmissionID { get; set; }
+        public string? FileName { get; set; }
+        public string? FileType { get; set; }
+        public string? FilePath { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public string? Flag { get; set; }
+        public string? IsActive { get; set; }
+    }
 
+    public class StudentUploadRequest
+    {
+        public List<IFormFile>? Files { get; set; }
+        public IFormFile? File { get; set; }
+        public string SchoolId { get; set; }
+        public string AdmissionId { get; set; }
+        public string? FileType { get; set; }
+    }
+
+    public class LogoUploadRequest
+    {
+        public IFormFile File { get; set; }
+        public string SchoolId { get; set; }
+    }
+
+    public class DeleteFileRequest
+    {
+        public string SchoolId { get; set; }
+        public string AdmissionId { get; set; }
+        public string FileName { get; set; }
+    }
 
 }
