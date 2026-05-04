@@ -1111,6 +1111,7 @@ namespace SchoolManagementAPI.Models
         public string? IndividualSubjectName { get; set; }
         public string? AttendanceMarked { get; set; }
         public string? ExamAttendancAndMarksMarked { get; set; }
+        public int? IsPublished { get; set;}
         public string? ID { get; set; }
         public string? SchoolID { get; set; }
         public string? AcademicYear { get; set; }
@@ -1444,6 +1445,8 @@ namespace SchoolManagementAPI.Models
         public string? DivisionName { get; set; }
         public string? ClassName { get; set; }
         public string? StaffName { get; set; }
+       
+        //public string? Message { get; set; }
 
         // ← ADD THESE TWO
         public List<StaffAttendanceItem>? Students { get; set; }
@@ -2297,6 +2300,183 @@ public class tblLeaveApplication
         public string? MaxDays { get; set; }
     }
 
+    //public class tblHomework
+    //{
+    //    public string? ID { get; set; }
+    //    public string? SchoolID { get; set; }
+    //    public string? AcademicYear { get; set; }
+    //    public string? Class { get; set; }
+    //    public string? Division { get; set; }
+    //    public string? SubjectID { get; set; }
+    //    public string? TeacherID { get; set; }
+    //    public string? HomeworkTitle { get; set; }
+    //    public string? Description { get; set; }
+    //    public DateTime? AssignedDate { get; set; }
+    //    public DateTime? SubmissionDate { get; set; }
+    //    public string? AttachmentURL { get; set; }
+    //    public string? IsActive { get; set; }
+    //    public string? CreatedBy { get; set; }
+    //    public string? CreatedIp { get; set; }
+    //    public DateTime? CreatedDate { get; set; }
+    //    public string? ModifiedBy { get; set; }
+    //    public string? ModifiedIp { get; set; }
+    //    public DateTime? ModifiedDate { get; set; }
+
+    //    // Extra fields from joins
+    //    public string? ClassName { get; set; }
+    //    public string? DivisionName { get; set; }
+    //    public string? SubjectName { get; set; }
+
+    //    // NotMapped control fields
+    //    [NotMapped]
+    //    public string? Flag { get; set; }
+    //    [NotMapped]
+    //    public string? Status { get; set; }
+    //    [NotMapped]
+    //    public int? Limit { get; set; }
+    //    [NotMapped]
+    //    public DateTime? LastCreatedDate { get; set; }
+    //    [NotMapped]
+    //    public int? LastID { get; set; }
+    //    [NotMapped]
+    //    public int? totalcount { get; set; }
+    //    [NotMapped]
+    //    public string? SortColumn { get; set; }
+    //    [NotMapped]
+    //    public string? SortDirection { get; set; }
+    //    [NotMapped]
+    //    public int? Offset { get; set; }
+    //}
+    public class tblHomework
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public int? Class { get; set; }
+        public int? Division { get; set; }
+        public int? SubjectID { get; set; }
+        public int? TeacherID { get; set; }
+
+        public string? HomeworkTitle { get; set; }
+        public string? Description { get; set; }
+
+        public DateTime? AssignedDate { get; set; }
+        public DateTime? SubmissionDate { get; set; }
+
+        public string? AttachmentURL { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+
+
+        // ===== JOIN FIELDS =====
+        public string? ClassName { get; set; }
+        public string? DivisionName { get; set; }
+        public string? SubjectName { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblHomeworkSubmission
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public int? HomeworkID { get; set; }
+
+        public string? StudentAdmissionNo { get; set; }
+        public int? Class { get; set; }
+        public int? Division { get; set; }
+
+        public string? SubmissionText { get; set; }
+        public string? AttachmentURL { get; set; }
+
+        public DateTime? SubmissionDate { get; set; }
+
+        public string? SubmissionStatus { get; set; }
+        public string? MarksObtained { get; set; }
+        public string? Remarks { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        // ===== JOIN FIELDS =====
+        public string? HomeworkTitle { get; set; }
+        public string? StudentName { get; set; }
+    }
+
     public class StudentDocumentsUpload
     {
         public string? AdmissionID { get; set; }
@@ -2330,5 +2510,4 @@ public class tblLeaveApplication
         public string AdmissionId { get; set; }
         public string FileName { get; set; }
     }
-
 }

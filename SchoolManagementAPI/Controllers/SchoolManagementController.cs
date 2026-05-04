@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.StaticFiles;
@@ -4612,11 +4613,187 @@ namespace SchoolManagementAPI.Controllers
             if (!System.IO.File.Exists(path))
                 return NotFound();
 
+            
             var provider = new FileExtensionContentTypeProvider();
             if (!provider.TryGetContentType(fileName, out var contentType))
                 contentType = "application/octet-stream";
 
             return PhysicalFile(path, contentType);
+        }
+
+        [HttpPost("Tbl_Homework_CRUD_Operations")]
+        public IActionResult Tbl_Homework_CRUD_Operations([FromBody] tblHomework obj)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    obj.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_Homework_CRUD_Operations(obj);
+
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                var first = result.FirstOrDefault();
+
+                if (first == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "No data returned from database."
+                    });
+                }
+
+                if (first.Status?.ToLower().Contains("error") == true)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = first.Status
+                    });
+                }
+
+                if (first.Status == "Homework already exists")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = first.Status,
+                        Data = result
+                    });
+                }
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = first.Status,
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(
+                    ex,
+                    "SchoolManagementController",
+                    "Tbl_Homework_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(obj)
+                );
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Tbl_HomeworkSubmission_CRUD_Operations")]
+        public IActionResult Tbl_HomeworkSubmission_CRUD_Operations([FromBody] tblHomeworkSubmission obj)
+        {
+            try
+            {
+                var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                var schoolId = User.FindFirst("SchoolID")?.Value;
+
+                if (roleId != "1")
+                {
+                    obj.SchoolID = schoolId;
+                }
+
+                var result = dbop.Tbl_HomeworkSubmission_CRUD_Operations(obj);
+
+                // ✅ NULL CHECK
+                if (result == null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Database returned null result."
+                    });
+                }
+
+                // ✅ EMPTY LIST CHECK (MOST IMPORTANT FIX)
+                if (!result.Any())
+                {
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Success = false,
+                        Message = "No data returned from database.",
+                        Data = result
+                    });
+                }
+
+                // ✅ SAFE ACCESS
+                var first = result.FirstOrDefault();
+
+                // ERROR CHECK
+                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                if (error != null)
+                {
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Success = false,
+                        Message = error.Status
+                    });
+                }
+
+                // DUPLICATE CHECK
+                if (first?.Status == "Homework already submitted by this student")
+                {
+                    return StatusCode(400, new
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Message = first.Status,
+                        Data = result
+                    });
+                }
+
+                // SUCCESS
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Success = true,
+                    Message = first?.Status ?? "Success",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(ex, "SchoolManagementController", "Tbl_HomeworkSubmission_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(obj));
+
+                return BadRequest(new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred. Please try again.",
+                    Error = ex.Message
+                });
+            }
+
         }
     }
 }

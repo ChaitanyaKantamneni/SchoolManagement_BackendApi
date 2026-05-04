@@ -246,6 +246,7 @@ namespace SchoolManagementAPI.DAL
             cmd.Parameters.AddWithValue("p_refreshExpiryAt", DBNull.Value);
 
             conn.Open();
+
             using var reader = cmd.ExecuteReader();
 
             if (reader.Read())
@@ -304,7 +305,6 @@ namespace SchoolManagementAPI.DAL
             conn.Open();
             cmd.ExecuteNonQuery();
         }
-
 
         //Masters Module
         public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
@@ -2322,13 +2322,13 @@ namespace SchoolManagementAPI.DAL
                                 Admissions.Add(new tblStudentDetails
                                 {
                                     totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
-                                    activeCount= reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                    activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
                                     inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                 });
                             }
                         }
                     }
-                    else if(admission.Flag == "8")
+                    else if (admission.Flag == "8")
                     {
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -5032,7 +5032,10 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_ExamDateAndTime", (object?)CleanParam(examtype.ExamDateAndTime) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Duration", (object?)CleanParam(examtype.Duration) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_NoOfQuestion", (object?)CleanParam(examtype.NoOfQuestion) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsPublished",
+                    examtype.IsPublished.HasValue ? examtype.IsPublished : (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Instructions", (object?)CleanParam(examtype.Instructions) ?? DBNull.Value);
+
                     cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(examtype.IsActive) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(examtype.CreatedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(examtype.CreatedIp) ?? DBNull.Value);
@@ -5045,7 +5048,8 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_SortColumn", examtype.SortColumn ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_SortDirection", examtype.SortDirection ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Offset", examtype.Offset ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_StaffID", examtype.StaffID ?? (object)DBNull.Value);  // ADD THIS LINE
+                    cmd.Parameters.AddWithValue("p_StaffID", examtype.StaffID ?? (object)DBNull.Value);
+
 
 
                     conn.Open();
@@ -5105,6 +5109,9 @@ namespace SchoolManagementAPI.DAL
                                         Status = reader["Message"]?.ToString(),
                                         SchoolName = reader["SchoolName"]?.ToString(),
                                         AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        IsPublished = reader["IsPublished"] != DBNull.Value
+                ? Convert.ToInt32(reader["IsPublished"])
+                : (int?)null,
 
                                     };
 
@@ -5152,7 +5159,10 @@ namespace SchoolManagementAPI.DAL
                                         SyllabusName = reader["SyllabusName"]?.ToString(),
                                         ExamTypeName = reader["ExamTypeName"]?.ToString(),
                                         AttendanceMarked = reader["AttendanceMarked"]?.ToString(),
-                                        ExamAttendancAndMarksMarked = reader["ExamAttendancAndMarksMarked"]?.ToString()
+                                        ExamAttendancAndMarksMarked = reader["ExamAttendancAndMarksMarked"]?.ToString(),
+                                        IsPublished = reader["IsPublished"] != DBNull.Value
+    ? Convert.ToInt32(reader["IsPublished"])
+    : (int?)null,
                                     };
 
                                     ExamType.Add(examtypee);
@@ -5275,12 +5285,35 @@ namespace SchoolManagementAPI.DAL
                                         AcademicYearName = reader["AcademicYearName"]?.ToString(),
                                         ClassName = reader["ClassName"]?.ToString(),
                                         SyllabusName = reader["SyllabusName"]?.ToString(),
+
                                         ExamTypeName = reader["ExamTypeName"]?.ToString(),
                                         AttendanceMarked = reader["AttendanceMarked"]?.ToString(),
-                                        ExamAttendancAndMarksMarked = reader["ExamAttendancAndMarksMarked"]?.ToString()
+                                        ExamAttendancAndMarksMarked = reader["ExamAttendancAndMarksMarked"]?.ToString(),
+                                        IsPublished = reader["IsPublished"] != DBNull.Value
+                ? Convert.ToInt32(reader["IsPublished"])
+                : (int?)null,
                                     };
 
                                     ExamType.Add(examtypee);
+                                }
+                            }
+                        }
+                        else if (examtype.Flag == "13")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var result = new tblSetExam
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        IsPublished = reader["IsPublished"] != DBNull.Value
+                ? Convert.ToInt32(reader["IsPublished"])
+                : (int?)null,
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    ExamType.Add(result);
                                 }
                             }
                         }
@@ -5672,14 +5705,24 @@ namespace SchoolManagementAPI.DAL
                     {
                         using (var reader = cmd.ExecuteReader())
                         {
+                            // Detect if SP returned warning-only result
+                            bool isWarning = true;
+                            try { reader.GetOrdinal("AdmissionID"); isWarning = false; }
+                            catch { isWarning = true; }
+
                             while (reader.Read())
                             {
-                                var examtypee = new tblExamMarks
+                                if (isWarning)
                                 {
-                                    //ID = reader["ID"].ToString(),
-                                    //SchoolID = reader["SchoolID"]?.ToString(),
-                                    //AcademicYear = reader["AcademicYear"]?.ToString(),
-                                    //Class = reader["Class"]?.ToString(),
+                                    result.Add(new tblExamMarks
+                                    {
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                    break;
+                                }
+
+                                result.Add(new tblExamMarks
+                                {
                                     AdmissionID = reader["AdmissionID"]?.ToString(),
                                     StudentName = reader["StudentName"]?.ToString(),
                                     SubjectName = reader["SubjectName"]?.ToString(),
@@ -5698,10 +5741,8 @@ namespace SchoolManagementAPI.DAL
                                     AcademicYearName = reader["AcademicYearName"]?.ToString(),
                                     ClassName = reader["ClassName"]?.ToString(),
                                     DivisionName = reader["DivisionName"]?.ToString(),
-                                };
-
-
-                                result.Add(examtypee);
+                                    Status = reader["Message"]?.ToString()
+                                });
                             }
                         }
                     }
@@ -5794,8 +5835,18 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_StudentsJson", (object?)exam.StudentsJson ?? DBNull.Value);
 
                     conn.Open();
-
-                    if (exam.Flag == "6" || exam.Flag == "8")
+                    if (exam.Flag == "1" || exam.Flag == "5")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new tblStudentAttendance
+                            {
+                                Status = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                    else if (exam.Flag == "6" || exam.Flag == "8")
                     {
                         using var reader = cmd.ExecuteReader();
 
@@ -5807,7 +5858,6 @@ namespace SchoolManagementAPI.DAL
                             });
                         }
                     }
-
                     else if (exam.Flag == "2" || exam.Flag == "3" || exam.Flag == "4" || exam.Flag == "7")
                     {
                         using var reader = cmd.ExecuteReader();
@@ -5847,7 +5897,6 @@ namespace SchoolManagementAPI.DAL
                             });
                         }
                     }
-
                     else if (exam.Flag == "9")
                     {
                         using var reader = cmd.ExecuteReader();
@@ -5879,17 +5928,6 @@ namespace SchoolManagementAPI.DAL
                                 // Add these in Flag 9 section:
                                 //SchoolName = reader["SchoolName"]?.ToString(),
                                 //AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                            });
-                        }
-                    }
-                    else if (exam.Flag == "1" || exam.Flag == "5")
-                    {
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            result.Add(new tblStudentAttendance
-                            {
-                                Status = reader["Message"]?.ToString()
                             });
                         }
                     }
@@ -8560,6 +8598,423 @@ namespace SchoolManagementAPI.DAL
                 return new List<tblLeaveApplication> { new tblLeaveApplication { Status = $"ERROR: {ex.Message}" } };
             }
         }
+        public List<tblHomework> Tbl_Homework_CRUD_Operations(tblHomework homework)
+        {
+            var Homework = new List<tblHomework>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Homework", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(homework.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(homework.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(homework.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Class", homework.Class ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Division", homework.Division ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SubjectID", homework.SubjectID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_TeacherID", homework.TeacherID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HomeworkTitle", (object?)CleanParam(homework.HomeworkTitle) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(homework.Description) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AssignedDate", homework.AssignedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SubmissionDate", homework.SubmissionDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(homework.AttachmentURL) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(homework.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(homework.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(homework.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(homework.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(homework.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", homework.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", homework.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", homework.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", homework.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", homework.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", homework.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", homework.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (homework.Flag != null)
+                    {
+                        // ===== COUNT =====
+                        if (homework.Flag == "6" || homework.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var obj = new tblHomework
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                    };
+
+                                    Homework.Add(obj);
+                                }
+                            }
+                        }
+
+                        // ===== FETCH =====
+                        else if (homework.Flag == "2" || homework.Flag == "3" || homework.Flag == "7" || homework.Flag == "4")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var obj = new tblHomework
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        Class = reader["Class"] == DBNull.Value ? null : Convert.ToInt32(reader["Class"]),
+                                        Division = reader["Division"] == DBNull.Value ? null : Convert.ToInt32(reader["Division"]),
+                                        SubjectID = reader["SubjectID"] == DBNull.Value ? null : Convert.ToInt32(reader["SubjectID"]),
+                                        TeacherID = reader["TeacherID"] == DBNull.Value ? null : Convert.ToInt32(reader["TeacherID"]),
+
+                                        HomeworkTitle = reader["HomeworkTitle"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+
+                                        AssignedDate = reader["AssignedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["AssignedDate"]),
+                                        SubmissionDate = reader["SubmissionDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["SubmissionDate"]),
+
+                                        AttachmentURL = reader["AttachmentURL"]?.ToString(),
+
+                                        IsActive = reader["IsActive"]?.ToString(),
+
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                        Status = reader["Message"]?.ToString(),
+
+                                        ClassName = reader["ClassName"]?.ToString(),
+                                        DivisionName = reader["DivisionName"]?.ToString(),
+                                        SubjectName = reader["SubjectName"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                    };
+
+                                    Homework.Add(obj);
+                                }
+                            }
+                        }
+
+                        // ===== INSERT / UPDATE =====
+                        else if (homework.Flag == "1" || homework.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["Message"]?.ToString() == "Homework already exists")
+                                    {
+                                        Homework.Add(new tblHomework
+                                        {
+                                            Status = reader["Message"]?.ToString()
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var obj = new tblHomework
+                                        {
+                                            ID = reader["ID"].ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                            Class = reader["Class"] == DBNull.Value ? null : Convert.ToInt32(reader["Class"]),
+                                            Division = reader["Division"] == DBNull.Value ? null : Convert.ToInt32(reader["Division"]),
+                                            SubjectID = reader["SubjectID"] == DBNull.Value ? null : Convert.ToInt32(reader["SubjectID"]),
+                                            TeacherID = reader["TeacherID"] == DBNull.Value ? null : Convert.ToInt32(reader["TeacherID"]),
+
+                                            HomeworkTitle = reader["HomeworkTitle"]?.ToString(),
+                                            Description = reader["Description"]?.ToString(),
+
+                                            AssignedDate = reader["AssignedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["AssignedDate"]),
+                                            SubmissionDate = reader["SubmissionDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["SubmissionDate"]),
+
+                                            AttachmentURL = reader["AttachmentURL"]?.ToString(),
+
+                                            IsActive = reader["IsActive"]?.ToString(),
+
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                            Status = reader["Message"]?.ToString()
+                                        };
+
+                                        Homework.Add(obj);
+                                    }
+                                }
+                            }
+                        }
+
+                        // ===== DEFAULT =====
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var obj = new tblHomework
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Homework.Add(obj);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Homework;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Homework_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(homework));
+
+                return new List<tblHomework>
+                {
+                    new tblHomework
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
+        public List<tblHomeworkSubmission> Tbl_HomeworkSubmission_CRUD_Operations(tblHomeworkSubmission obj)
+        {
+            var list = new List<tblHomeworkSubmission>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_HomeworkSubmission", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // PARAMETERS
+                    cmd.Parameters.AddWithValue("p_ID", obj.ID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(obj.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(obj.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HomeworkID", obj.HomeworkID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_StudentAdmissionNo", (object?)CleanParam(obj.StudentAdmissionNo) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Class", obj.Class ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Division", obj.Division ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SubmissionText", (object?)CleanParam(obj.SubmissionText) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(obj.AttachmentURL) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SubmissionStatus", (object?)CleanParam(obj.SubmissionStatus) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_MarksObtained", (object?)CleanParam(obj.MarksObtained) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Remarks", (object?)CleanParam(obj.Remarks) ?? DBNull.Value);
+
+                    // AFTER
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(obj.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(obj.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(obj.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(obj.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(obj.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", obj.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit", obj.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", obj.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", obj.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", obj.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", obj.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", obj.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (obj.Flag != null)
+                    {
+                        // ===== COUNT =====
+                        if (obj.Flag == "6" || obj.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new tblHomeworkSubmission
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                    });
+                                }
+                            }
+                        }
+
+                        // ===== FETCH =====
+                        else if (obj.Flag == "2" || obj.Flag == "3" || obj.Flag == "4" || obj.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var data = new tblHomeworkSubmission
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        HomeworkID = reader["HomeworkID"] == DBNull.Value ? null : Convert.ToInt32(reader["HomeworkID"]),
+
+                                        StudentAdmissionNo = reader["StudentAdmissionNo"]?.ToString(),
+                                        Class = reader["Class"] == DBNull.Value ? null : Convert.ToInt32(reader["Class"]),
+                                        Division = reader["Division"] == DBNull.Value ? null : Convert.ToInt32(reader["Division"]),
+
+                                        SubmissionText = reader["SubmissionText"]?.ToString(),
+                                        AttachmentURL = reader["AttachmentURL"]?.ToString(),
+
+                                        SubmissionDate = reader["SubmissionDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["SubmissionDate"]),
+
+                                        SubmissionStatus = reader["SubmissionStatus"]?.ToString(),
+                                        MarksObtained = reader["MarksObtained"]?.ToString(),
+                                        Remarks = reader["Remarks"]?.ToString(),
+
+                                        IsActive = reader["IsActive"]?.ToString(),
+
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                        HomeworkTitle = reader["HomeworkTitle"]?.ToString(),
+                                        StudentName = reader["StudentName"]?.ToString(),
+
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    list.Add(data);
+                                }
+                            }
+                        }
+
+                        // ===== INSERT / UPDATE =====
+                        else if (obj.Flag == "1" || obj.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["Message"]?.ToString() == "Homework already submitted by this student")
+                                    {
+                                        list.Add(new tblHomeworkSubmission
+                                        {
+                                            Status = reader["Message"]?.ToString()
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var data = new tblHomeworkSubmission
+                                        {
+                                            ID = reader["ID"].ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                            HomeworkID = reader["HomeworkID"] == DBNull.Value ? null : Convert.ToInt32(reader["HomeworkID"]),
+
+                                            StudentAdmissionNo = reader["StudentAdmissionNo"]?.ToString(),
+                                            Class = reader["Class"] == DBNull.Value ? null : Convert.ToInt32(reader["Class"]),
+                                            Division = reader["Division"] == DBNull.Value ? null : Convert.ToInt32(reader["Division"]),
+
+                                            SubmissionText = reader["SubmissionText"]?.ToString(),
+                                            AttachmentURL = reader["AttachmentURL"]?.ToString(),
+
+                                            SubmissionDate = reader["SubmissionDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["SubmissionDate"]),
+
+                                            SubmissionStatus = reader["SubmissionStatus"]?.ToString(),
+                                            MarksObtained = reader["MarksObtained"]?.ToString(),
+                                            Remarks = reader["Remarks"]?.ToString(),
+
+                                            IsActive = reader["IsActive"]?.ToString(),
+
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                            Status = reader["Message"]?.ToString()
+                                        };
+
+                                        list.Add(data);
+                                    }
+                                }
+                            }
+                        }
+
+                        // ===== DEFAULT =====
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new tblHomeworkSubmission
+                                    {
+                                        ID = reader["ID"].ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_HomeworkSubmission_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(obj));
+
+                return new List<tblHomeworkSubmission>
+                {
+                    new tblHomeworkSubmission
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
 
         public List<StudentDocumentsUpload> Tbl_StudentDocumentsUpload_CRUD(StudentDocumentsUpload doc)
         {
@@ -8624,5 +9079,4 @@ namespace SchoolManagementAPI.DAL
         }
 
     }
-
 }
