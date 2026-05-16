@@ -2882,8 +2882,9 @@ namespace SchoolManagementAPI.DAL
                                     FatherName = reader["StudentName"]?.ToString(),
                                     Class = reader["Class"]?.ToString(),
                                     Division = reader["Division"]?.ToString(),
+                                    StudentName = reader["StudentName"]?.ToString(),
 
-                                });
+                                }); 
                             }
                         }
                     }
@@ -8493,6 +8494,7 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_ApplicationStatus", (object?)CleanParam(fee.ApplicationStatus) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ApprovedBy", (object?)CleanParam(fee.ApprovedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_AdminRemarks", (object?)CleanParam(fee.AdminRemarks) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(fee.AttachmentURL) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(fee.IsActive) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(fee.CreatedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
@@ -8568,6 +8570,7 @@ namespace SchoolManagementAPI.DAL
                                 ApplicationStatus = HasColumn(reader, "ApplicationStatus") ? reader["ApplicationStatus"]?.ToString() : null,
                                 ApprovedBy = HasColumn(reader, "ApprovedBy") ? reader["ApprovedBy"]?.ToString() : null,
                                 AdminRemarks = HasColumn(reader, "AdminRemarks") ? reader["AdminRemarks"]?.ToString() : null,
+                                AttachmentURL = HasColumn(reader, "AttachmentURL") ? reader["AttachmentURL"]?.ToString() : null,
                                 IsActive = HasColumn(reader, "IsActive") ? reader["IsActive"]?.ToString() : null,
                                 CreatedBy = HasColumn(reader, "CreatedBy") ? reader["CreatedBy"]?.ToString() : null,
                                 CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
@@ -8596,6 +8599,48 @@ namespace SchoolManagementAPI.DAL
             {
                 LogException(ex, "SchoolManagementDAL", "Tbl_LeaveApplication_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
                 return new List<tblLeaveApplication> { new tblLeaveApplication { Status = $"ERROR: {ex.Message}" } };
+            }
+        }
+        public async Task<(string fileName, string url, string tempPath)> SaveLeaveFile(IFormFile file, string schoolId, string leaveId)
+        {
+            var tempFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Leave", "temp");
+
+            if (!Directory.Exists(tempFolder))
+                Directory.CreateDirectory(tempFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var path = Path.Combine(tempFolder, fileName);
+
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var url = $"Uploads/{schoolId}/Leave/temp/{fileName}";
+            return (fileName, url, path);
+        }
+        public (string newUrl, bool success) MoveLeaveFileToFinal(string schoolId, string leaveId, string fileName)
+        {
+            try
+            {
+                var temp = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Leave", "temp", fileName);
+                var finalFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Leave", leaveId);
+                var final = Path.Combine(finalFolder, fileName);
+
+                if (!System.IO.File.Exists(temp))
+                    return (null, false);
+
+                if (!Directory.Exists(finalFolder))
+                    Directory.CreateDirectory(finalFolder);
+
+                System.IO.File.Move(temp, final);
+
+                var url = $"Uploads/{schoolId}/Leave/{leaveId}/{fileName}";
+                return (url, true);
+            }
+            catch
+            {
+                return (null, false);
             }
         }
         public List<tblHomework> Tbl_Homework_CRUD_Operations(tblHomework homework)
@@ -8804,6 +8849,51 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        public async Task<(string fileName, string url, string tempPath)> SaveHomeworkFile(IFormFile file, string schoolId, string homeworkId)
+        {
+            // Always save to TEMP folder first
+            var tempFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Homework", "temp");
+
+            if (!Directory.Exists(tempFolder))
+                Directory.CreateDirectory(tempFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var tempFilePath = Path.Combine(tempFolder, fileName);
+
+            using (var stream = new FileStream(tempFilePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return temp URL
+            var tempUrl = $"Uploads/{schoolId}/Homework/temp/{fileName}";
+            return (fileName, tempUrl, tempFilePath);
+        }
+        public (string newUrl, bool success) MoveHomeworkFileToFinal(string schoolId, string homeworkId, string fileName)
+        {
+            try
+            {
+                var tempPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Homework", "temp", fileName);
+                var finalFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Homework", homeworkId);
+                var finalPath = Path.Combine(finalFolder, fileName);
+
+                if (!System.IO.File.Exists(tempPath))
+                    return (null, false);
+
+                if (!Directory.Exists(finalFolder))
+                    Directory.CreateDirectory(finalFolder);
+
+                System.IO.File.Move(tempPath, finalPath);
+
+                var newUrl = $"Uploads/{schoolId}/Homework/{homeworkId}/{fileName}";
+                return (newUrl, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MOVE ERROR] {ex.Message}");
+                return (null, false);
+            }
+        }
         public List<tblHomeworkSubmission> Tbl_HomeworkSubmission_CRUD_Operations(tblHomeworkSubmission obj)
         {
             var list = new List<tblHomeworkSubmission>();
@@ -9016,6 +9106,63 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        // Add these methods to your SchoolManagementDAL.cs
+
+        public async Task<(string fileName, string url, string tempPath)> SaveHomeworkSubmissionFile(IFormFile file, string schoolId, string submissionId)
+        {
+            // Always save to TEMP folder first
+            var tempFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "HomeworkSubmission", "temp");
+
+            if (!Directory.Exists(tempFolder))
+                Directory.CreateDirectory(tempFolder);
+
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var tempFilePath = Path.Combine(tempFolder, fileName);
+
+            using (var stream = new FileStream(tempFilePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return temp URL
+            var tempUrl = $"Uploads/{schoolId}/HomeworkSubmission/temp/{fileName}";
+            Console.WriteLine($"[SAVE SUBMISSION FILE] Saved to: {tempFilePath}, URL: {tempUrl}");
+            return (fileName, tempUrl, tempFilePath);
+        }
+
+        public (string newUrl, bool success) MoveHomeworkSubmissionFileToFinal(string schoolId, string submissionId, string fileName)
+        {
+            try
+            {
+                var tempPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "HomeworkSubmission", "temp", fileName);
+                var finalFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "HomeworkSubmission", submissionId);
+                var finalPath = Path.Combine(finalFolder, fileName);
+
+                Console.WriteLine($"[MOVE SUBMISSION] Temp path: {tempPath}");
+                Console.WriteLine($"[MOVE SUBMISSION] Final path: {finalPath}");
+
+                if (!System.IO.File.Exists(tempPath))
+                {
+                    Console.WriteLine($"[MOVE SUBMISSION ERROR] Temp file not found: {tempPath}");
+                    return (null, false);
+                }
+
+                if (!Directory.Exists(finalFolder))
+                    Directory.CreateDirectory(finalFolder);
+
+                System.IO.File.Move(tempPath, finalPath);
+
+                var newUrl = $"Uploads/{schoolId}/HomeworkSubmission/{submissionId}/{fileName}";
+                Console.WriteLine($"[MOVE SUBMISSION SUCCESS] New URL: {newUrl}");
+                return (newUrl, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MOVE SUBMISSION ERROR] {ex.Message}");
+                return (null, false);
+            }
+        }
+
         public List<StudentDocumentsUpload> Tbl_StudentDocumentsUpload_CRUD(StudentDocumentsUpload doc)
         {
             var list = new List<StudentDocumentsUpload>();
@@ -9075,6 +9222,1422 @@ namespace SchoolManagementAPI.DAL
                 {
                     new StudentDocumentsUpload { Flag = $"ERROR: {ex.Message}" }
                 };
+            }
+        }
+        public List<tblUnits> Tbl_Units_CRUD_Operations(tblUnits units)
+        {
+            var Units = new List<tblUnits>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Units", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(units.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID",(object?)CleanParam(units.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear",(object?)CleanParam(units.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_UnitName",(object?)CleanParam(units.UnitName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Abbreviation",
+                        (object?)CleanParam(units.Abbreviation) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_MinimumValue",
+                        (object?)CleanParam(units.MinimumValue) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_MaximumValue",
+                        (object?)CleanParam(units.MaximumValue) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_MinimumDifference",
+                        (object?)CleanParam(units.MinimumDifference) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description",
+                        (object?)CleanParam(units.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(units.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(units.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(units.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(units.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(units.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        units.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        units.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        units.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        units.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        units.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        units.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        units.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    /* =========================================
+                       FLAG 6 & 8 : COUNT
+                    ========================================= */
+                    if (units.Flag == "6" || units.Flag == "8")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var unit = new tblUnits
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                };
+
+                                Units.Add(unit);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 2,3,4,7 : FETCH
+                    ========================================= */
+                    else if (units.Flag == "2"|| units.Flag == "3" || units.Flag == "4" || units.Flag == "7")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var unit = new tblUnits
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    UnitName = reader["UnitName"]?.ToString(),
+                                    Abbreviation = reader["Abbreviation"]?.ToString(),
+
+                                    MinimumValue = reader["MinimumValue"]?.ToString(),
+                                    MaximumValue = reader["MaximumValue"]?.ToString(),
+                                    MinimumDifference = reader["MinimumDifference"]?.ToString(),
+
+                                    Description = reader["Description"]?.ToString(),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+                                    CreatedIp = reader["CreatedIp"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                    ModifiedIp = reader["ModifiedIp"]?.ToString(),
+
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Units.Add(unit);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 1 & 5 : INSERT / UPDATE
+                    ========================================= */
+                    else if (units.Flag == "1" || units.Flag == "5")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader["Message"]?.ToString() == "Unit already exists")
+                                {
+                                    var unit = new tblUnits
+                                    {
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Units.Add(unit);
+                                }
+                                else
+                                {
+                                    var unit = new tblUnits
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        UnitName = reader["UnitName"]?.ToString(),
+                                        Abbreviation = reader["Abbreviation"]?.ToString(),
+
+                                        MinimumValue = reader["MinimumValue"]?.ToString(),
+                                        MaximumValue = reader["MaximumValue"]?.ToString(),
+                                        MinimumDifference = reader["MinimumDifference"]?.ToString(),
+
+                                        Description = reader["Description"]?.ToString(),
+
+                                        IsActive = reader["IsActive"]?.ToString(),
+
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                            ? null
+                                            : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                            ? null
+                                            : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Units.Add(unit);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Units;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_Units_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(Units)
+                );
+
+                return new List<tblUnits>
+        {
+            new tblUnits
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+        public List<tblCategories> Tbl_Categories_CRUD_Operations(tblCategories category)
+        {
+            var Categories = new List<tblCategories>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Categories", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(category.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(category.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(category.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CategoryName", (object?)CleanParam(category.CategoryName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(category.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(category.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(category.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(category.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(category.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(category.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", category.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", category.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", category.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", category.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", category.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", category.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", category.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (category.Flag != null)
+                    {
+                        if (category.Flag == "6" || category.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var cat = new tblCategories
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    };
+
+                                    Categories.Add(cat);
+                                }
+                            }
+                        }
+                        else if (category.Flag == "2" || category.Flag == "3" || category.Flag == "4" || category.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var cat = new tblCategories
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        CategoryName = reader["CategoryName"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Categories.Add(cat);
+                                }
+                            }
+                        }
+                        else if (category.Flag == "1" || category.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["Message"]?.ToString() == "Category already exists")
+                                    {
+                                        var cat = new tblCategories
+                                        {
+                                            Status = reader["Message"]?.ToString()
+                                        };
+
+                                        Categories.Add(cat);
+                                    }
+                                    else
+                                    {
+                                        var cat = new tblCategories
+                                        {
+                                            ID = reader["ID"]?.ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+                                            CategoryName = reader["CategoryName"]?.ToString(),
+                                            Description = reader["Description"]?.ToString(),
+                                            IsActive = reader["IsActive"]?.ToString(),
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                            Status = reader["Message"]?.ToString()
+                                        };
+
+                                        Categories.Add(cat);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Categories;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Categories_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(Categories));
+
+                return new List<tblCategories>
+        {
+            new tblCategories
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+        public List<tblItems> Tbl_Items_CRUD_Operations(tblItems items)
+        {
+            var Items = new List<tblItems>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Items", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(items.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(items.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(items.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CategoryID", (object?)CleanParam(items.CategoryID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_UnitID", (object?)CleanParam(items.UnitID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ItemName", (object?)CleanParam(items.ItemName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_PurchasePrice", items.PurchasePrice ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SellingPrice", items.SellingPrice ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_OpeningStock", items.OpeningStock ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ReorderLevel", items.ReorderLevel ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_TaxCGST", items.TaxCGST ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_TaxSGST", items.TaxSGST ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(items.Description) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(items.IsActive) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(items.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(items.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(items.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(items.ModifiedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Flag", items.Flag ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Limit", items.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", items.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", items.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", items.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", items.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", items.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (items.Flag != null)
+                    {
+                        /* =========================================
+                           FLAG 6 & 8 : COUNT
+                        ========================================= */
+                        if (items.Flag == "6" || items.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var item = new tblItems
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                    };
+                                    Items.Add(item);
+                                }
+                            }
+                        }
+
+                        /* =========================================
+                           FLAG 2, 3, 4, 7 : FETCH
+                        ========================================= */
+                        else if (items.Flag == "2" || items.Flag == "3" || items.Flag == "4" || items.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var item = new tblItems
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+                                        CategoryID = reader["CategoryID"]?.ToString(),
+                                        UnitID = reader["UnitID"]?.ToString(),
+                                        ItemName = reader["ItemName"]?.ToString(),
+                                        PurchasePrice = reader["PurchasePrice"] == DBNull.Value ? null : Convert.ToDecimal(reader["PurchasePrice"]),
+                                        SellingPrice = reader["SellingPrice"] == DBNull.Value ? null : Convert.ToDecimal(reader["SellingPrice"]),
+                                        OpeningStock = reader["OpeningStock"] == DBNull.Value ? null : Convert.ToDecimal(reader["OpeningStock"]),
+                                        ReorderLevel = reader["ReorderLevel"] == DBNull.Value ? null : Convert.ToDecimal(reader["ReorderLevel"]),
+                                        TaxCGST = reader["TaxCGST"] == DBNull.Value ? null : Convert.ToDecimal(reader["TaxCGST"]),
+                                        TaxSGST = reader["TaxSGST"] == DBNull.Value ? null : Convert.ToDecimal(reader["TaxSGST"]),
+                                        Description = reader["Description"]?.ToString(),
+                                        IsActive = reader["IsActive"]?.ToString(),
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        CategoryName = reader["CategoryName"]?.ToString(),
+                                        UnitName = reader["UnitName"]?.ToString(),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    };
+                                    Items.Add(item);
+                                }
+                            }
+                        }
+
+                        /* =========================================
+                           FLAG 1 & 5 : INSERT / UPDATE
+                        ========================================= */
+                        else if (items.Flag == "1" || items.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var message = reader["Message"]?.ToString();
+
+                                    if (message == "Item already exists" ||
+                                        message == "Selling Price should be greater than or equal to Purchase Price" ||
+                                        message == "Invalid CGST Percentage" ||
+                                        message == "Invalid SGST Percentage" ||
+                                        message == "Opening Stock cannot be negative" ||
+                                        message == "Reorder Level cannot be negative")
+                                    {
+                                        var item = new tblItems
+                                        {
+                                            Status = message
+                                        };
+                                        Items.Add(item);
+                                    }
+                                    else
+                                    {
+                                        var item = new tblItems
+                                        {
+                                            ID = reader["ID"]?.ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+                                            CategoryID = reader["CategoryID"]?.ToString(),
+                                            UnitID = reader["UnitID"]?.ToString(),
+                                            ItemName = reader["ItemName"]?.ToString(),
+                                            PurchasePrice = reader["PurchasePrice"] == DBNull.Value ? null : Convert.ToDecimal(reader["PurchasePrice"]),
+                                            SellingPrice = reader["SellingPrice"] == DBNull.Value ? null : Convert.ToDecimal(reader["SellingPrice"]),
+                                            OpeningStock = reader["OpeningStock"] == DBNull.Value ? null : Convert.ToDecimal(reader["OpeningStock"]),
+                                            ReorderLevel = reader["ReorderLevel"] == DBNull.Value ? null : Convert.ToDecimal(reader["ReorderLevel"]),
+                                            TaxCGST = reader["TaxCGST"] == DBNull.Value ? null : Convert.ToDecimal(reader["TaxCGST"]),
+                                            TaxSGST = reader["TaxSGST"] == DBNull.Value ? null : Convert.ToDecimal(reader["TaxSGST"]),
+                                            Description = reader["Description"]?.ToString(),
+                                            IsActive = reader["IsActive"]?.ToString(),
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                            CategoryName = reader["CategoryName"]?.ToString(),
+                                            UnitName = reader["UnitName"]?.ToString(),
+                                            SchoolName = reader["SchoolName"]?.ToString(),
+                                            AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                            Status = reader["Message"]?.ToString()
+                                        };
+                                        Items.Add(item);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Items;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_Items_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(Items)
+                );
+
+                return new List<tblItems>
+        {
+            new tblItems
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+        public List<tblSuppliers> Tbl_Suppliers_CRUD_Operations(tblSuppliers supplier)
+        {
+            var Suppliers = new List<tblSuppliers>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Suppliers", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(supplier.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(supplier.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(supplier.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SupplierName",
+                        (object?)CleanParam(supplier.SupplierName) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_EmailAddress",
+                        (object?)CleanParam(supplier.EmailAddress) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_PhoneNumber",
+                        (object?)CleanParam(supplier.PhoneNumber) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Address",
+                        (object?)CleanParam(supplier.Address) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(supplier.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(supplier.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(supplier.CreatedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(supplier.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(supplier.ModifiedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        supplier.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        supplier.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        supplier.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        supplier.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        supplier.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        supplier.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    /* =========================================
+                       FLAG 6 & 8 : COUNT
+                    ========================================= */
+
+                    if (supplier.Flag == "6" || supplier.Flag == "8")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Supplier = new tblSuppliers
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                };
+
+                                Suppliers.Add(Supplier);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 2,3,4,7 : FETCH
+                    ========================================= */
+
+                    else if (supplier.Flag == "2"
+                          || supplier.Flag == "3"
+                          || supplier.Flag == "4"
+                          || supplier.Flag == "7")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Supplier = new tblSuppliers
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    SupplierName = reader["SupplierName"]?.ToString(),
+
+                                    EmailAddress = reader["EmailAddress"]?.ToString(),
+
+                                    PhoneNumber = reader["PhoneNumber"]?.ToString(),
+
+                                    Address = reader["Address"]?.ToString(),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Suppliers.Add(Supplier);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 1 & 5 : INSERT / UPDATE
+                    ========================================= */
+
+                    else if (supplier.Flag == "1" || supplier.Flag == "5")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader["Message"]?.ToString() == "Supplier Already Exists")
+                                {
+                                    var Supplier = new tblSuppliers
+                                    {
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Suppliers.Add(Supplier);
+                                }
+                                else
+                                {
+                                    var Supplier = new tblSuppliers
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        SupplierName = reader["SupplierName"]?.ToString(),
+
+                                        EmailAddress = reader["EmailAddress"]?.ToString(),
+
+                                        PhoneNumber = reader["PhoneNumber"]?.ToString(),
+
+                                        Address = reader["Address"]?.ToString(),
+
+                                        IsActive = reader["IsActive"]?.ToString(),
+
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                        CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                            ? null
+                                            : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+
+                                        ModifiedIP = reader["ModifiedIP"]?.ToString(),
+
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                            ? null
+                                            : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                        Status = reader["Message"]?.ToString()
+                                    };
+
+                                    Suppliers.Add(Supplier);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Suppliers;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_Suppliers_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(Suppliers)
+                );
+
+                return new List<tblSuppliers>
+        {
+            new tblSuppliers
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+        public List<tblPurchase> Tbl_Purchase_CRUD_Operations(tblPurchase purchase)
+        {
+            var Purchases = new List<tblPurchase>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Purchase", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(purchase.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(purchase.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(purchase.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SupplierID",
+                        (object?)CleanParam(purchase.SupplierID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_PurchaseDate",
+                        purchase.PurchaseDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_PaymentMode",
+                        (object?)CleanParam(purchase.PaymentMode) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Notes",
+                        (object?)CleanParam(purchase.Notes) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ItemIDs",
+                        (object?)CleanParam(purchase.ItemIDs) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Quantities",
+                        (object?)CleanParam(purchase.Quantities) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Prices",
+                        (object?)CleanParam(purchase.Prices) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CGSTs",
+                        (object?)CleanParam(purchase.CGSTs) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SGSTs",
+                        (object?)CleanParam(purchase.SGSTs) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TotalTaxes",
+                        (object?)CleanParam(purchase.TotalTaxes) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SubTotals",
+                        (object?)CleanParam(purchase.SubTotals) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TotalTaxAmount",
+                        purchase.TotalTaxAmount ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_GrandTotalAmount",
+                        purchase.GrandTotalAmount ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(purchase.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(purchase.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(purchase.CreatedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(purchase.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(purchase.ModifiedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        purchase.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        purchase.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        purchase.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        purchase.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        purchase.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        purchase.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    /* =========================================
+                       FLAG 6 & 8 : COUNT
+                    ========================================= */
+
+                    if (purchase.Flag == "6" || purchase.Flag == "8")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Purchase = new tblPurchase
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                };
+
+                                Purchases.Add(Purchase);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 2,3,4,7 : FETCH
+                    ========================================= */
+
+                    else if (purchase.Flag == "2"
+                          || purchase.Flag == "3"
+                          || purchase.Flag == "4"
+                          || purchase.Flag == "7")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Purchase = new tblPurchase
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    SupplierID = reader["SupplierID"]?.ToString(),
+
+                                    PurchaseDate = reader["PurchaseDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["PurchaseDate"]),
+
+                                    PaymentMode = reader["PaymentMode"]?.ToString(),
+
+                                    Notes = reader["Notes"]?.ToString(),
+
+                                    ItemIDs = reader["ItemIDs"]?.ToString(),
+
+                                    Quantities = reader["Quantities"]?.ToString(),
+
+                                    Prices = reader["Prices"]?.ToString(),
+
+                                    CGSTs = reader["CGSTs"]?.ToString(),
+
+                                    SGSTs = reader["SGSTs"]?.ToString(),
+
+                                    TotalTaxes = reader["TotalTaxes"]?.ToString(),
+
+                                    SubTotals = reader["SubTotals"]?.ToString(),
+
+                                    TotalTaxAmount = reader["TotalTaxAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["TotalTaxAmount"]),
+
+                                    GrandTotalAmount = reader["GrandTotalAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["GrandTotalAmount"]),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                    SupplierName = reader["SupplierName"]?.ToString(),
+
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Purchases.Add(Purchase);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 1 & 5 : INSERT / UPDATE
+                    ========================================= */
+
+                    else if (purchase.Flag == "1" || purchase.Flag == "5")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Purchase = new tblPurchase
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    SupplierID = reader["SupplierID"]?.ToString(),
+
+                                    PurchaseDate = reader["PurchaseDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["PurchaseDate"]),
+
+                                    PaymentMode = reader["PaymentMode"]?.ToString(),
+
+                                    Notes = reader["Notes"]?.ToString(),
+
+                                    ItemIDs = reader["ItemIDs"]?.ToString(),
+
+                                    Quantities = reader["Quantities"]?.ToString(),
+
+                                    Prices = reader["Prices"]?.ToString(),
+
+                                    CGSTs = reader["CGSTs"]?.ToString(),
+
+                                    SGSTs = reader["SGSTs"]?.ToString(),
+
+                                    TotalTaxes = reader["TotalTaxes"]?.ToString(),
+
+                                    SubTotals = reader["SubTotals"]?.ToString(),
+
+                                    TotalTaxAmount = reader["TotalTaxAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["TotalTaxAmount"]),
+
+                                    GrandTotalAmount = reader["GrandTotalAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["GrandTotalAmount"]),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                    SupplierName = reader["SupplierName"]?.ToString(),
+
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Purchases.Add(Purchase);
+                            }
+                        }
+                    }
+                }
+
+                return Purchases;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_Purchase_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(Purchases)
+                );
+
+                return new List<tblPurchase>
+        {
+            new tblPurchase
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+        public List<tblSales> Tbl_Sales_CRUD_Operations(tblSales sales)
+        {
+            var Sales = new List<tblSales>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_Sales", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(sales.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(sales.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(sales.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ClassID",
+                        (object?)CleanParam(sales.ClassID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_DivisionID",
+                        (object?)CleanParam(sales.DivisionID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AdmissionNo",
+                        (object?)CleanParam(sales.AdmissionNo) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CategoryIDs",
+                        (object?)CleanParam(sales.CategoryIDs) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ItemIDs",
+                        (object?)CleanParam(sales.ItemIDs) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Prices",
+                        (object?)CleanParam(sales.Prices) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TaxAmounts",
+                        (object?)CleanParam(sales.TaxAmounts) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SubTotals",
+                        (object?)CleanParam(sales.SubTotals) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TotalTaxAmount",
+                        sales.TotalTaxAmount ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_GrandTotalAmount",
+                        sales.GrandTotalAmount ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_PaymentMode",
+                        (object?)CleanParam(sales.PaymentMode) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Notes",
+                        (object?)CleanParam(sales.Notes) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SaleDate",
+                        sales.SaleDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(sales.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(sales.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(sales.CreatedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(sales.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(sales.ModifiedIP) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        sales.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        sales.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        sales.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        sales.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        sales.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        sales.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    /* =========================================
+                       FLAG 6 & 8 : COUNT
+                    ========================================= */
+
+                    if (sales.Flag == "6" || sales.Flag == "8")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Sale = new tblSales
+                                {
+                                    totalcount = reader["totalCount"] != DBNull.Value
+                                        ? Convert.ToInt32(reader["totalCount"])
+                                        : (int?)null
+                                };
+
+                                Sales.Add(Sale);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 2,3,4,7 : FETCH
+                    ========================================= */
+
+                    else if (sales.Flag == "2"
+                          || sales.Flag == "3"
+                          || sales.Flag == "4"
+                          || sales.Flag == "7")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Sale = new tblSales
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    ClassID = reader["ClassID"]?.ToString(),
+
+                                    DivisionID = reader["DivisionID"]?.ToString(),
+
+                                    AdmissionNo = reader["AdmissionNo"]?.ToString(),
+
+                                    CategoryIDs = reader["CategoryIDs"]?.ToString(),
+
+                                    ItemIDs = reader["ItemIDs"]?.ToString(),
+
+                                    Prices = reader["Prices"]?.ToString(),
+
+                                    TaxAmounts = reader["TaxAmounts"]?.ToString(),
+
+                                    SubTotals = reader["SubTotals"]?.ToString(),
+
+                                    TotalTaxAmount = reader["TotalTaxAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["TotalTaxAmount"]),
+
+                                    GrandTotalAmount = reader["GrandTotalAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["GrandTotalAmount"]),
+
+                                    PaymentMode = reader["PaymentMode"]?.ToString(),
+
+                                    Notes = reader["Notes"]?.ToString(),
+
+                                    SaleDate = reader["SaleDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["SaleDate"]),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+                                    CategoryNames = reader["CategoryNames"]?.ToString(),
+
+                                    ItemNames = reader["ItemNames"]?.ToString(),
+
+                                    ClassName = reader["ClassName"]?.ToString(),
+
+                                    DivisionName = reader["DivisionName"]?.ToString(),
+
+                                    StudentName = reader["StudentName"]?.ToString(),
+
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Sales.Add(Sale);
+                            }
+                        }
+                    }
+
+                    /* =========================================
+                       FLAG 1 & 5 : INSERT / UPDATE
+                    ========================================= */
+
+                    else if (sales.Flag == "1" || sales.Flag == "5")
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var Sale = new tblSales
+                                {
+                                    ID = reader["ID"]?.ToString(),
+
+                                    SchoolID = reader["SchoolID"]?.ToString(),
+
+                                    AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                    ClassID = reader["ClassID"]?.ToString(),
+
+                                    DivisionID = reader["DivisionID"]?.ToString(),
+
+                                    AdmissionNo = reader["AdmissionNo"]?.ToString(),
+
+                                    CategoryIDs = reader["CategoryIDs"]?.ToString(),
+
+                                    ItemIDs = reader["ItemIDs"]?.ToString(),
+
+                                    Prices = reader["Prices"]?.ToString(),
+
+                                    TaxAmounts = reader["TaxAmounts"]?.ToString(),
+
+                                    SubTotals = reader["SubTotals"]?.ToString(),
+
+                                    TotalTaxAmount = reader["TotalTaxAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["TotalTaxAmount"]),
+
+                                    GrandTotalAmount = reader["GrandTotalAmount"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDecimal(reader["GrandTotalAmount"]),
+
+                                    PaymentMode = reader["PaymentMode"]?.ToString(),
+
+                                    Notes = reader["Notes"]?.ToString(),
+
+                                    SaleDate = reader["SaleDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["SaleDate"]),
+
+                                    IsActive = reader["IsActive"]?.ToString(),
+
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["CreatedDate"]),
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value
+                                        ? null
+                                        : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                    ClassName = reader["ClassName"]?.ToString(),
+                                    DivisionName = reader["DivisionName"]?.ToString(),
+                                    StudentName = reader["StudentName"]?.ToString(),
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                    Status = reader["Message"]?.ToString()
+                                };
+
+                                Sales.Add(Sale);
+                            }
+                        }
+                    }
+                }
+
+                return Sales;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_Sales_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(Sales)
+                );
+
+                return new List<tblSales>
+        {
+            new tblSales
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
             }
         }
 

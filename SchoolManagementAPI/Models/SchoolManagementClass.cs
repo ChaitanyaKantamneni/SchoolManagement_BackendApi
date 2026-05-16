@@ -658,6 +658,8 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
         public string? AcademicYear { get; set; }
         public int? Offset { get; set; }
+        public String? StudentName { get; set; }
+
     }
 
     public class tblStudentTransportationDetails
@@ -2172,58 +2174,6 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
     }
 
-    //public class tblLeaveManagement
-    //{
-    //    public int? ID { get; set; }
-
-    //    public string? SchoolID { get; set; }
-    //    public string? AcademicYear { get; set; }
-
-    //    public string? ApplicantID { get; set; }
-    //    public int? ApplicantRoleID { get; set; }
-    //    public string? ApplicantName { get; set; }
-
-    //    public string? ClassID { get; set; }
-    //    public string? DivisionID { get; set; }
-
-    //    public string? LeaveType { get; set; }
-    //    public DateTime? FromDate { get; set; }
-    //    public DateTime? ToDate { get; set; }
-    //    public string? Reason { get; set; }
-
-    //    public string? CurrentApproverID { get; set; }
-    //    public int? CurrentApproverRoleID { get; set; }
-
-    //    public string? Status { get; set; }
-    //    public string? ApprovalRemarks { get; set; }
-
-    //    public int? IsActive { get; set; }
-
-    //    public string? CreatedBy { get; set; }
-    //    public DateTime? CreatedDate { get; set; }
-
-    //    public string? ModifiedBy { get; set; }
-    //    public DateTime? ModifiedDate { get; set; }
-
-    //    // FLAGS
-    //    public string? Flag { get; set; }
-
-    //    // PAGINATION
-    //    public int? Limit { get; set; }
-    //    public int? Offset { get; set; }
-    //    public DateTime? LastCreatedDate { get; set; }
-    //    public int? LastID { get; set; }
-    //    public string? SortDirection { get; set; }
-
-    //    // SEARCH
-    //    public string? Search { get; set; }
-
-    //    // RESPONSE
-    //    public int? totalCount { get; set; }
-    //    public string? Message { get; set; }
-    //}
-
-
 public class tblLeaveApplication
     {
         public string? ID { get; set; }
@@ -2247,6 +2197,7 @@ public class tblLeaveApplication
         public string? ApplicationStatus { get; set; }
         public string? ApprovedBy { get; set; }
         public string? AdminRemarks { get; set; }
+        public string? AttachmentURL { get; set; }
 
         // Standard Auditing
         public string? IsActive { get; set; }
@@ -2300,53 +2251,7 @@ public class tblLeaveApplication
         public string? MaxDays { get; set; }
     }
 
-    //public class tblHomework
-    //{
-    //    public string? ID { get; set; }
-    //    public string? SchoolID { get; set; }
-    //    public string? AcademicYear { get; set; }
-    //    public string? Class { get; set; }
-    //    public string? Division { get; set; }
-    //    public string? SubjectID { get; set; }
-    //    public string? TeacherID { get; set; }
-    //    public string? HomeworkTitle { get; set; }
-    //    public string? Description { get; set; }
-    //    public DateTime? AssignedDate { get; set; }
-    //    public DateTime? SubmissionDate { get; set; }
-    //    public string? AttachmentURL { get; set; }
-    //    public string? IsActive { get; set; }
-    //    public string? CreatedBy { get; set; }
-    //    public string? CreatedIp { get; set; }
-    //    public DateTime? CreatedDate { get; set; }
-    //    public string? ModifiedBy { get; set; }
-    //    public string? ModifiedIp { get; set; }
-    //    public DateTime? ModifiedDate { get; set; }
-
-    //    // Extra fields from joins
-    //    public string? ClassName { get; set; }
-    //    public string? DivisionName { get; set; }
-    //    public string? SubjectName { get; set; }
-
-    //    // NotMapped control fields
-    //    [NotMapped]
-    //    public string? Flag { get; set; }
-    //    [NotMapped]
-    //    public string? Status { get; set; }
-    //    [NotMapped]
-    //    public int? Limit { get; set; }
-    //    [NotMapped]
-    //    public DateTime? LastCreatedDate { get; set; }
-    //    [NotMapped]
-    //    public int? LastID { get; set; }
-    //    [NotMapped]
-    //    public int? totalcount { get; set; }
-    //    [NotMapped]
-    //    public string? SortColumn { get; set; }
-    //    [NotMapped]
-    //    public string? SortDirection { get; set; }
-    //    [NotMapped]
-    //    public int? Offset { get; set; }
-    //}
+    
     public class tblHomework
     {
         public string? ID { get; set; }
@@ -2413,6 +2318,14 @@ public class tblLeaveApplication
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+    public class HomeworkUploadRequest
+    {
+        public IFormFile? File { get; set; }
+        public string? SchoolId { get; set; }
+        public string? HomeworkId { get; set; }
+        public string? FileType { get; set; }
+    }
+
     public class tblHomeworkSubmission
     {
         public string? ID { get; set; }
@@ -2509,5 +2422,369 @@ public class tblLeaveApplication
         public string SchoolId { get; set; }
         public string AdmissionId { get; set; }
         public string FileName { get; set; }
+    }
+
+    public class tblUnits
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public string? UnitName { get; set; }
+        public string? Abbreviation { get; set; }
+
+        public string? MinimumValue { get; set; }
+        public string? MaximumValue { get; set; }
+        public string? MinimumDifference { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+    }
+    public class tblCategories
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? CategoryName { get; set; }
+        public string? Description { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblItems
+    {
+        public string? ID { get; set; }
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? CategoryID { get; set; }
+        public string? UnitID { get; set; }
+        public string? ItemName { get; set; }
+        public decimal? PurchasePrice { get; set; }
+        public decimal? SellingPrice { get; set; }
+        public decimal? OpeningStock { get; set; }
+        public decimal? ReorderLevel { get; set; }
+        public decimal? TaxCGST { get; set; }
+        public decimal? TaxSGST { get; set; }
+        public string? Description { get; set; }
+        public string? IsActive { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // Joined fields
+        public string? CategoryName { get; set; }
+        public string? UnitName { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
+
+        // Pagination & sorting
+        public string? Flag { get; set; }
+        public int? Limit { get; set; }
+        public string? LastCreatedDate { get; set; }
+        public int? LastID { get; set; }
+        public string? SortColumn { get; set; }
+        public string? SortDirection { get; set; }
+        public int? Offset { get; set; }
+
+        // Meta
+        public string? Status { get; set; }
+        public int? totalcount { get; set; }
+    }
+    public class tblSuppliers
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? SupplierName { get; set; }
+
+        public string? EmailAddress { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public string? Address { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+
+        public string? CreatedIP { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+
+        public string? ModifiedIP { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblPurchase
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? SupplierID { get; set; }
+
+        public DateTime? PurchaseDate { get; set; }
+
+        public string? PaymentMode { get; set; }
+
+        public string? Notes { get; set; }
+
+        public string? ItemIDs { get; set; }
+
+        public string? Quantities { get; set; }
+
+        public string? Prices { get; set; }
+
+        public string? CGSTs { get; set; }
+
+        public string? SGSTs { get; set; }
+
+        public string? TotalTaxes { get; set; }
+
+        public string? SubTotals { get; set; }
+
+        public decimal? TotalTaxAmount { get; set; }
+
+        public decimal? GrandTotalAmount { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+
+        public string? CreatedIP { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+
+        public string? ModifiedIP { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? SupplierName { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+    }
+    public class tblSales
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? ClassID { get; set; }
+
+        public string? DivisionID { get; set; }
+
+        public string? AdmissionNo { get; set; }
+
+        public string? CategoryIDs { get; set; }
+
+        public string? ItemIDs { get; set; }
+
+        public string? Prices { get; set; }
+
+        public string? TaxAmounts { get; set; }
+
+        public string? SubTotals { get; set; }
+
+        public decimal? TotalTaxAmount { get; set; }
+
+        public decimal? GrandTotalAmount { get; set; }
+
+        public string? PaymentMode { get; set; }
+
+        public string? Notes { get; set; }
+
+        public DateTime? SaleDate { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+
+        public string? CreatedIP { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+
+        public string? ModifiedIP { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+
+        public string? ClassName { get; set; }
+
+        public string? DivisionName { get; set; }
+
+        public string? StudentName { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+        public string? CategoryNames { get; set; }
+
+        public string? ItemNames { get; set; }
     }
 }
