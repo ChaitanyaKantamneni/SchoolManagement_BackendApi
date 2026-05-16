@@ -73,7 +73,7 @@ namespace SchoolManagementAPI.Services
         }
 
         public (string AccessToken, string RefreshToken, DateTime AccessExpiryUtc, DateTime RefreshExpiryUtc)
-            GenerateTokens(string email, string fullName, string role, string? schoolId = null)
+            GenerateTokens(string email, string fullName, string role, string? schoolId = null, string? schoolIds = null)
         {
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"])
@@ -97,6 +97,12 @@ namespace SchoolManagementAPI.Services
             if (!string.IsNullOrEmpty(schoolId) && role != "1")
             {
                 claims.Add(new Claim("SchoolID", schoolId));
+            }
+
+            // NEW — group admin gets school list in token
+            if (!string.IsNullOrEmpty(schoolIds) && role == "10") // 9 = group admin role ID
+            {
+                claims.Add(new Claim("SchoolIDs", schoolIds)); // comma-separated
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
