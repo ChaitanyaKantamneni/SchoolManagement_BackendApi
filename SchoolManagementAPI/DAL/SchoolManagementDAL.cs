@@ -11078,6 +11078,9 @@ namespace SchoolManagementAPI.DAL
 
                                     ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                     ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                    SchoolName = reader["SchoolName"]?.ToString(),
+                                    AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
 
                                     ModifiedDate = reader["ModifiedDate"] == DBNull.Value
                                         ? null
@@ -11246,6 +11249,9 @@ namespace SchoolManagementAPI.DAL
                                         ModifiedBy = reader["ModifiedBy"]?.ToString(),
                                         ModifiedIp = reader["ModifiedIp"]?.ToString(),
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
                                         Status = reader["Message"]?.ToString()
                                     };
 
