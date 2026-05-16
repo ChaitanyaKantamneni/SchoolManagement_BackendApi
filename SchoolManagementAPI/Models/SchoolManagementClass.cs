@@ -2513,6 +2513,8 @@ public class tblLeaveApplication
 
         [NotMapped]
         public int? Offset { get; set; }
+        public string? SchoolName { get; set; }
+        public string? AcademicYearName { get; set; }
     }
     public class tblCategories
     {
