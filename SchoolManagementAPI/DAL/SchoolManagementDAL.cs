@@ -1393,7 +1393,7 @@ namespace SchoolManagementAPI.DAL
                             }
                         }
                         else if (staff.Flag == "14")
-                        {                            
+                        {
                             using (var reader = cmd.ExecuteReader())
                             {
                                 if (reader.Read())
@@ -3056,9 +3056,8 @@ namespace SchoolManagementAPI.DAL
                                     FatherName = reader["StudentName"]?.ToString(),
                                     Class = reader["Class"]?.ToString(),
                                     Division = reader["Division"]?.ToString(),
-                                    StudentName = reader["StudentName"]?.ToString(),
 
-                                }); 
+                                });
                             }
                         }
                     }
@@ -8882,8 +8881,7 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(fee.ModifiedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(fee.ModifiedIp) ?? DBNull.Value);
-                    //cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(fee.AttachmentURL) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(fee.AttachmentURL) ?? DBNull.Value);
+
                     cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Limit", fee.Limit ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_LastCreatedDate", fee.LastCreatedDate ?? (object)DBNull.Value);
@@ -9545,7 +9543,6 @@ namespace SchoolManagementAPI.DAL
                 return (null, false);
             }
         }
-
         public List<StudentDocumentsUpload> Tbl_StudentDocumentsUpload_CRUD(StudentDocumentsUpload doc)
         {
             var list = new List<StudentDocumentsUpload>();
@@ -9836,6 +9833,1126 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+
+
+        public List<TblNotices> Tbl_Notices_CRUD_Operations(TblNotices req)
+        {
+            var result = new List<TblNotices>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_Notices", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("p_NoticeId", req.NoticeId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Title", (object?)CleanParam(req.Title) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(req.Description) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_NoticeType", (object?)CleanParam(req.NoticeType) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Audience", (object?)CleanParam(req.Audience) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ClassIds", (object?)CleanParam(req.ClassIds) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_StartDate", req.StartDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_EndDate", req.EndDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AttachmentPath", (object?)CleanParam(req.AttachmentPath) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", req.IsActive ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedBy", req.CreatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(req.CreatedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", req.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(req.ModifiedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(req.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Limit", req.Limit ?? 100);
+                cmd.Parameters.AddWithValue("p_LastCreatedDate", req.LastCreatedDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_LastID", req.LastID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(req.SortDirection) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Offset", req.Offset ?? (object)DBNull.Value);
+
+                conn.Open();
+
+                if (req.Flag != null)
+                {
+                    // COUNT FLAGS
+                    if (req.Flag == "6" || req.Flag == "8")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                TotalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                            });
+                        }
+                    }
+                    // FETCH / SEARCH / GET BY ID
+                    else if (req.Flag == "2" || req.Flag == "3" || req.Flag == "4" || req.Flag == "7")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
+                                SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                Title = reader["Title"]?.ToString(),
+                                Description = reader["Description"]?.ToString(),
+                                NoticeType = reader["NoticeType"]?.ToString(),
+                                Audience = reader["Audience"]?.ToString(),
+                                ClassIds = reader["ClassIds"]?.ToString(),
+                                StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
+                                EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
+                                AttachmentPath = reader["AttachmentPath"]?.ToString(),
+                                IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                CreatedBy = reader["CreatedBy"]?.ToString(),
+                                CreatedIP = reader["CreatedIP"]?.ToString(),
+                                CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
+                                ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
+                                SchoolName = reader["SchoolName"]?.ToString(),
+                                AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                Status = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                    // INSERT / UPDATE
+                    else if (req.Flag == "1" || req.Flag == "5")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            if (reader["Message"]?.ToString() == "Notice already exists")
+                            {
+                                result.Add(new TblNotices
+                                {
+                                    Status = reader["Message"]?.ToString()
+                                });
+                            }
+                            else
+                            {
+                                result.Add(new TblNotices
+                                {
+                                    NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
+                                    SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                    AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                    Title = reader["Title"]?.ToString(),
+                                    Description = reader["Description"]?.ToString(),
+                                    NoticeType = reader["NoticeType"]?.ToString(),
+                                    Audience = reader["Audience"]?.ToString(),
+                                    ClassIds = reader["ClassIds"]?.ToString(),
+                                    StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
+                                    EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
+                                    AttachmentPath = reader["AttachmentPath"]?.ToString(),
+                                    IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                    //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+                                    CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
+                                    ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                    ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
+                                    Status = reader["Message"]?.ToString()
+                                });
+                            }
+                        }
+                    }
+                    // DEFAULT
+                    else
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                Status = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Notices_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                return new List<TblNotices>
+        {
+            new TblNotices { Status = $"ERROR: {ex.Message}" }
+        };
+            }
+        }
+
+
+        public List<Tbl_HostelMaster> Tbl_HostelMaster_CRUD_Operations(Tbl_HostelMaster hostel)
+        {
+            var Hostel = new List<Tbl_HostelMaster>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_HostelMaster", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(hostel.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(hostel.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(hostel.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelName", (object?)CleanParam(hostel.HostelName) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelType", (object?)CleanParam(hostel.HostelType) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TotalRooms", (object?)CleanParam(hostel.TotalRooms) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_BedCapacity", (object?)CleanParam(hostel.BedCapacity) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(hostel.Address) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks", (object?)CleanParam(hostel.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(hostel.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(hostel.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(hostel.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(hostel.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(hostel.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", hostel.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit", hostel.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", hostel.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID", hostel.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        hostel.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        hostel.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        hostel.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (hostel.Flag == "6" || hostel.Flag == "8")
+                            {
+                                Hostel.Add(new Tbl_HostelMaster
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Hostel.Add(new Tbl_HostelMaster
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_HostelMaster
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID") ? reader["SchoolID"]?.ToString() : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear") ? reader["AcademicYear"]?.ToString() : null,
+
+                                HostelName = HasColumn(reader, "HostelName") ? reader["HostelName"]?.ToString() : null,
+
+                                HostelType = HasColumn(reader, "HostelType") ? reader["HostelType"]?.ToString() : null,
+
+                                TotalRooms = HasColumn(reader, "TotalRooms") ? reader["TotalRooms"]?.ToString() : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity") ? reader["BedCapacity"]?.ToString() : null,
+
+                                Address = HasColumn(reader, "Address") ? reader["Address"]?.ToString() : null,
+
+                                Remarks = HasColumn(reader, "Remarks") ? reader["Remarks"]?.ToString() : null,
+
+                                IsActive = HasColumn(reader, "IsActive") ? reader["IsActive"]?.ToString() : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy") ? reader["CreatedBy"]?.ToString() : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp") ? reader["CreatedIp"]?.ToString() : null,
+
+                                CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy") ? reader["ModifiedBy"]?.ToString() : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp") ? reader["ModifiedIp"]?.ToString() : null,
+
+                                ModifiedDate = HasColumn(reader, "ModifiedDate") && reader["ModifiedDate"] != DBNull.Value ? Convert.ToDateTime(reader["ModifiedDate"]) : (DateTime?)null,
+
+                                SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null,
+
+                                Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                            };
+
+                            Hostel.Add(obj);
+                        }
+                    }
+                }
+
+                return Hostel;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_HostelMaster_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(hostel)
+                );
+
+                return new List<Tbl_HostelMaster>
+        {
+            new Tbl_HostelMaster
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+
+
+        public List<Tbl_RoomMaster> Tbl_RoomMaster_CRUD_Operations(Tbl_RoomMaster room)
+        {
+            var Room = new List<Tbl_RoomMaster>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_RoomMaster", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(room.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(room.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(room.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(room.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomNumber",
+                        (object?)CleanParam(room.RoomNumber) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_BedCapacity",
+                        (object?)CleanParam(room.BedCapacity) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Occupied",
+                        (object?)CleanParam(room.Occupied) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(room.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(room.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(room.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(room.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(room.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(room.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        room.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        room.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        room.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        room.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        room.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        room.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        room.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (room.Flag == "6" || room.Flag == "8")
+                            {
+                                Room.Add(new Tbl_RoomMaster
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Room.Add(new Tbl_RoomMaster
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_RoomMaster
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity")
+                                    ? reader["BedCapacity"]?.ToString()
+                                    : null,
+
+                                Occupied = HasColumn(reader, "Occupied")
+                                    ? reader["Occupied"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy")
+                                    ? reader["CreatedBy"]?.ToString()
+                                    : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp")
+                                    ? reader["CreatedIp"]?.ToString()
+                                    : null,
+
+                                CreatedDate =
+                                    HasColumn(reader, "CreatedDate") &&
+                                    reader["CreatedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["CreatedDate"])
+                                        : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy")
+                                    ? reader["ModifiedBy"]?.ToString()
+                                    : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp")
+                                    ? reader["ModifiedIp"]?.ToString()
+                                    : null,
+
+                                ModifiedDate =
+                                    HasColumn(reader, "ModifiedDate") &&
+                                    reader["ModifiedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["ModifiedDate"])
+                                        : (DateTime?)null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
+                                    ? reader["OccupiedBeds"]?.ToString()
+                                    : null,
+
+                                AvailableBeds = HasColumn(reader, "AvailableBeds")
+                                    ? reader["AvailableBeds"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            Room.Add(obj);
+                        }
+                    }
+                }
+
+                return Room;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_RoomMaster_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(room)
+                );
+
+                return new List<Tbl_RoomMaster>
+        {
+            new Tbl_RoomMaster
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+
+
+        public List<Tbl_RoomAllotment> Tbl_RoomAllotment_CRUD_Operations(Tbl_RoomAllotment allotment)
+        {
+            var Allotment = new List<Tbl_RoomAllotment>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_RoomAllotment", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(allotment.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(allotment.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(allotment.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(allotment.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomID",
+                        (object?)CleanParam(allotment.RoomID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_StudentID",
+                        (object?)CleanParam(allotment.StudentID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AllotmentDate",
+                        (object?)CleanParam(allotment.AllotmentDate) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(allotment.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(allotment.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(allotment.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(allotment.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(allotment.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(allotment.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        allotment.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        allotment.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        allotment.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Allotment.Add(new Tbl_RoomAllotment
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            var obj = new Tbl_RoomAllotment
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomID = HasColumn(reader, "RoomID")
+                                    ? reader["RoomID"]?.ToString()
+                                    : null,
+
+                                StudentID = HasColumn(reader, "StudentID")
+                                    ? reader["StudentID"]?.ToString()
+                                    : null,
+
+                                AllotmentDate = HasColumn(reader, "AllotmentDate")
+                                    ? reader["AllotmentDate"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity")
+                                    ? reader["BedCapacity"]?.ToString()
+                                    : null,
+
+                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
+                                    ? reader["OccupiedBeds"]?.ToString()
+                                    : null,
+
+                                AvailableBeds = HasColumn(reader, "AvailableBeds")
+                                    ? reader["AvailableBeds"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            Allotment.Add(obj);
+                        }
+                    }
+                }
+
+                return Allotment;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_RoomAllotment_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(allotment)
+                );
+
+                return new List<Tbl_RoomAllotment>
+        {
+            new Tbl_RoomAllotment
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+
+        public List<Tbl_OutPass> Tbl_OutPass_CRUD_Operations(Tbl_OutPass outpass)
+        {
+            var OutPass = new List<Tbl_OutPass>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_OutPass", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(outpass.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(outpass.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(outpass.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(outpass.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomID",
+                        (object?)CleanParam(outpass.RoomID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_StudentID",
+                        (object?)CleanParam(outpass.StudentID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_OutDateTime",
+                        (object?)CleanParam(outpass.OutDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ExpectedReturnDateTime",
+                        (object?)CleanParam(outpass.ExpectedReturnDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ActualReturnDateTime",
+                        (object?)CleanParam(outpass.ActualReturnDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Destination",
+                        (object?)CleanParam(outpass.Destination) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Reason",
+                        (object?)CleanParam(outpass.Reason) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Status",
+                        (object?)CleanParam(outpass.OutPassStatus) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ApprovedBy",
+                        (object?)CleanParam(outpass.ApprovedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ApprovedDate",
+                        (object?)CleanParam(outpass.ApprovedDate) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(outpass.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(outpass.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(outpass.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(outpass.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(outpass.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(outpass.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        outpass.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        outpass.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        outpass.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        outpass.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        outpass.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        outpass.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        outpass.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (outpass.Flag == "6" || outpass.Flag == "8")
+                            {
+                                OutPass.Add(new Tbl_OutPass
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                OutPass.Add(new Tbl_OutPass
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_OutPass
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomID = HasColumn(reader, "RoomID")
+                                    ? reader["RoomID"]?.ToString()
+                                    : null,
+
+                                StudentID = HasColumn(reader, "StudentID")
+                                    ? reader["StudentID"]?.ToString()
+                                    : null,
+
+                                OutDateTime = HasColumn(reader, "OutDateTime")
+                                    ? reader["OutDateTime"]?.ToString()
+                                    : null,
+
+                                ExpectedReturnDateTime = HasColumn(reader, "ExpectedReturnDateTime")
+                                    ? reader["ExpectedReturnDateTime"]?.ToString()
+                                    : null,
+
+                                ActualReturnDateTime = HasColumn(reader, "ActualReturnDateTime")
+                                    ? reader["ActualReturnDateTime"]?.ToString()
+                                    : null,
+
+                                Destination = HasColumn(reader, "Destination")
+                                    ? reader["Destination"]?.ToString()
+                                    : null,
+
+                                Reason = HasColumn(reader, "Reason")
+                                    ? reader["Reason"]?.ToString()
+                                    : null,
+
+                                OutPassStatus = HasColumn(reader, "OutPassStatus")
+                                    ? reader["OutPassStatus"]?.ToString()
+                                    : null,
+
+                                ApprovedBy = HasColumn(reader, "ApprovedBy")
+                                    ? reader["ApprovedBy"]?.ToString()
+                                    : null,
+
+                                ApprovedDate = HasColumn(reader, "ApprovedDate")
+                                    ? reader["ApprovedDate"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy")
+                                    ? reader["CreatedBy"]?.ToString()
+                                    : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp")
+                                    ? reader["CreatedIp"]?.ToString()
+                                    : null,
+
+                                CreatedDate =
+                                    HasColumn(reader, "CreatedDate") &&
+                                    reader["CreatedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["CreatedDate"])
+                                        : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy")
+                                    ? reader["ModifiedBy"]?.ToString()
+                                    : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp")
+                                    ? reader["ModifiedIp"]?.ToString()
+                                    : null,
+
+                                ModifiedDate =
+                                    HasColumn(reader, "ModifiedDate") &&
+                                    reader["ModifiedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["ModifiedDate"])
+                                        : (DateTime?)null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                StudentName = HasColumn(reader, "StudentName")
+                                    ? reader["StudentName"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            OutPass.Add(obj);
+                        }
+                    }
+                }
+
+                return OutPass;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_OutPass_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(outpass)
+                );
+
+                return new List<Tbl_OutPass>
+                {
+                    new Tbl_OutPass
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
+        public void TagStaffSchools(long staffId, List<string> schoolIds)
+        {
+            // First clear existing tags
+            using var conn1 = new MySqlConnection(_connectionString);
+            using var cmd1 = new MySqlCommand("Proc_StaffSchools", conn1)
+            { CommandType = CommandType.StoredProcedure };
+            cmd1.Parameters.AddWithValue("p_StaffID", staffId);
+            cmd1.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
+            cmd1.Parameters.AddWithValue("p_Flag", "3");
+            conn1.Open();
+            cmd1.ExecuteNonQuery();
+            // Insert each school
+            foreach (var schoolId in schoolIds)
+            {
+                using var conn2 = new MySqlConnection(_connectionString);
+                using var cmd2 = new MySqlCommand("Proc_StaffSchools", conn2)
+                { CommandType = CommandType.StoredProcedure };
+                cmd2.Parameters.AddWithValue("p_StaffID", staffId);
+                cmd2.Parameters.AddWithValue("p_SchoolID", schoolId.Trim());
+                cmd2.Parameters.AddWithValue("p_Flag", "1");
+                conn2.Open();
+                cmd2.ExecuteNonQuery();
+            }
+        }
+
+        public List<string> GetStaffSchoolIDs(string email)
+        {
+            // Flag 11 gives user by email, then we use Flag 14 on staff
+            var user = Tbl_Users_CRUD_Operations(new TblUser { Email = email, Flag = "11" }).FirstOrDefault();
+            if (user == null) return new List<string>();
+
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("Proc_StaffSchools", conn)
+            { CommandType = CommandType.StoredProcedure };
+
+            // Find staff ID by email
+            using var conn2 = new MySqlConnection(_connectionString);
+            using var cmd2 = new MySqlCommand(
+                "SELECT ID FROM tbl_staff WHERE Email = @email LIMIT 1", conn2);
+            cmd2.Parameters.AddWithValue("@email", email);
+            conn2.Open();
+            var staffId = cmd2.ExecuteScalar();
+            if (staffId == null) return new List<string>();
+
+            cmd.Parameters.AddWithValue("p_StaffID", staffId);
+            cmd.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_Flag", "2");
+            conn.Open();
+
+            var ids = new List<string>();
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                ids.Add(reader["SchoolID"]?.ToString() ?? "");
+            return ids;
+        }
+
         public List<tblUnits> Tbl_Units_CRUD_Operations(tblUnits units)
         {
             var Units = new List<tblUnits>();
@@ -9854,9 +10971,9 @@ namespace SchoolManagementAPI.DAL
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(units.ID) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_SchoolID",(object?)CleanParam(units.SchoolID) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_AcademicYear",(object?)CleanParam(units.AcademicYear) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("p_UnitName",(object?)CleanParam(units.UnitName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(units.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(units.AcademicYear) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_UnitName", (object?)CleanParam(units.UnitName) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Abbreviation",
                         (object?)CleanParam(units.Abbreviation) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_MinimumValue",
@@ -9928,7 +11045,7 @@ namespace SchoolManagementAPI.DAL
                     /* =========================================
                        FLAG 2,3,4,7 : FETCH
                     ========================================= */
-                    else if (units.Flag == "2"|| units.Flag == "3" || units.Flag == "4" || units.Flag == "7")
+                    else if (units.Flag == "2" || units.Flag == "3" || units.Flag == "4" || units.Flag == "7")
                     {
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -11253,1113 +12370,8 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
-            try
-            {
-                using var conn = new MySqlConnection(_connectionString);
-                using var cmd = new MySqlCommand("Proc_Notices", conn);
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("p_NoticeId", req.NoticeId ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Title", (object?)CleanParam(req.Title) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(req.Description) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_NoticeType", (object?)CleanParam(req.NoticeType) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Audience", (object?)CleanParam(req.Audience) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ClassIds", (object?)CleanParam(req.ClassIds) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_StartDate", req.StartDate ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_EndDate", req.EndDate ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_AttachmentPath", (object?)CleanParam(req.AttachmentPath) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_IsActive", req.IsActive ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_CreatedBy", req.CreatedBy ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(req.CreatedIP) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ModifiedBy", req.ModifiedBy ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(req.ModifiedIP) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(req.Flag) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Limit", req.Limit ?? 100);
-                cmd.Parameters.AddWithValue("p_LastCreatedDate", req.LastCreatedDate ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_LastID", req.LastID ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(req.SortDirection) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_Offset", req.Offset ?? (object)DBNull.Value);
-
-                conn.Open();
-
-                if (req.Flag != null)
-                {
-                    // COUNT FLAGS
-                    if (req.Flag == "6" || req.Flag == "8")
-                    {
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            result.Add(new TblNotices
-                            {
-                                TotalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
-                            });
-                        }
-                    }
-                    // FETCH / SEARCH / GET BY ID
-                    else if (req.Flag == "2" || req.Flag == "3" || req.Flag == "4" || req.Flag == "7")
-                    {
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            result.Add(new TblNotices
-                            {
-                                NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
-                                SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
-                                AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
-                                Title = reader["Title"]?.ToString(),
-                                Description = reader["Description"]?.ToString(),
-                                NoticeType = reader["NoticeType"]?.ToString(),
-                                Audience = reader["Audience"]?.ToString(),
-                                ClassIds = reader["ClassIds"]?.ToString(),
-                                StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
-                                EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
-                                AttachmentPath = reader["AttachmentPath"]?.ToString(),
-                                IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
-                                //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
-                                CreatedBy = reader["CreatedBy"]?.ToString(),
-                                CreatedIP = reader["CreatedIP"]?.ToString(),
-                                CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
-                                ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
-                                ModifiedIP = reader["ModifiedIP"]?.ToString(),
-                                ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
-                                SchoolName = reader["SchoolName"]?.ToString(),
-                                AcademicYearName = reader["AcademicYearName"]?.ToString(),
-                                Status = reader["Message"]?.ToString()
-                            });
-                        }
-                    }
-                    // INSERT / UPDATE
-                    else if (req.Flag == "1" || req.Flag == "5")
-                    {
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            if (reader["Message"]?.ToString() == "Notice already exists")
-                            {
-                                result.Add(new TblNotices
-                                {
-                                    Status = reader["Message"]?.ToString()
-                                });
-                            }
-                            else
-                            {
-                                result.Add(new TblNotices
-                                {
-                                    NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
-                                    SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
-                                    AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
-                                    Title = reader["Title"]?.ToString(),
-                                    Description = reader["Description"]?.ToString(),
-                                    NoticeType = reader["NoticeType"]?.ToString(),
-                                    Audience = reader["Audience"]?.ToString(),
-                                    ClassIds = reader["ClassIds"]?.ToString(),
-                                    StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
-                                    EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
-                                    AttachmentPath = reader["AttachmentPath"]?.ToString(),
-                                    IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
-                                    //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
-                                    CreatedBy = reader["CreatedBy"]?.ToString(),
-                                    CreatedIP = reader["CreatedIP"]?.ToString(),
-                                    CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
-                                    ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
-                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
-                                    ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
-                                    Status = reader["Message"]?.ToString()
-                                });
-                            }
-                        }
-                    }
-                    // DEFAULT
-                    else
-                    {
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            result.Add(new TblNotices
-                            {
-                                Status = reader["Message"]?.ToString()
-                            });
-                        }
-                    }
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "SchoolManagementDAL", "Tbl_Notices_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
-                return new List<TblNotices>
-        {
-            new TblNotices { Status = $"ERROR: {ex.Message}" }
-        };
-            }
-        }
-
-
-        public List<Tbl_HostelMaster> Tbl_HostelMaster_CRUD_Operations(Tbl_HostelMaster hostel)
-        {
-            var Hostel = new List<Tbl_HostelMaster>();
-
-            string CleanParam(string? value)
-            {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
-            }
-
-            bool HasColumn(IDataRecord reader, string columnName)
-            {
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-
-                return false;
-            }
-
-            try
-            {
-                using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_HostelMaster", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(hostel.ID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(hostel.SchoolID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(hostel.AcademicYear) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_HostelName", (object?)CleanParam(hostel.HostelName) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_HostelType", (object?)CleanParam(hostel.HostelType) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_TotalRooms", (object?)CleanParam(hostel.TotalRooms) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_BedCapacity", (object?)CleanParam(hostel.BedCapacity) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(hostel.Address) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Remarks", (object?)CleanParam(hostel.Remarks) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(hostel.IsActive) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(hostel.CreatedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(hostel.CreatedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(hostel.ModifiedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(hostel.ModifiedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Flag", hostel.Flag ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Limit", hostel.Limit ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastCreatedDate", hostel.LastCreatedDate ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastID", hostel.LastID ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortColumn",
-                        hostel.SortColumn ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortDirection",
-                        hostel.SortDirection ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Offset",
-                        hostel.Offset ?? (object)DBNull.Value);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // ===== COUNT =====
-
-                            if (hostel.Flag == "6" || hostel.Flag == "8")
-                            {
-                                Hostel.Add(new Tbl_HostelMaster
-                                {
-                                    totalcount =
-                                        HasColumn(reader, "totalCount") &&
-                                        reader["totalCount"] != DBNull.Value
-                                            ? Convert.ToInt32(reader["totalCount"])
-                                            : (int?)null
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MESSAGE ONLY =====
-
-                            if (!HasColumn(reader, "ID"))
-                            {
-                                Hostel.Add(new Tbl_HostelMaster
-                                {
-                                    Status =
-                                        HasColumn(reader, "Message")
-                                            ? reader["Message"]?.ToString()
-                                            : "Operation completed."
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MAIN DATA =====
-
-                            var obj = new Tbl_HostelMaster
-                            {
-                                ID = reader["ID"]?.ToString(),
-
-                                SchoolID = HasColumn(reader, "SchoolID") ? reader["SchoolID"]?.ToString() : null,
-
-                                AcademicYear = HasColumn(reader, "AcademicYear") ? reader["AcademicYear"]?.ToString() : null,
-
-                                HostelName = HasColumn(reader, "HostelName") ? reader["HostelName"]?.ToString() : null,
-
-                                HostelType = HasColumn(reader, "HostelType") ? reader["HostelType"]?.ToString() : null,
-
-                                TotalRooms = HasColumn(reader, "TotalRooms") ? reader["TotalRooms"]?.ToString() : null,
-
-                                BedCapacity = HasColumn(reader, "BedCapacity") ? reader["BedCapacity"]?.ToString() : null,
-
-                                Address = HasColumn(reader, "Address") ? reader["Address"]?.ToString() : null,
-
-                                Remarks = HasColumn(reader, "Remarks") ? reader["Remarks"]?.ToString() : null,
-
-                                IsActive = HasColumn(reader, "IsActive") ? reader["IsActive"]?.ToString() : null,
-
-                                CreatedBy = HasColumn(reader, "CreatedBy") ? reader["CreatedBy"]?.ToString() : null,
-
-                                CreatedIp = HasColumn(reader, "CreatedIp") ? reader["CreatedIp"]?.ToString() : null,
-
-                                CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
-
-                                ModifiedBy = HasColumn(reader, "ModifiedBy") ? reader["ModifiedBy"]?.ToString() : null,
-
-                                ModifiedIp = HasColumn(reader, "ModifiedIp") ? reader["ModifiedIp"]?.ToString() : null,
-
-                                ModifiedDate = HasColumn(reader, "ModifiedDate") && reader["ModifiedDate"] != DBNull.Value ? Convert.ToDateTime(reader["ModifiedDate"]) : (DateTime?)null,
-
-                                SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null,
-
-                                AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null,
-
-                                Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
-                            };
-
-                            Hostel.Add(obj);
-                        }
-                    }
-                }
-
-                return Hostel;
-            }
-            catch (Exception ex)
-            {
-                LogException(
-                    ex,
-                    "SchoolManagementDAL",
-                    "Tbl_HostelMaster_CRUD_Operations",
-                    Newtonsoft.Json.JsonConvert.SerializeObject(hostel)
-                );
-
-                return new List<Tbl_HostelMaster>
-        {
-            new Tbl_HostelMaster
-            {
-                Status = $"ERROR: {ex.Message}"
-            }
-        };
-            }
-        }
-
-
-        
-        public List<Tbl_RoomMaster> Tbl_RoomMaster_CRUD_Operations(Tbl_RoomMaster room)
-        {
-            var Room = new List<Tbl_RoomMaster>();
-
-            string CleanParam(string? value)
-            {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
-                    ? null
-                    : value;
-            }
-
-            bool HasColumn(IDataRecord reader, string columnName)
-            {
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-
-                return false;
-            }
-
-            try
-            {
-                using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_RoomMaster", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_ID",
-                        (object?)CleanParam(room.ID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SchoolID",
-                        (object?)CleanParam(room.SchoolID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_AcademicYear",
-                        (object?)CleanParam(room.AcademicYear) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_HostelID",
-                        (object?)CleanParam(room.HostelID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_RoomNumber",
-                        (object?)CleanParam(room.RoomNumber) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_BedCapacity",
-                        (object?)CleanParam(room.BedCapacity) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Occupied",
-                        (object?)CleanParam(room.Occupied) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Remarks",
-                        (object?)CleanParam(room.Remarks) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_IsActive",
-                        (object?)CleanParam(room.IsActive) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedBy",
-                        (object?)CleanParam(room.CreatedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedIP",
-                        (object?)CleanParam(room.CreatedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedBy",
-                        (object?)CleanParam(room.ModifiedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedIP",
-                        (object?)CleanParam(room.ModifiedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Flag",
-                        room.Flag ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Limit",
-                        room.Limit ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
-                        room.LastCreatedDate ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastID",
-                        room.LastID ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortColumn",
-                        room.SortColumn ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortDirection",
-                        room.SortDirection ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Offset",
-                        room.Offset ?? (object)DBNull.Value);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // ===== COUNT =====
-
-                            if (room.Flag == "6" || room.Flag == "8")
-                            {
-                                Room.Add(new Tbl_RoomMaster
-                                {
-                                    totalcount =
-                                        HasColumn(reader, "totalCount") &&
-                                        reader["totalCount"] != DBNull.Value
-                                            ? Convert.ToInt32(reader["totalCount"])
-                                            : (int?)null
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MESSAGE ONLY =====
-
-                            if (!HasColumn(reader, "ID"))
-                            {
-                                Room.Add(new Tbl_RoomMaster
-                                {
-                                    Status =
-                                        HasColumn(reader, "Message")
-                                            ? reader["Message"]?.ToString()
-                                            : "Operation completed."
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MAIN DATA =====
-
-                            var obj = new Tbl_RoomMaster
-                            {
-                                ID = reader["ID"]?.ToString(),
-
-                                SchoolID = HasColumn(reader, "SchoolID")
-                                    ? reader["SchoolID"]?.ToString()
-                                    : null,
-
-                                AcademicYear = HasColumn(reader, "AcademicYear")
-                                    ? reader["AcademicYear"]?.ToString()
-                                    : null,
-
-                                HostelID = HasColumn(reader, "HostelID")
-                                    ? reader["HostelID"]?.ToString()
-                                    : null,
-
-                                RoomNumber = HasColumn(reader, "RoomNumber")
-                                    ? reader["RoomNumber"]?.ToString()
-                                    : null,
-
-                                BedCapacity = HasColumn(reader, "BedCapacity")
-                                    ? reader["BedCapacity"]?.ToString()
-                                    : null,
-
-                                Occupied = HasColumn(reader, "Occupied")
-                                    ? reader["Occupied"]?.ToString()
-                                    : null,
-
-                                Remarks = HasColumn(reader, "Remarks")
-                                    ? reader["Remarks"]?.ToString()
-                                    : null,
-
-                                IsActive = HasColumn(reader, "IsActive")
-                                    ? reader["IsActive"]?.ToString()
-                                    : null,
-
-                                CreatedBy = HasColumn(reader, "CreatedBy")
-                                    ? reader["CreatedBy"]?.ToString()
-                                    : null,
-
-                                CreatedIp = HasColumn(reader, "CreatedIp")
-                                    ? reader["CreatedIp"]?.ToString()
-                                    : null,
-
-                                CreatedDate =
-                                    HasColumn(reader, "CreatedDate") &&
-                                    reader["CreatedDate"] != DBNull.Value
-                                        ? Convert.ToDateTime(reader["CreatedDate"])
-                                        : (DateTime?)null,
-
-                                ModifiedBy = HasColumn(reader, "ModifiedBy")
-                                    ? reader["ModifiedBy"]?.ToString()
-                                    : null,
-
-                                ModifiedIp = HasColumn(reader, "ModifiedIp")
-                                    ? reader["ModifiedIp"]?.ToString()
-                                    : null,
-
-                                ModifiedDate =
-                                    HasColumn(reader, "ModifiedDate") &&
-                                    reader["ModifiedDate"] != DBNull.Value
-                                        ? Convert.ToDateTime(reader["ModifiedDate"])
-                                        : (DateTime?)null,
-
-                                HostelName = HasColumn(reader, "HostelName")
-                                    ? reader["HostelName"]?.ToString()
-                                    : null,
-
-                                SchoolName = HasColumn(reader, "SchoolName")
-                                    ? reader["SchoolName"]?.ToString()
-                                    : null,
-
-                                AcademicYearName = HasColumn(reader, "AcademicYearName")
-                                    ? reader["AcademicYearName"]?.ToString()
-                                    : null,
-
-                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
-                                    ? reader["OccupiedBeds"]?.ToString()
-                                    : null,
-
-                                AvailableBeds = HasColumn(reader, "AvailableBeds")
-                                    ? reader["AvailableBeds"]?.ToString()
-                                    : null,
-
-                                Status = HasColumn(reader, "Message")
-                                    ? reader["Message"]?.ToString()
-                                    : null
-                            };
-
-                            Room.Add(obj);
-                        }
-                    }
-                }
-
-                return Room;
-            }
-            catch (Exception ex)
-            {
-                LogException(
-                    ex,
-                    "SchoolManagementDAL",
-                    "Tbl_RoomMaster_CRUD_Operations",
-                    Newtonsoft.Json.JsonConvert.SerializeObject(room)
-                );
-
-                return new List<Tbl_RoomMaster>
-        {
-            new Tbl_RoomMaster
-            {
-                Status = $"ERROR: {ex.Message}"
-            }
-        };
-            }
-        }
-
-        
-
-        public List<Tbl_RoomAllotment> Tbl_RoomAllotment_CRUD_Operations(Tbl_RoomAllotment allotment)
-        {
-            var Allotment = new List<Tbl_RoomAllotment>();
-
-            string CleanParam(string? value)
-            {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
-                    ? null
-                    : value;
-            }
-
-            bool HasColumn(IDataRecord reader, string columnName)
-            {
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-
-                return false;
-            }
-
-            try
-            {
-                using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_RoomAllotment", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_ID",
-                        (object?)CleanParam(allotment.ID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SchoolID",
-                        (object?)CleanParam(allotment.SchoolID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_AcademicYear",
-                        (object?)CleanParam(allotment.AcademicYear) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_HostelID",
-                        (object?)CleanParam(allotment.HostelID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_RoomID",
-                        (object?)CleanParam(allotment.RoomID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_StudentID",
-                        (object?)CleanParam(allotment.StudentID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_AllotmentDate",
-                        (object?)CleanParam(allotment.AllotmentDate) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Remarks",
-                        (object?)CleanParam(allotment.Remarks) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_IsActive",
-                        (object?)CleanParam(allotment.IsActive) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedBy",
-                        (object?)CleanParam(allotment.CreatedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedIP",
-                        (object?)CleanParam(allotment.CreatedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedBy",
-                        (object?)CleanParam(allotment.ModifiedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedIP",
-                        (object?)CleanParam(allotment.ModifiedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Flag",
-                        allotment.Flag ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Limit",
-                        allotment.Limit ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Offset",
-                        allotment.Offset ?? (object)DBNull.Value);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            if (!HasColumn(reader, "ID"))
-                            {
-                                Allotment.Add(new Tbl_RoomAllotment
-                                {
-                                    Status =
-                                        HasColumn(reader, "Message")
-                                            ? reader["Message"]?.ToString()
-                                            : "Operation completed."
-                                });
-
-                                continue;
-                            }
-
-                            var obj = new Tbl_RoomAllotment
-                            {
-                                ID = reader["ID"]?.ToString(),
-
-                                SchoolID = HasColumn(reader, "SchoolID")
-                                    ? reader["SchoolID"]?.ToString()
-                                    : null,
-
-                                AcademicYear = HasColumn(reader, "AcademicYear")
-                                    ? reader["AcademicYear"]?.ToString()
-                                    : null,
-
-                                HostelID = HasColumn(reader, "HostelID")
-                                    ? reader["HostelID"]?.ToString()
-                                    : null,
-
-                                RoomID = HasColumn(reader, "RoomID")
-                                    ? reader["RoomID"]?.ToString()
-                                    : null,
-
-                                StudentID = HasColumn(reader, "StudentID")
-                                    ? reader["StudentID"]?.ToString()
-                                    : null,
-
-                                AllotmentDate = HasColumn(reader, "AllotmentDate")
-                                    ? reader["AllotmentDate"]?.ToString()
-                                    : null,
-
-                                Remarks = HasColumn(reader, "Remarks")
-                                    ? reader["Remarks"]?.ToString()
-                                    : null,
-
-                                IsActive = HasColumn(reader, "IsActive")
-                                    ? reader["IsActive"]?.ToString()
-                                    : null,
-
-                                HostelName = HasColumn(reader, "HostelName")
-                                    ? reader["HostelName"]?.ToString()
-                                    : null,
-
-                                RoomNumber = HasColumn(reader, "RoomNumber")
-                                    ? reader["RoomNumber"]?.ToString()
-                                    : null,
-
-                                BedCapacity = HasColumn(reader, "BedCapacity")
-                                    ? reader["BedCapacity"]?.ToString()
-                                    : null,
-
-                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
-                                    ? reader["OccupiedBeds"]?.ToString()
-                                    : null,
-
-                                AvailableBeds = HasColumn(reader, "AvailableBeds")
-                                    ? reader["AvailableBeds"]?.ToString()
-                                    : null,
-
-                                SchoolName = HasColumn(reader, "SchoolName")
-                                    ? reader["SchoolName"]?.ToString()
-                                    : null,
-
-                                AcademicYearName = HasColumn(reader, "AcademicYearName")
-                                    ? reader["AcademicYearName"]?.ToString()
-                                    : null,
-
-                                Status = HasColumn(reader, "Message")
-                                    ? reader["Message"]?.ToString()
-                                    : null
-                            };
-
-                            Allotment.Add(obj);
-                        }
-                    }
-                }
-
-                return Allotment;
-            }
-            catch (Exception ex)
-            {
-                LogException(
-                    ex,
-                    "SchoolManagementDAL",
-                    "Tbl_RoomAllotment_CRUD_Operations",
-                    Newtonsoft.Json.JsonConvert.SerializeObject(allotment)
-                );
-
-                return new List<Tbl_RoomAllotment>
-        {
-            new Tbl_RoomAllotment
-            {
-                Status = $"ERROR: {ex.Message}"
-            }
-        };
-            }
-        }
-
-
-        public List<Tbl_OutPass> Tbl_OutPass_CRUD_Operations(Tbl_OutPass outpass)
-        {
-            var OutPass = new List<Tbl_OutPass>();
-
-            string CleanParam(string? value)
-            {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
-            }
-
-            bool HasColumn(IDataRecord reader, string columnName)
-            {
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-
-                return false;
-            }
-
-            try
-            {
-                using (var conn = new MySqlConnection(_connectionString))
-                using (var cmd = new MySqlCommand("Proc_OutPass", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("p_ID",
-                        (object?)CleanParam(outpass.ID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SchoolID",
-                        (object?)CleanParam(outpass.SchoolID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_AcademicYear",
-                        (object?)CleanParam(outpass.AcademicYear) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_HostelID",
-                        (object?)CleanParam(outpass.HostelID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_RoomID",
-                        (object?)CleanParam(outpass.RoomID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_StudentID",
-                        (object?)CleanParam(outpass.StudentID) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_OutDateTime",
-                        (object?)CleanParam(outpass.OutDateTime) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ExpectedReturnDateTime",
-                        (object?)CleanParam(outpass.ExpectedReturnDateTime) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ActualReturnDateTime",
-                        (object?)CleanParam(outpass.ActualReturnDateTime) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Destination",
-                        (object?)CleanParam(outpass.Destination) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Reason",
-                        (object?)CleanParam(outpass.Reason) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Status",
-                        (object?)CleanParam(outpass.OutPassStatus) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ApprovedBy",
-                        (object?)CleanParam(outpass.ApprovedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ApprovedDate",
-                        (object?)CleanParam(outpass.ApprovedDate) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Remarks",
-                        (object?)CleanParam(outpass.Remarks) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_IsActive",
-                        (object?)CleanParam(outpass.IsActive) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedBy",
-                        (object?)CleanParam(outpass.CreatedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_CreatedIP",
-                        (object?)CleanParam(outpass.CreatedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedBy",
-                        (object?)CleanParam(outpass.ModifiedBy) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_ModifiedIP",
-                        (object?)CleanParam(outpass.ModifiedIp) ?? DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Flag",
-                        outpass.Flag ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Limit",
-                        outpass.Limit ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
-                        outpass.LastCreatedDate ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_LastID",
-                        outpass.LastID ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortColumn",
-                        outpass.SortColumn ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_SortDirection",
-                        outpass.SortDirection ?? (object)DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("p_Offset",
-                        outpass.Offset ?? (object)DBNull.Value);
-
-                    conn.Open();
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // ===== COUNT =====
-
-                            if (outpass.Flag == "6" || outpass.Flag == "8")
-                            {
-                                OutPass.Add(new Tbl_OutPass
-                                {
-                                    totalcount =
-                                        HasColumn(reader, "totalCount") &&
-                                        reader["totalCount"] != DBNull.Value
-                                            ? Convert.ToInt32(reader["totalCount"])
-                                            : (int?)null
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MESSAGE ONLY =====
-
-                            if (!HasColumn(reader, "ID"))
-                            {
-                                OutPass.Add(new Tbl_OutPass
-                                {
-                                    Status =
-                                        HasColumn(reader, "Message")
-                                            ? reader["Message"]?.ToString()
-                                            : "Operation completed."
-                                });
-
-                                continue;
-                            }
-
-                            // ===== MAIN DATA =====
-
-                            var obj = new Tbl_OutPass
-                            {
-                                ID = reader["ID"]?.ToString(),
-
-                                SchoolID = HasColumn(reader, "SchoolID")
-                                    ? reader["SchoolID"]?.ToString()
-                                    : null,
-
-                                AcademicYear = HasColumn(reader, "AcademicYear")
-                                    ? reader["AcademicYear"]?.ToString()
-                                    : null,
-
-                                HostelID = HasColumn(reader, "HostelID")
-                                    ? reader["HostelID"]?.ToString()
-                                    : null,
-
-                                RoomID = HasColumn(reader, "RoomID")
-                                    ? reader["RoomID"]?.ToString()
-                                    : null,
-
-                                StudentID = HasColumn(reader, "StudentID")
-                                    ? reader["StudentID"]?.ToString()
-                                    : null,
-
-                                OutDateTime = HasColumn(reader, "OutDateTime")
-                                    ? reader["OutDateTime"]?.ToString()
-                                    : null,
-
-                                ExpectedReturnDateTime = HasColumn(reader, "ExpectedReturnDateTime")
-                                    ? reader["ExpectedReturnDateTime"]?.ToString()
-                                    : null,
-
-                                ActualReturnDateTime = HasColumn(reader, "ActualReturnDateTime")
-                                    ? reader["ActualReturnDateTime"]?.ToString()
-                                    : null,
-
-                                Destination = HasColumn(reader, "Destination")
-                                    ? reader["Destination"]?.ToString()
-                                    : null,
-
-                                Reason = HasColumn(reader, "Reason")
-                                    ? reader["Reason"]?.ToString()
-                                    : null,
-
-                                OutPassStatus = HasColumn(reader, "OutPassStatus")
-                                    ? reader["OutPassStatus"]?.ToString()
-                                    : null,
-
-                                ApprovedBy = HasColumn(reader, "ApprovedBy")
-                                    ? reader["ApprovedBy"]?.ToString()
-                                    : null,
-
-                                ApprovedDate = HasColumn(reader, "ApprovedDate")
-                                    ? reader["ApprovedDate"]?.ToString()
-                                    : null,
-
-                                Remarks = HasColumn(reader, "Remarks")
-                                    ? reader["Remarks"]?.ToString()
-                                    : null,
-
-                                IsActive = HasColumn(reader, "IsActive")
-                                    ? reader["IsActive"]?.ToString()
-                                    : null,
-
-                                CreatedBy = HasColumn(reader, "CreatedBy")
-                                    ? reader["CreatedBy"]?.ToString()
-                                    : null,
-
-                                CreatedIp = HasColumn(reader, "CreatedIp")
-                                    ? reader["CreatedIp"]?.ToString()
-                                    : null,
-
-                                CreatedDate =
-                                    HasColumn(reader, "CreatedDate") &&
-                                    reader["CreatedDate"] != DBNull.Value
-                                        ? Convert.ToDateTime(reader["CreatedDate"])
-                                        : (DateTime?)null,
-
-                                ModifiedBy = HasColumn(reader, "ModifiedBy")
-                                    ? reader["ModifiedBy"]?.ToString()
-                                    : null,
-
-                                ModifiedIp = HasColumn(reader, "ModifiedIp")
-                                    ? reader["ModifiedIp"]?.ToString()
-                                    : null,
-
-                                ModifiedDate =
-                                    HasColumn(reader, "ModifiedDate") &&
-                                    reader["ModifiedDate"] != DBNull.Value
-                                        ? Convert.ToDateTime(reader["ModifiedDate"])
-                                        : (DateTime?)null,
-
-                                HostelName = HasColumn(reader, "HostelName")
-                                    ? reader["HostelName"]?.ToString()
-                                    : null,
-
-                                RoomNumber = HasColumn(reader, "RoomNumber")
-                                    ? reader["RoomNumber"]?.ToString()
-                                    : null,
-
-                                SchoolName = HasColumn(reader, "SchoolName")
-                                    ? reader["SchoolName"]?.ToString()
-                                    : null,
-
-                                AcademicYearName = HasColumn(reader, "AcademicYearName")
-                                    ? reader["AcademicYearName"]?.ToString()
-                                    : null,
-
-                                StudentName = HasColumn(reader, "StudentName")
-                                    ? reader["StudentName"]?.ToString()
-                                    : null,
-
-                                Status = HasColumn(reader, "Message")
-                                    ? reader["Message"]?.ToString()
-                                    : null
-                            };
-
-                            OutPass.Add(obj);
-                        }
-                    }
-                }
-
-                return OutPass;
-            }
-            catch (Exception ex)
-            {
-                LogException(
-                    ex,
-                    "SchoolManagementDAL",
-                    "Tbl_OutPass_CRUD_Operations",
-                    Newtonsoft.Json.JsonConvert.SerializeObject(outpass)
-                );
-
-                return new List<Tbl_OutPass>
-                {
-                    new Tbl_OutPass
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
-                };
-            }
-        }
-
-        public void TagStaffSchools(long staffId, List<string> schoolIds)
-        {
-            // First clear existing tags
-            using var conn1 = new MySqlConnection(_connectionString);
-            using var cmd1 = new MySqlCommand("Proc_StaffSchools", conn1)
-            { CommandType = CommandType.StoredProcedure };
-            cmd1.Parameters.AddWithValue("p_StaffID", staffId);
-            cmd1.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
-            cmd1.Parameters.AddWithValue("p_Flag", "3");
-            conn1.Open();
-            cmd1.ExecuteNonQuery();
-            // Insert each school
-            foreach (var schoolId in schoolIds)
-            {
-                using var conn2 = new MySqlConnection(_connectionString);
-                using var cmd2 = new MySqlCommand("Proc_StaffSchools", conn2)
-                { CommandType = CommandType.StoredProcedure };
-                cmd2.Parameters.AddWithValue("p_StaffID", staffId);
-                cmd2.Parameters.AddWithValue("p_SchoolID", schoolId.Trim());
-                cmd2.Parameters.AddWithValue("p_Flag", "1");
-                conn2.Open();
-                cmd2.ExecuteNonQuery();
-            }
-        }
-
-        public List<string> GetStaffSchoolIDs(string email)
-        {
-            // Flag 11 gives user by email, then we use Flag 14 on staff
-            var user = Tbl_Users_CRUD_Operations(new TblUser { Email = email, Flag = "11" }).FirstOrDefault();
-            if (user == null) return new List<string>();
-
-            using var conn = new MySqlConnection(_connectionString);
-            using var cmd = new MySqlCommand("Proc_StaffSchools", conn)
-            { CommandType = CommandType.StoredProcedure };
-
-            // Find staff ID by email
-            using var conn2 = new MySqlConnection(_connectionString);
-            using var cmd2 = new MySqlCommand(
-                "SELECT ID FROM tbl_staff WHERE Email = @email LIMIT 1", conn2);
-            cmd2.Parameters.AddWithValue("@email", email);
-            conn2.Open();
-            var staffId = cmd2.ExecuteScalar();
-            if (staffId == null) return new List<string>();
-
-            cmd.Parameters.AddWithValue("p_StaffID", staffId);
-            cmd.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
-            cmd.Parameters.AddWithValue("p_Flag", "2");
-            conn.Open();
-
-            var ids = new List<string>();
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-                ids.Add(reader["SchoolID"]?.ToString() ?? "");
-            return ids;
-        }
     }
+
 }
+
+    
