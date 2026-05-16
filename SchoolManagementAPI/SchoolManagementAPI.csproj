@@ -8,6 +8,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Uploads\2\HomeworkSubmission\temp\7049ef9b-a5b3-4c39-aae3-f357ff49ed99_Screenshot 2026-05-05 145253.png" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\81586558-dc27-480d-934d-91640d70e999_image2.png" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\93cc2e24-5a4d-4796-8bd0-6ed8141da0fc_Screenshot 2026-05-05 144449.png" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\a131ed88-190e-4b21-8d39-0993c6f02a2a_Screenshot 2026-05-02 165250.png" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\b23feefa-79a6-4d99-8c4b-4189bf67762f_WhatsApp Image 2026-04-16 at 10.48.31 %281%29.jpeg" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\cfd3fa74-d8e6-4ede-8b43-4b6b1de210c5_public ListtblLeavepolicy Tbl_leave.txt" />
+    <None Remove="Uploads\2\HomeworkSubmission\temp\f018362d-94f1-4fe1-b9e9-a29b51f25ae6_c7af3b83-9617-43bb-a777-f4ee8d478f5e_Chaitanya_Resume_DotNet.pdf" />
+    <None Remove="Uploads\2\Homework\temp\14ff004a-7250-408f-a02c-e64850b2de3e_public ListtblLeavepolicy Tbl_leave.txt" />
+    <None Remove="Uploads\2\Homework\temp\1eab658d-6b22-4bfd-8bf1-8899ca46d077_public ListtblLeavepolicy Tbl_leave.txt" />
+    <None Remove="Uploads\2\Homework\temp\282d205e-1ff3-4767-a79e-f2bddb8de632_WhatsApp Image 2026-04-16 at 10.53.12.jpeg" />
+    <None Remove="Uploads\2\Homework\temp\34ec1318-3a5a-4f48-93af-f106a4c57f2c_Screenshot %28243%29.png" />
+    <None Remove="Uploads\2\Homework\temp\3ebb177a-3a8f-4009-b001-ab5f1da7a145_Screenshot %28233%29.png" />
+    <None Remove="Uploads\2\Homework\temp\922ea5a3-0acc-4f52-bfb4-95d2097a6a61_image2.png" />
+    <None Remove="Uploads\2\Homework\temp\92dbe835-c232-42c0-bd89-318a05a04038_public ListtblLeavepolicy Tbl_leave.txt" />
+    <None Remove="Uploads\2\Homework\temp\9492f612-9570-4ed6-a6d9-b169bd770e3f_Screenshot 2026-05-02 165250.png" />
+    <None Remove="Uploads\2\Homework\temp\a9578268-f0ea-49d7-b0d6-6cac9a99a080_image2.png" />
+    <None Remove="Uploads\2\Homework\temp\d1d6bce8-362e-459e-8a0e-d34a563268c1_c7af3b83-9617-43bb-a777-f4ee8d478f5e_Chaitanya_Resume_DotNet.pdf" />
+    <None Remove="Uploads\2\Homework\temp\e28000b8-bb3e-4d32-87c5-44dc884e3891_c7af3b83-9617-43bb-a777-f4ee8d478f5e_Chaitanya_Resume_DotNet.pdf" />
+    <None Remove="Uploads\2\Homework\temp\ecfeaf5b-8ed0-4891-b3c1-a40c701051a8_Screenshot %28243%29.png" />
+    <None Remove="Uploads\2\Homework\temp\f884e71b-5c58-42ee-94f0-da35d8365e8b_Screenshot %28241%29.png" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="EPPlus" Version="5.8.10" />
 	<PackageReference Include="MailKit" Version="4.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
@@ -17,6 +40,12 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
     <PackageReference Include="QuestPDF" Version="2025.12.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Uploads\2\HomeworkSubmission\temp\" />
+    <Folder Include="Uploads\2\Homework\temp\" />
+    <Folder Include="Uploads\2\Leave\" />
   </ItemGroup>
 
 </Project>
