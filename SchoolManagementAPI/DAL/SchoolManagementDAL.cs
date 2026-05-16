@@ -307,13 +307,158 @@ namespace SchoolManagementAPI.DAL
         }
 
         //Masters Module
+        //public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
+        //{
+        //    var schools = new List<SchoolDetails>();
+
+        //    string CleanParam(string? value)
+        //    {
+        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+        //    }
+
+        //    try
+        //    {
+        //        using var conn = new MySqlConnection(_connectionString);
+        //        using var cmd = new MySqlCommand("Proc_Tbl_SchoolDetails", conn)
+        //        {
+        //            CommandType = CommandType.StoredProcedure
+        //        };
+
+        //        // Add parameters
+        //        cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Email", (object?)CleanParam(school.Email) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Website", (object?)CleanParam(school.Website) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(school.Address) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_IsActive", school.IsActive ?? (object)DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(school.CreatedBy) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_CreatedIp", (object?)CleanParam(school.CreatedIP) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(school.ModifiedBy) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_ModifiedIp", (object?)CleanParam(school.ModifiedIP) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(school.Flag) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_Limit", school.Limit ?? 100);
+        //        cmd.Parameters.AddWithValue("p_Offset", school.Offset ?? 0);
+        //        cmd.Parameters.AddWithValue("p_LastCreatedDate", school.LastCreatedDate ?? (object)DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_LastID", school.LastID ?? (object)DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_SortColumn", (object?)CleanParam(school.SortColumn) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(school.SortDirection) ?? DBNull.Value);
+        //        cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(school.SchoolID) ?? DBNull.Value);
+
+        //        conn.Open();
+
+        //        if (!string.IsNullOrEmpty(school.Flag))
+        //        {
+        //            if (school.Flag == "6" || school.Flag == "8") // Count flags
+        //            {
+        //                using var reader = cmd.ExecuteReader();
+        //                while (reader.Read())
+        //                {
+        //                    schools.Add(new SchoolDetails
+        //                    {
+        //                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+        //                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+        //                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
+        //                    });
+        //                }
+        //            }
+        //            else if (school.Flag == "9")
+        //            {
+        //                using var reader = cmd.ExecuteReader();
+        //                while (reader.Read())
+        //                {
+        //                    schools.Add(new SchoolDetails
+        //                    {
+        //                        ID = reader["NextID"]?.ToString()
+        //                    });
+        //                }
+        //            }
+        //            else if (school.Flag == "1" || school.Flag == "5")
+        //            {
+        //                using (var reader = cmd.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {
+        //                        if (reader["Message"]?.ToString() == "School name already exists")
+        //                        {
+        //                            schools.Add(new SchoolDetails
+        //                            {
+        //                                Status = reader["Message"]?.ToString()
+        //                            });
+        //                        }
+        //                        else
+        //                        {
+        //                            schools.Add(new SchoolDetails
+        //                            {
+        //                                ID = reader["ID"]?.ToString(),
+        //                                Name = reader["Name"]?.ToString(),
+        //                                MobileNo = reader["MobileNo"]?.ToString(),
+        //                                Email = reader["Email"]?.ToString(),
+        //                                Website = reader["Website"]?.ToString(),
+        //                                Address = reader["Address"]?.ToString(),
+        //                                AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+        //                                Description = reader["Description"]?.ToString(),
+        //                                IsActive = reader["IsActive"].ToString(),
+        //                                CreatedBy = reader["CreatedBy"]?.ToString(),
+        //                                CreatedIP = reader["CreatedIp"]?.ToString(),
+        //                                CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+        //                                ModifiedBy = reader["ModifiedBy"]?.ToString(),
+        //                                ModifiedIP = reader["ModifiedIp"]?.ToString(),
+        //                                ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+        //                                Status = reader["Message"]?.ToString()
+        //                            });
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                using var reader = cmd.ExecuteReader();
+        //                while (reader.Read())
+        //                {
+        //                    schools.Add(new SchoolDetails
+        //                    {
+        //                        ID = reader["ID"]?.ToString(),
+        //                        Name = reader["Name"]?.ToString(),
+        //                        MobileNo = reader["MobileNo"]?.ToString(),
+        //                        Email = reader["Email"]?.ToString(),
+        //                        Website = reader["Website"]?.ToString(),
+        //                        Address = reader["Address"]?.ToString(),
+        //                        AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+        //                        Description = reader["Description"]?.ToString(),
+        //                        IsActive = reader["IsActive"].ToString(),
+        //                        CreatedBy = reader["CreatedBy"]?.ToString(),
+        //                        CreatedIP = reader["CreatedIp"]?.ToString(),
+        //                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+        //                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+        //                        ModifiedIP = reader["ModifiedIp"]?.ToString(),
+        //                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+        //                        Status = reader["Message"]?.ToString()
+        //                    });
+        //                }
+        //            }
+        //        }
+
+        //        return schools;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(school));
+        //        return new List<SchoolDetails>
+        //        {
+        //            new SchoolDetails { Status = $"ERROR: {ex.Message}" }
+        //        };
+        //    }
+        //}
+
         public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
         {
             var schools = new List<SchoolDetails>();
 
-            string CleanParam(string? value)
+            string? CleanParam(string? value)
             {
-                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null : value;
             }
 
             try
@@ -324,7 +469,6 @@ namespace SchoolManagementAPI.DAL
                     CommandType = CommandType.StoredProcedure
                 };
 
-                // Add parameters
                 cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(school.ID) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_Name", (object?)CleanParam(school.Name) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_MobileNo", (object?)CleanParam(school.MobileNo) ?? DBNull.Value);
@@ -345,58 +489,67 @@ namespace SchoolManagementAPI.DAL
                 cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(school.SortDirection) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(school.SchoolID) ?? DBNull.Value);
 
+                // ?? NEW: pass comma-separated school IDs for group admin ??
+                cmd.Parameters.AddWithValue("p_SchoolIDs", (object?)CleanParam(school.SchoolIDs) ?? DBNull.Value);
+
                 conn.Open();
 
                 if (!string.IsNullOrEmpty(school.Flag))
                 {
-                    if (school.Flag == "6" || school.Flag == "8") // Count flags
+                    if (school.Flag == "6" || school.Flag == "8")
                     {
                         using var reader = cmd.ExecuteReader();
                         while (reader.Read())
                         {
                             schools.Add(new SchoolDetails
                             {
-                                totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
-                                activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
-                                inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
+                                totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : null,
+                                activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : null,
+                                inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : null
+                            });
+                        }
+                    }
+                    else if (school.Flag == "9")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            schools.Add(new SchoolDetails
+                            {
+                                ID = reader["NextID"]?.ToString()
                             });
                         }
                     }
                     else if (school.Flag == "1" || school.Flag == "5")
                     {
-                        using (var reader = cmd.ExecuteReader())
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
                         {
-                            while (reader.Read())
+                            if (reader["Message"]?.ToString() == "School name already exists")
                             {
-                                if (reader["Message"]?.ToString() == "School name already exists")
+                                schools.Add(new SchoolDetails { Status = reader["Message"]?.ToString() });
+                            }
+                            else
+                            {
+                                schools.Add(new SchoolDetails
                                 {
-                                    schools.Add(new SchoolDetails
-                                    {
-                                        Status = reader["Message"]?.ToString()
-                                    });
-                                }
-                                else
-                                {
-                                    schools.Add(new SchoolDetails
-                                    {
-                                        ID = reader["ID"]?.ToString(),
-                                        Name = reader["Name"]?.ToString(),
-                                        MobileNo = reader["MobileNo"]?.ToString(),
-                                        Email = reader["Email"]?.ToString(),
-                                        Website = reader["Website"]?.ToString(),
-                                        Address = reader["Address"]?.ToString(),
-                                        AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
-                                        Description = reader["Description"]?.ToString(),
-                                        IsActive = reader["IsActive"].ToString(),
-                                        CreatedBy = reader["CreatedBy"]?.ToString(),
-                                        CreatedIP = reader["CreatedIp"]?.ToString(),
-                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
-                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
-                                        ModifiedIP = reader["ModifiedIp"]?.ToString(),
-                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
-                                        Status = reader["Message"]?.ToString()
-                                    });
-                                }
+                                    ID = reader["ID"]?.ToString(),
+                                    Name = reader["Name"]?.ToString(),
+                                    MobileNo = reader["MobileNo"]?.ToString(),
+                                    Email = reader["Email"]?.ToString(),
+                                    Website = reader["Website"]?.ToString(),
+                                    Address = reader["Address"]?.ToString(),
+                                    AvailableFrom = reader["AvailableFrom"] == DBNull.Value ? null : Convert.ToDateTime(reader["AvailableFrom"]),
+                                    Description = reader["Description"]?.ToString(),
+                                    IsActive = reader["IsActive"].ToString(),
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+                                    CreatedIP = reader["CreatedIp"]?.ToString(),
+                                    CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+                                    ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                    ModifiedIP = reader["ModifiedIp"]?.ToString(),
+                                    ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+                                    Status = reader["Message"]?.ToString()
+                                });
                             }
                         }
                     }
@@ -432,11 +585,12 @@ namespace SchoolManagementAPI.DAL
             }
             catch (Exception ex)
             {
-                LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(school));
+                LogException(ex, "SchoolManagementDAL", "Tbl_SchoolDetails_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(school));
                 return new List<SchoolDetails>
-                {
-                    new SchoolDetails { Status = $"ERROR: {ex.Message}" }
-                };
+        {
+            new SchoolDetails { Status = $"ERROR: {ex.Message}" }
+        };
             }
         }
 
@@ -1194,7 +1348,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var staffRecord = new tblStaff
                                     {
-                                        TotalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        TotalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     StaffList.Add(staffRecord);
@@ -1233,6 +1389,22 @@ namespace SchoolManagementAPI.DAL
                                     };
 
                                     StaffList.Add(staffRecord);
+                                }
+                            }
+                        }
+                        else if (staff.Flag == "14")
+                        {                            
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    StaffList.Add(new tblStaff
+                                    {
+                                        SchoolIDs = reader["SchoolIDs"] == DBNull.Value
+                                            ? null
+                                            : reader["SchoolIDs"]?.ToString(),
+                                        Status = reader["Message"]?.ToString()
+                                    });
                                 }
                             }
                         }
@@ -1415,7 +1587,9 @@ namespace SchoolManagementAPI.DAL
                             {
                                 Subjects.Add(new tblSubjects
                                 {
-                                    totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                    activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                    inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                 });
                             }
                         }
@@ -3473,6 +3647,8 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+
+
         //Transportation Module
         public List<tblBus> Tbl_bus_CRUD_Operations(tblBus bus)
         {
@@ -3529,7 +3705,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var buss = new tblBus
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Buses.Add(buss);
@@ -3724,7 +3902,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var routess = new tblRoute
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Routes.Add(routess);
@@ -3896,7 +4076,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var stopss = new tblStops
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Stops.Add(stopss);
@@ -4075,7 +4257,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var fares = new tblFare
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Fare.Add(fares);
@@ -5372,7 +5556,6 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
-
         public List<tblExamAttendence> Tbl_ExamAttendece_CRUD_Operations(tblExamAttendence exam)
         {
             var result = new List<tblExamAttendence>();
@@ -6187,7 +6370,9 @@ namespace SchoolManagementAPI.DAL
                                 {
                                     var routess = new feeCategory
                                     {
-                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null,
+                                        activeCount = reader["activeCount"] != DBNull.Value ? Convert.ToInt32(reader["activeCount"]) : (int?)null,
+                                        inactiveCount = reader["inactiveCount"] != DBNull.Value ? Convert.ToInt32(reader["inactiveCount"]) : (int?)null
                                     };
 
                                     Routes.Add(routess);
@@ -7327,31 +7512,6 @@ namespace SchoolManagementAPI.DAL
 
 
         //Dashboard
-        //public List<DashboardDataDetails> Proc_DashboardData_DAL(DashboardDataDetails fee)
-        //{
-        //    var resultList = new List<DashboardDataDetails>();
-
-        //    string CleanParam(string? value)
-        //    {
-        //        return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
-        //            ? null
-        //            : value;
-        //    }
-
-        //    try
-        //    {
-        //        using (var conn = new MySqlConnection(_connectionString))
-        //        using (var cmd = new MySqlCommand("Proc_DashboardData", conn))
-        //        {
-        //            cmd.CommandType = CommandType.StoredProcedure;
-
-        //            cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(fee.SchoolID) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(fee.AcademicYear) ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
-
-        //            conn.Open();
-
-
         public DashboardResponse GetDashboardData(DashboardRequest req)
         {
             var response = new DashboardResponse();
@@ -7360,18 +7520,21 @@ namespace SchoolManagementAPI.DAL
             using var cmd = new MySqlCommand("Proc_DashboardData_RoleAware", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // Parameters (keeping your structure)
-            cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
-            cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
-            cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
-            cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
-            cmd.Parameters.AddWithValue("p_UserID", req.UserID);
-            cmd.Parameters.AddWithValue("p_RoleKey", req.RoleKey);
-            cmd.Parameters.AddWithValue("p_BranchID", req.BranchID);
-            cmd.Parameters.AddWithValue("p_DateRangeKey", req.DateRangeKey);
-            cmd.Parameters.AddWithValue("p_CompareMode", req.CompareMode);
-            cmd.Parameters.AddWithValue("p_DrillLevel", req.DrillLevel);
-            cmd.Parameters.AddWithValue("p_DrillEntityID", req.DrillEntityID);
+            cmd.Parameters.AddWithValue("p_SchoolID", (object?)req.SchoolID ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_AcademicYear", (object?)req.AcademicYear ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_ClassID", (object?)req.ClassID ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_DivisionID", (object?)req.DivisionID ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_UserID", (object?)req.UserID ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_RoleKey", req.RoleKey ?? "school_admin");
+            cmd.Parameters.AddWithValue("p_BranchID", (object?)req.BranchID ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("p_DateRangeKey", req.DateRangeKey ?? "today");
+            cmd.Parameters.AddWithValue("p_CompareMode", req.CompareMode ?? "previous_period");
+            cmd.Parameters.AddWithValue("p_DrillLevel", req.DrillLevel ?? "network");
+            cmd.Parameters.AddWithValue("p_DrillEntityID", (object?)req.DrillEntityID ?? DBNull.Value);
+
+            // ?? NEW: pass comma-separated school IDs for group admin ??
+            cmd.Parameters.AddWithValue("p_SchoolIDs",
+                string.IsNullOrWhiteSpace(req.SchoolIDs) ? (object)DBNull.Value : req.SchoolIDs);
 
             conn.Open();
             using var reader = cmd.ExecuteReader();
@@ -7446,7 +7609,7 @@ namespace SchoolManagementAPI.DAL
                     response.recentAdmissions.Add(new RecentAdmission
                     {
                         Name = SafeString(reader, "Name"),
-                        Class = SafeStringSafe(reader, "Class"), // safe fallback
+                        Class = SafeStringSafe(reader, "Class"),
                         JoinDate = SafeDateTimeNullable(reader, "JoinDate")
                     });
                 }
@@ -7466,15 +7629,22 @@ namespace SchoolManagementAPI.DAL
                 }
             }
 
-            // 8) Skip NOTICES safely
+            // 8) notices
             if (reader.NextResult())
             {
-                // do nothing (just skip)
+                response.notices ??= new List<Notice>();
+                while (reader.Read())
+                {
+                    response.notices.Add(new Notice
+                    {
+                        Title = SafeString(reader, "Title"),
+                        CreatedDate = SafeDateTimeNullable(reader, "CreatedDate") ?? DateTime.Now
+                    });
+                }
             }
 
-            // 9) MINI KPIs (SAFE COLUMN DETECTION)
+            // 9) MINI KPIs (safe column detection)
             bool kpiFound = false;
-
             while (reader.NextResult())
             {
                 if (reader.FieldCount > 0)
@@ -7482,7 +7652,6 @@ namespace SchoolManagementAPI.DAL
                     var cols = Enumerable.Range(0, reader.FieldCount)
                                          .Select(reader.GetName)
                                          .ToList();
-
                     if (cols.Contains("attendancePercent"))
                     {
                         if (reader.Read())
@@ -7495,7 +7664,6 @@ namespace SchoolManagementAPI.DAL
                                 upcomingExams = SafeDouble(reader, "upcomingExams")
                             };
                         }
-
                         kpiFound = true;
                         break;
                     }
@@ -7518,7 +7686,6 @@ namespace SchoolManagementAPI.DAL
                 while (reader.Read())
                 {
                     var key = SafeString(reader, "activityKey");
-
                     if (!response.roleActivities.ContainsKey(key))
                         response.roleActivities[key] = new List<RoleActivityItem>();
 
@@ -7554,6 +7721,221 @@ namespace SchoolManagementAPI.DAL
 
             return response;
         }
+
+
+        //public DashboardResponse GetDashboardData(DashboardRequest req)
+        // {
+        //    var response = new DashboardResponse();
+
+        //    using var conn = new MySqlConnection(_connectionString);
+        //    using var cmd = new MySqlCommand("Proc_DashboardData_RoleAware", conn);
+        //    cmd.CommandType = CommandType.StoredProcedure;
+
+        //    // Parameters (keeping your structure)
+        //    cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID);
+        //    cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear);
+        //    cmd.Parameters.AddWithValue("p_ClassID", req.ClassID);
+        //    cmd.Parameters.AddWithValue("p_DivisionID", req.DivisionID);
+        //    cmd.Parameters.AddWithValue("p_UserID", req.UserID);
+        //    cmd.Parameters.AddWithValue("p_RoleKey", req.RoleKey);
+        //    cmd.Parameters.AddWithValue("p_BranchID", req.BranchID);
+        //    cmd.Parameters.AddWithValue("p_DateRangeKey", req.DateRangeKey);
+        //    cmd.Parameters.AddWithValue("p_CompareMode", req.CompareMode);
+        //    cmd.Parameters.AddWithValue("p_DrillLevel", req.DrillLevel);
+        //    cmd.Parameters.AddWithValue("p_DrillEntityID", req.DrillEntityID);
+
+        //    conn.Open();
+        //    using var reader = cmd.ExecuteReader();
+
+        //    // 1) counts
+        //    if (reader.Read())
+        //    {
+        //        response.counts.ClassCount = SafeInt(reader, "ClassCount");
+        //        response.counts.DivisionsCount = SafeInt(reader, "DivisionsCount");
+        //        response.counts.StudentsCount = SafeInt(reader, "StudentsCount");
+        //        response.counts.StaffCount = SafeInt(reader, "StaffCount");
+        //    }
+
+        //    // 2) studentChart
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.studentChart.Add(new StudentChart
+        //            {
+        //                ID = SafeInt(reader, "ID"),
+        //                Name = SafeString(reader, "Name"),
+        //                StudentCount = SafeInt(reader, "StudentCount")
+        //            });
+        //        }
+        //    }
+
+        //    // 3) staffChart
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.staffChart.Add(new StaffChart
+        //            {
+        //                StaffType = SafeString(reader, "StaffType"),
+        //                Count = SafeInt(reader, "Count")
+        //            });
+        //        }
+        //    }
+
+        //    // 4) attendance
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.attendance.Add(new AttendanceChart
+        //            {
+        //                Month = SafeString(reader, "Month"),
+        //                Attendance = SafeDouble(reader, "Attendance")
+        //            });
+        //        }
+        //    }
+
+        //    // 5) fees
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.fees.Add(new FeeChart
+        //            {
+        //                Month = SafeString(reader, "Month"),
+        //                Amount = SafeDouble(reader, "Amount")
+        //            });
+        //        }
+        //    }
+
+        //    // 6) recentAdmissions
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.recentAdmissions.Add(new RecentAdmission
+        //            {
+        //                Name = SafeString(reader, "Name"),
+        //                Class = SafeStringSafe(reader, "Class"), // safe fallback
+        //                JoinDate = SafeDateTimeNullable(reader, "JoinDate")
+        //            });
+        //        }
+        //    }
+
+        //    // 7) recentStaff
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.recentStaff.Add(new RecentStaff
+        //            {
+        //                Name = SafeString(reader, "Name"),
+        //                CreatedDate = SafeDateTimeNullable(reader, "CreatedDate"),
+        //                RoleName = SafeStringSafe(reader, "RoleName")
+        //            });
+        //        }
+        //    }
+
+        //    // 8) Skip NOTICES safely
+        //    // 8) NOTICES (READ PROPERLY)
+        //    if (reader.NextResult())
+        //    {
+        //        if (response.notices == null)
+        //            response.notices = new List<Notice>();
+
+        //        while (reader.Read())
+        //        {
+        //            response.notices.Add(new Notice
+        //            {
+        //                Title = SafeString(reader, "Title"),
+        //                CreatedDate = SafeDateTimeNullable(reader, "CreatedDate") ?? DateTime.Now
+        //            });
+        //        }
+        //    }
+
+        //    // 9) MINI KPIs (SAFE COLUMN DETECTION)
+        //    bool kpiFound = false;
+
+        //    while (reader.NextResult())
+        //    {
+        //        if (reader.FieldCount > 0)
+        //        {
+        //            var cols = Enumerable.Range(0, reader.FieldCount)
+        //                                 .Select(reader.GetName)
+        //                                 .ToList();
+
+        //            if (cols.Contains("attendancePercent"))
+        //            {
+        //                if (reader.Read())
+        //                {
+        //                    response.miniKpis = new MiniKpis
+        //                    {
+        //                        attendancePercent = SafeDouble(reader, "attendancePercent"),
+        //                        activeUsers = SafeDouble(reader, "activeUsers"),
+        //                        totalCollection = SafeDouble(reader, "totalCollection"),
+        //                        upcomingExams = SafeDouble(reader, "upcomingExams")
+        //                    };
+        //                }
+
+        //                kpiFound = true;
+        //                break;
+        //            }
+        //        }
+        //    }
+
+        //    // 10) ROLE KPIs
+        //    if (kpiFound && reader.NextResult() && reader.Read())
+        //    {
+        //        for (int i = 0; i < reader.FieldCount; i++)
+        //        {
+        //            var col = reader.GetName(i);
+        //            response.roleKpis[col] = reader.IsDBNull(i) ? 0 : reader.GetValue(i);
+        //        }
+        //    }
+
+        //    // 11) ACTIVITIES
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            var key = SafeString(reader, "activityKey");
+
+        //            if (!response.roleActivities.ContainsKey(key))
+        //                response.roleActivities[key] = new List<RoleActivityItem>();
+
+        //            response.roleActivities[key].Add(new RoleActivityItem
+        //            {
+        //                title = SafeString(reader, "title"),
+        //                meta = SafeStringSafe(reader, "meta"),
+        //                activityDate = SafeDateTimeNullable(reader, "activityDate")
+        //            });
+        //        }
+        //    }
+
+        //    // 12) ALERTS
+        //    if (reader.NextResult())
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            response.alerts.Add(new DashboardAlert
+        //            {
+        //                severity = SafeStringSafe(reader, "severity"),
+        //                title = SafeStringSafe(reader, "title"),
+        //                reasonText = SafeStringSafe(reader, "reasonText"),
+        //                actionText = SafeStringSafe(reader, "actionText")
+        //            });
+        //        }
+        //    }
+
+        //    // 13) META
+        //    if (reader.NextResult() && reader.Read())
+        //    {
+        //        response.meta.generatedAt = SafeDateTimeNullable(reader, "generatedAt");
+        //    }
+
+        //    return response;
+        //}
 
         private static int SafeInt(IDataRecord r, string c)
         {
@@ -8500,7 +8882,8 @@ namespace SchoolManagementAPI.DAL
                     cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(fee.ModifiedBy) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(fee.ModifiedIp) ?? DBNull.Value);
-
+                    //cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(fee.AttachmentURL) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AttachmentURL", (object?)CleanParam(fee.AttachmentURL) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_Limit", fee.Limit ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("p_LastCreatedDate", fee.LastCreatedDate ?? (object)DBNull.Value);
@@ -8840,12 +9223,12 @@ namespace SchoolManagementAPI.DAL
                     Newtonsoft.Json.JsonConvert.SerializeObject(homework));
 
                 return new List<tblHomework>
-                {
-                    new tblHomework
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
-                };
+         {
+             new tblHomework
+             {
+                 Status = $"ERROR: {ex.Message}"
+             }
+         };
             }
         }
 
@@ -9097,12 +9480,12 @@ namespace SchoolManagementAPI.DAL
                     Newtonsoft.Json.JsonConvert.SerializeObject(obj));
 
                 return new List<tblHomeworkSubmission>
-                {
-                    new tblHomeworkSubmission
-                    {
-                        Status = $"ERROR: {ex.Message}"
-                    }
-                };
+         {
+             new tblHomeworkSubmission
+             {
+                 Status = $"ERROR: {ex.Message}"
+             }
+         };
             }
         }
 
@@ -9222,6 +9605,235 @@ namespace SchoolManagementAPI.DAL
                 {
                     new StudentDocumentsUpload { Flag = $"ERROR: {ex.Message}" }
                 };
+            }
+        }
+
+        public List<SchoolFile> Proc_Tbl_SchoolFiles(SchoolFile file)
+        {
+            var list = new List<SchoolFile>();
+
+            string Clean(string value)
+                => string.IsNullOrWhiteSpace(value) ? null : value;
+
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_Tbl_SchoolFiles", conn)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                cmd.Parameters.AddWithValue("p_SchoolID", Clean(file.SchoolID) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FileName", Clean(file.FileName) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FilePath", Clean(file.FilePath) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_FileType", Clean(file.FileType) ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", 1);
+                cmd.Parameters.AddWithValue("p_Flag", Clean(file.Flag) ?? (object)DBNull.Value);
+
+                conn.Open();
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(new SchoolFile
+                    {
+                        SchoolID = reader["SchoolID"]?.ToString(),
+                        FileName = reader["FileName"]?.ToString(),
+                        FilePath = reader["FilePath"]?.ToString(),
+                        FileType = reader["FileType"]?.ToString()
+                    });
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "DAL", "Proc_Tbl_SchoolFiles", JsonConvert.SerializeObject(file));
+
+                return new List<SchoolFile>
+                {
+                    new SchoolFile { FileType = $"ERROR: {ex.Message}" }
+                };
+            }
+        }
+
+        public List<TblHolidayCalendar> Tbl_HolidayCalendar_CRUD_Operations(TblHolidayCalendar fee)
+        {
+            var Routes = new List<TblHolidayCalendar>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_HolidayCalendar", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(fee.ID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(fee.SchoolID) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(fee.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HolidayName", (object?)CleanParam(fee.HolidayName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_FromDate", fee.FromDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ToDate", fee.ToDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_HolidayType", (object?)CleanParam(fee.HolidayType) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(fee.Description) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(fee.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(fee.CreatedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(fee.CreatedIp) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(fee.ModifiedBy) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(fee.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", fee.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit", fee.Limit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", fee.LastCreatedDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_LastID", fee.LastID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortColumn", fee.SortColumn ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_SortDirection", fee.SortDirection ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("p_Offset", fee.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    if (fee.Flag != null)
+                    {
+                        //COUNT FLAGS
+                        if (fee.Flag == "6" || fee.Flag == "8")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    Routes.Add(new TblHolidayCalendar
+                                    {
+                                        totalcount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                                    });
+                                }
+                            }
+                        }
+
+                        // FETCH / SEARCH / GET
+                        else if (fee.Flag == "2" || fee.Flag == "3" || fee.Flag == "4" || fee.Flag == "7")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    Routes.Add(new TblHolidayCalendar
+                                    {
+                                        ID = reader["ID"]?.ToString(),
+                                        SchoolID = reader["SchoolID"]?.ToString(),
+                                        AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                        HolidayName = reader["HolidayName"]?.ToString(),
+                                        FromDate = reader["FromDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["FromDate"]),
+                                        ToDate = reader["ToDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ToDate"]),
+                                        HolidayType = reader["HolidayType"]?.ToString(),
+                                        Description = reader["Description"]?.ToString(),
+
+                                        IsActive = reader["IsActive"]?.ToString(),
+
+                                        SchoolName = reader["SchoolName"]?.ToString(),
+                                        AcademicYearName = reader["AcademicYearName"]?.ToString(),
+
+                                        CreatedBy = reader["CreatedBy"]?.ToString(),
+                                        CreatedIp = reader["CreatedIp"]?.ToString(),
+                                        CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                        ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                        ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                        ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+
+                        // INSERT / UPDATE
+                        else if (fee.Flag == "1" || fee.Flag == "5")
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var msg = reader["Message"]?.ToString();
+
+                                    if (msg == "Holiday already exists" ||
+                                        msg == "Holiday date range overlaps with existing holiday")
+                                    {
+                                        Routes.Add(new TblHolidayCalendar
+                                        {
+                                            Status = msg
+                                        });
+                                    }
+                                    else
+                                    {
+                                        Routes.Add(new TblHolidayCalendar
+                                        {
+                                            ID = reader["ID"]?.ToString(),
+                                            SchoolID = reader["SchoolID"]?.ToString(),
+                                            AcademicYear = reader["AcademicYear"]?.ToString(),
+
+                                            HolidayName = reader["HolidayName"]?.ToString(),
+                                            FromDate = reader["FromDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["FromDate"]),
+                                            ToDate = reader["ToDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ToDate"]),
+                                            HolidayType = reader["HolidayType"]?.ToString(),
+                                            Description = reader["Description"]?.ToString(),
+
+                                            IsActive = reader["IsActive"]?.ToString(),
+
+                                            CreatedBy = reader["CreatedBy"]?.ToString(),
+                                            CreatedIp = reader["CreatedIp"]?.ToString(),
+                                            CreatedDate = reader["CreatedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedDate"]),
+
+                                            ModifiedBy = reader["ModifiedBy"]?.ToString(),
+                                            ModifiedIp = reader["ModifiedIp"]?.ToString(),
+                                            ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
+
+                                            Status = msg
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
+                        // DEFAULT
+                        else
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    Routes.Add(new TblHolidayCalendar
+                                    {
+                                        Status = reader["Message"]?.ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return Routes;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_HolidayCalendar_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(fee));
+
+                return new List<TblHolidayCalendar>
+        {
+            new TblHolidayCalendar
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
             }
         }
         public List<tblUnits> Tbl_Units_CRUD_Operations(tblUnits units)
@@ -10641,5 +11253,1113 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+            try
+            {
+                using var conn = new MySqlConnection(_connectionString);
+                using var cmd = new MySqlCommand("Proc_Notices", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("p_NoticeId", req.NoticeId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SchoolID", req.SchoolID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AcademicYear", req.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Title", (object?)CleanParam(req.Title) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Description", (object?)CleanParam(req.Description) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_NoticeType", (object?)CleanParam(req.NoticeType) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Audience", (object?)CleanParam(req.Audience) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ClassIds", (object?)CleanParam(req.ClassIds) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_StartDate", req.StartDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_EndDate", req.EndDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_AttachmentPath", (object?)CleanParam(req.AttachmentPath) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_IsActive", req.IsActive ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedBy", req.CreatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(req.CreatedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedBy", req.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(req.ModifiedIP) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Flag", (object?)CleanParam(req.Flag) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Limit", req.Limit ?? 100);
+                cmd.Parameters.AddWithValue("p_LastCreatedDate", req.LastCreatedDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_LastID", req.LastID ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("p_SortDirection", (object?)CleanParam(req.SortDirection) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p_Offset", req.Offset ?? (object)DBNull.Value);
+
+                conn.Open();
+
+                if (req.Flag != null)
+                {
+                    // COUNT FLAGS
+                    if (req.Flag == "6" || req.Flag == "8")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                TotalCount = reader["totalCount"] != DBNull.Value ? Convert.ToInt32(reader["totalCount"]) : (int?)null
+                            });
+                        }
+                    }
+                    // FETCH / SEARCH / GET BY ID
+                    else if (req.Flag == "2" || req.Flag == "3" || req.Flag == "4" || req.Flag == "7")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
+                                SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                Title = reader["Title"]?.ToString(),
+                                Description = reader["Description"]?.ToString(),
+                                NoticeType = reader["NoticeType"]?.ToString(),
+                                Audience = reader["Audience"]?.ToString(),
+                                ClassIds = reader["ClassIds"]?.ToString(),
+                                StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
+                                EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
+                                AttachmentPath = reader["AttachmentPath"]?.ToString(),
+                                IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                CreatedBy = reader["CreatedBy"]?.ToString(),
+                                CreatedIP = reader["CreatedIP"]?.ToString(),
+                                CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
+                                ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
+                                SchoolName = reader["SchoolName"]?.ToString(),
+                                AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                Status = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                    // INSERT / UPDATE
+                    else if (req.Flag == "1" || req.Flag == "5")
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            if (reader["Message"]?.ToString() == "Notice already exists")
+                            {
+                                result.Add(new TblNotices
+                                {
+                                    Status = reader["Message"]?.ToString()
+                                });
+                            }
+                            else
+                            {
+                                result.Add(new TblNotices
+                                {
+                                    NoticeId = reader["NoticeId"] == DBNull.Value ? null : Convert.ToInt32(reader["NoticeId"]),
+                                    SchoolID = reader["SchoolID"] == DBNull.Value ? null : Convert.ToInt32(reader["SchoolID"]),
+                                    AcademicYear = reader["AcademicYear"] == DBNull.Value ? null : Convert.ToInt32(reader["AcademicYear"]),
+                                    Title = reader["Title"]?.ToString(),
+                                    Description = reader["Description"]?.ToString(),
+                                    NoticeType = reader["NoticeType"]?.ToString(),
+                                    Audience = reader["Audience"]?.ToString(),
+                                    ClassIds = reader["ClassIds"]?.ToString(),
+                                    StartDate = reader["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["StartDate"]),
+                                    EndDate = reader["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["EndDate"]),
+                                    AttachmentPath = reader["AttachmentPath"]?.ToString(),
+                                    IsActive = reader["IsActive"] == DBNull.Value ? null : Convert.ToInt32(reader["IsActive"]),
+                                    //CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]),
+                                    CreatedBy = reader["CreatedBy"]?.ToString(),
+                                    CreatedIP = reader["CreatedIP"]?.ToString(),
+                                    CreatedAt = reader["CreatedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["CreatedAt"]),
+                                    ModifiedBy = reader["ModifiedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["ModifiedBy"]),
+                                    ModifiedIP = reader["ModifiedIP"]?.ToString(),
+                                    ModifiedAt = reader["ModifiedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedAt"]),
+                                    Status = reader["Message"]?.ToString()
+                                });
+                            }
+                        }
+                    }
+                    // DEFAULT
+                    else
+                    {
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            result.Add(new TblNotices
+                            {
+                                Status = reader["Message"]?.ToString()
+                            });
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "SchoolManagementDAL", "Tbl_Notices_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                return new List<TblNotices>
+        {
+            new TblNotices { Status = $"ERROR: {ex.Message}" }
+        };
+            }
+        }
+
+
+        public List<Tbl_HostelMaster> Tbl_HostelMaster_CRUD_Operations(Tbl_HostelMaster hostel)
+        {
+            var Hostel = new List<Tbl_HostelMaster>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_HostelMaster", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID", (object?)CleanParam(hostel.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID", (object?)CleanParam(hostel.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear", (object?)CleanParam(hostel.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelName", (object?)CleanParam(hostel.HostelName) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelType", (object?)CleanParam(hostel.HostelType) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_TotalRooms", (object?)CleanParam(hostel.TotalRooms) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_BedCapacity", (object?)CleanParam(hostel.BedCapacity) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Address", (object?)CleanParam(hostel.Address) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks", (object?)CleanParam(hostel.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive", (object?)CleanParam(hostel.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy", (object?)CleanParam(hostel.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP", (object?)CleanParam(hostel.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy", (object?)CleanParam(hostel.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP", (object?)CleanParam(hostel.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag", hostel.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit", hostel.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate", hostel.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID", hostel.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        hostel.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        hostel.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        hostel.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (hostel.Flag == "6" || hostel.Flag == "8")
+                            {
+                                Hostel.Add(new Tbl_HostelMaster
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Hostel.Add(new Tbl_HostelMaster
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_HostelMaster
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID") ? reader["SchoolID"]?.ToString() : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear") ? reader["AcademicYear"]?.ToString() : null,
+
+                                HostelName = HasColumn(reader, "HostelName") ? reader["HostelName"]?.ToString() : null,
+
+                                HostelType = HasColumn(reader, "HostelType") ? reader["HostelType"]?.ToString() : null,
+
+                                TotalRooms = HasColumn(reader, "TotalRooms") ? reader["TotalRooms"]?.ToString() : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity") ? reader["BedCapacity"]?.ToString() : null,
+
+                                Address = HasColumn(reader, "Address") ? reader["Address"]?.ToString() : null,
+
+                                Remarks = HasColumn(reader, "Remarks") ? reader["Remarks"]?.ToString() : null,
+
+                                IsActive = HasColumn(reader, "IsActive") ? reader["IsActive"]?.ToString() : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy") ? reader["CreatedBy"]?.ToString() : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp") ? reader["CreatedIp"]?.ToString() : null,
+
+                                CreatedDate = HasColumn(reader, "CreatedDate") && reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy") ? reader["ModifiedBy"]?.ToString() : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp") ? reader["ModifiedIp"]?.ToString() : null,
+
+                                ModifiedDate = HasColumn(reader, "ModifiedDate") && reader["ModifiedDate"] != DBNull.Value ? Convert.ToDateTime(reader["ModifiedDate"]) : (DateTime?)null,
+
+                                SchoolName = HasColumn(reader, "SchoolName") ? reader["SchoolName"]?.ToString() : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName") ? reader["AcademicYearName"]?.ToString() : null,
+
+                                Status = HasColumn(reader, "Message") ? reader["Message"]?.ToString() : null
+                            };
+
+                            Hostel.Add(obj);
+                        }
+                    }
+                }
+
+                return Hostel;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_HostelMaster_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(hostel)
+                );
+
+                return new List<Tbl_HostelMaster>
+        {
+            new Tbl_HostelMaster
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+
+        
+        public List<Tbl_RoomMaster> Tbl_RoomMaster_CRUD_Operations(Tbl_RoomMaster room)
+        {
+            var Room = new List<Tbl_RoomMaster>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_RoomMaster", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(room.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(room.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(room.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(room.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomNumber",
+                        (object?)CleanParam(room.RoomNumber) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_BedCapacity",
+                        (object?)CleanParam(room.BedCapacity) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Occupied",
+                        (object?)CleanParam(room.Occupied) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(room.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(room.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(room.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(room.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(room.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(room.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        room.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        room.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        room.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        room.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        room.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        room.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        room.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (room.Flag == "6" || room.Flag == "8")
+                            {
+                                Room.Add(new Tbl_RoomMaster
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Room.Add(new Tbl_RoomMaster
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_RoomMaster
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity")
+                                    ? reader["BedCapacity"]?.ToString()
+                                    : null,
+
+                                Occupied = HasColumn(reader, "Occupied")
+                                    ? reader["Occupied"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy")
+                                    ? reader["CreatedBy"]?.ToString()
+                                    : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp")
+                                    ? reader["CreatedIp"]?.ToString()
+                                    : null,
+
+                                CreatedDate =
+                                    HasColumn(reader, "CreatedDate") &&
+                                    reader["CreatedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["CreatedDate"])
+                                        : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy")
+                                    ? reader["ModifiedBy"]?.ToString()
+                                    : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp")
+                                    ? reader["ModifiedIp"]?.ToString()
+                                    : null,
+
+                                ModifiedDate =
+                                    HasColumn(reader, "ModifiedDate") &&
+                                    reader["ModifiedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["ModifiedDate"])
+                                        : (DateTime?)null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
+                                    ? reader["OccupiedBeds"]?.ToString()
+                                    : null,
+
+                                AvailableBeds = HasColumn(reader, "AvailableBeds")
+                                    ? reader["AvailableBeds"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            Room.Add(obj);
+                        }
+                    }
+                }
+
+                return Room;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_RoomMaster_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(room)
+                );
+
+                return new List<Tbl_RoomMaster>
+        {
+            new Tbl_RoomMaster
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+        
+
+        public List<Tbl_RoomAllotment> Tbl_RoomAllotment_CRUD_Operations(Tbl_RoomAllotment allotment)
+        {
+            var Allotment = new List<Tbl_RoomAllotment>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string"
+                    ? null
+                    : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_RoomAllotment", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(allotment.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(allotment.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(allotment.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(allotment.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomID",
+                        (object?)CleanParam(allotment.RoomID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_StudentID",
+                        (object?)CleanParam(allotment.StudentID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AllotmentDate",
+                        (object?)CleanParam(allotment.AllotmentDate) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(allotment.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(allotment.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(allotment.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(allotment.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(allotment.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(allotment.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        allotment.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        allotment.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        allotment.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                Allotment.Add(new Tbl_RoomAllotment
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            var obj = new Tbl_RoomAllotment
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomID = HasColumn(reader, "RoomID")
+                                    ? reader["RoomID"]?.ToString()
+                                    : null,
+
+                                StudentID = HasColumn(reader, "StudentID")
+                                    ? reader["StudentID"]?.ToString()
+                                    : null,
+
+                                AllotmentDate = HasColumn(reader, "AllotmentDate")
+                                    ? reader["AllotmentDate"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                BedCapacity = HasColumn(reader, "BedCapacity")
+                                    ? reader["BedCapacity"]?.ToString()
+                                    : null,
+
+                                OccupiedBeds = HasColumn(reader, "OccupiedBeds")
+                                    ? reader["OccupiedBeds"]?.ToString()
+                                    : null,
+
+                                AvailableBeds = HasColumn(reader, "AvailableBeds")
+                                    ? reader["AvailableBeds"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            Allotment.Add(obj);
+                        }
+                    }
+                }
+
+                return Allotment;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_RoomAllotment_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(allotment)
+                );
+
+                return new List<Tbl_RoomAllotment>
+        {
+            new Tbl_RoomAllotment
+            {
+                Status = $"ERROR: {ex.Message}"
+            }
+        };
+            }
+        }
+
+
+        public List<Tbl_OutPass> Tbl_OutPass_CRUD_Operations(Tbl_OutPass outpass)
+        {
+            var OutPass = new List<Tbl_OutPass>();
+
+            string CleanParam(string? value)
+            {
+                return string.IsNullOrWhiteSpace(value) || value.Trim().ToLower() == "string" ? null : value;
+            }
+
+            bool HasColumn(IDataRecord reader, string columnName)
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connectionString))
+                using (var cmd = new MySqlCommand("Proc_OutPass", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_ID",
+                        (object?)CleanParam(outpass.ID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SchoolID",
+                        (object?)CleanParam(outpass.SchoolID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_AcademicYear",
+                        (object?)CleanParam(outpass.AcademicYear) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_HostelID",
+                        (object?)CleanParam(outpass.HostelID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_RoomID",
+                        (object?)CleanParam(outpass.RoomID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_StudentID",
+                        (object?)CleanParam(outpass.StudentID) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_OutDateTime",
+                        (object?)CleanParam(outpass.OutDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ExpectedReturnDateTime",
+                        (object?)CleanParam(outpass.ExpectedReturnDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ActualReturnDateTime",
+                        (object?)CleanParam(outpass.ActualReturnDateTime) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Destination",
+                        (object?)CleanParam(outpass.Destination) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Reason",
+                        (object?)CleanParam(outpass.Reason) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Status",
+                        (object?)CleanParam(outpass.OutPassStatus) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ApprovedBy",
+                        (object?)CleanParam(outpass.ApprovedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ApprovedDate",
+                        (object?)CleanParam(outpass.ApprovedDate) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Remarks",
+                        (object?)CleanParam(outpass.Remarks) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_IsActive",
+                        (object?)CleanParam(outpass.IsActive) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedBy",
+                        (object?)CleanParam(outpass.CreatedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_CreatedIP",
+                        (object?)CleanParam(outpass.CreatedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedBy",
+                        (object?)CleanParam(outpass.ModifiedBy) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_ModifiedIP",
+                        (object?)CleanParam(outpass.ModifiedIp) ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Flag",
+                        outpass.Flag ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Limit",
+                        outpass.Limit ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastCreatedDate",
+                        outpass.LastCreatedDate ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_LastID",
+                        outpass.LastID ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortColumn",
+                        outpass.SortColumn ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_SortDirection",
+                        outpass.SortDirection ?? (object)DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("p_Offset",
+                        outpass.Offset ?? (object)DBNull.Value);
+
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // ===== COUNT =====
+
+                            if (outpass.Flag == "6" || outpass.Flag == "8")
+                            {
+                                OutPass.Add(new Tbl_OutPass
+                                {
+                                    totalcount =
+                                        HasColumn(reader, "totalCount") &&
+                                        reader["totalCount"] != DBNull.Value
+                                            ? Convert.ToInt32(reader["totalCount"])
+                                            : (int?)null
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MESSAGE ONLY =====
+
+                            if (!HasColumn(reader, "ID"))
+                            {
+                                OutPass.Add(new Tbl_OutPass
+                                {
+                                    Status =
+                                        HasColumn(reader, "Message")
+                                            ? reader["Message"]?.ToString()
+                                            : "Operation completed."
+                                });
+
+                                continue;
+                            }
+
+                            // ===== MAIN DATA =====
+
+                            var obj = new Tbl_OutPass
+                            {
+                                ID = reader["ID"]?.ToString(),
+
+                                SchoolID = HasColumn(reader, "SchoolID")
+                                    ? reader["SchoolID"]?.ToString()
+                                    : null,
+
+                                AcademicYear = HasColumn(reader, "AcademicYear")
+                                    ? reader["AcademicYear"]?.ToString()
+                                    : null,
+
+                                HostelID = HasColumn(reader, "HostelID")
+                                    ? reader["HostelID"]?.ToString()
+                                    : null,
+
+                                RoomID = HasColumn(reader, "RoomID")
+                                    ? reader["RoomID"]?.ToString()
+                                    : null,
+
+                                StudentID = HasColumn(reader, "StudentID")
+                                    ? reader["StudentID"]?.ToString()
+                                    : null,
+
+                                OutDateTime = HasColumn(reader, "OutDateTime")
+                                    ? reader["OutDateTime"]?.ToString()
+                                    : null,
+
+                                ExpectedReturnDateTime = HasColumn(reader, "ExpectedReturnDateTime")
+                                    ? reader["ExpectedReturnDateTime"]?.ToString()
+                                    : null,
+
+                                ActualReturnDateTime = HasColumn(reader, "ActualReturnDateTime")
+                                    ? reader["ActualReturnDateTime"]?.ToString()
+                                    : null,
+
+                                Destination = HasColumn(reader, "Destination")
+                                    ? reader["Destination"]?.ToString()
+                                    : null,
+
+                                Reason = HasColumn(reader, "Reason")
+                                    ? reader["Reason"]?.ToString()
+                                    : null,
+
+                                OutPassStatus = HasColumn(reader, "OutPassStatus")
+                                    ? reader["OutPassStatus"]?.ToString()
+                                    : null,
+
+                                ApprovedBy = HasColumn(reader, "ApprovedBy")
+                                    ? reader["ApprovedBy"]?.ToString()
+                                    : null,
+
+                                ApprovedDate = HasColumn(reader, "ApprovedDate")
+                                    ? reader["ApprovedDate"]?.ToString()
+                                    : null,
+
+                                Remarks = HasColumn(reader, "Remarks")
+                                    ? reader["Remarks"]?.ToString()
+                                    : null,
+
+                                IsActive = HasColumn(reader, "IsActive")
+                                    ? reader["IsActive"]?.ToString()
+                                    : null,
+
+                                CreatedBy = HasColumn(reader, "CreatedBy")
+                                    ? reader["CreatedBy"]?.ToString()
+                                    : null,
+
+                                CreatedIp = HasColumn(reader, "CreatedIp")
+                                    ? reader["CreatedIp"]?.ToString()
+                                    : null,
+
+                                CreatedDate =
+                                    HasColumn(reader, "CreatedDate") &&
+                                    reader["CreatedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["CreatedDate"])
+                                        : (DateTime?)null,
+
+                                ModifiedBy = HasColumn(reader, "ModifiedBy")
+                                    ? reader["ModifiedBy"]?.ToString()
+                                    : null,
+
+                                ModifiedIp = HasColumn(reader, "ModifiedIp")
+                                    ? reader["ModifiedIp"]?.ToString()
+                                    : null,
+
+                                ModifiedDate =
+                                    HasColumn(reader, "ModifiedDate") &&
+                                    reader["ModifiedDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["ModifiedDate"])
+                                        : (DateTime?)null,
+
+                                HostelName = HasColumn(reader, "HostelName")
+                                    ? reader["HostelName"]?.ToString()
+                                    : null,
+
+                                RoomNumber = HasColumn(reader, "RoomNumber")
+                                    ? reader["RoomNumber"]?.ToString()
+                                    : null,
+
+                                SchoolName = HasColumn(reader, "SchoolName")
+                                    ? reader["SchoolName"]?.ToString()
+                                    : null,
+
+                                AcademicYearName = HasColumn(reader, "AcademicYearName")
+                                    ? reader["AcademicYearName"]?.ToString()
+                                    : null,
+
+                                StudentName = HasColumn(reader, "StudentName")
+                                    ? reader["StudentName"]?.ToString()
+                                    : null,
+
+                                Status = HasColumn(reader, "Message")
+                                    ? reader["Message"]?.ToString()
+                                    : null
+                            };
+
+                            OutPass.Add(obj);
+                        }
+                    }
+                }
+
+                return OutPass;
+            }
+            catch (Exception ex)
+            {
+                LogException(
+                    ex,
+                    "SchoolManagementDAL",
+                    "Tbl_OutPass_CRUD_Operations",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(outpass)
+                );
+
+                return new List<Tbl_OutPass>
+                {
+                    new Tbl_OutPass
+                    {
+                        Status = $"ERROR: {ex.Message}"
+                    }
+                };
+            }
+        }
+
+        public void TagStaffSchools(long staffId, List<string> schoolIds)
+        {
+            // First clear existing tags
+            using var conn1 = new MySqlConnection(_connectionString);
+            using var cmd1 = new MySqlCommand("Proc_StaffSchools", conn1)
+            { CommandType = CommandType.StoredProcedure };
+            cmd1.Parameters.AddWithValue("p_StaffID", staffId);
+            cmd1.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
+            cmd1.Parameters.AddWithValue("p_Flag", "3");
+            conn1.Open();
+            cmd1.ExecuteNonQuery();
+            // Insert each school
+            foreach (var schoolId in schoolIds)
+            {
+                using var conn2 = new MySqlConnection(_connectionString);
+                using var cmd2 = new MySqlCommand("Proc_StaffSchools", conn2)
+                { CommandType = CommandType.StoredProcedure };
+                cmd2.Parameters.AddWithValue("p_StaffID", staffId);
+                cmd2.Parameters.AddWithValue("p_SchoolID", schoolId.Trim());
+                cmd2.Parameters.AddWithValue("p_Flag", "1");
+                conn2.Open();
+                cmd2.ExecuteNonQuery();
+            }
+        }
+
+        public List<string> GetStaffSchoolIDs(string email)
+        {
+            // Flag 11 gives user by email, then we use Flag 14 on staff
+            var user = Tbl_Users_CRUD_Operations(new TblUser { Email = email, Flag = "11" }).FirstOrDefault();
+            if (user == null) return new List<string>();
+
+            using var conn = new MySqlConnection(_connectionString);
+            using var cmd = new MySqlCommand("Proc_StaffSchools", conn)
+            { CommandType = CommandType.StoredProcedure };
+
+            // Find staff ID by email
+            using var conn2 = new MySqlConnection(_connectionString);
+            using var cmd2 = new MySqlCommand(
+                "SELECT ID FROM tbl_staff WHERE Email = @email LIMIT 1", conn2);
+            cmd2.Parameters.AddWithValue("@email", email);
+            conn2.Open();
+            var staffId = cmd2.ExecuteScalar();
+            if (staffId == null) return new List<string>();
+
+            cmd.Parameters.AddWithValue("p_StaffID", staffId);
+            cmd.Parameters.AddWithValue("p_SchoolID", DBNull.Value);
+            cmd.Parameters.AddWithValue("p_Flag", "2");
+            conn.Open();
+
+            var ids = new List<string>();
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                ids.Add(reader["SchoolID"]?.ToString() ?? "");
+            return ids;
+        }
     }
 }

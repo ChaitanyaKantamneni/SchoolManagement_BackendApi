@@ -92,4 +92,30 @@ public class FileService
             ? Path.Combine(_basePath, schoolId, type, fileName)
             : Path.Combine(_basePath, schoolId, type, subId, fileName);
     }
+
+    public async Task<(string fileName, string url)> SaveSchoolFile(
+    IFormFile file,
+    string schoolId)
+    {
+        var folderPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Uploads",
+            schoolId,
+            "School"
+        );
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+        var fullPath = Path.Combine(folderPath, fileName);
+
+        using (var stream = new FileStream(fullPath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var url = $"student/{schoolId}/School/{fileName}";
+        return (fileName, url);
+    }
 }
