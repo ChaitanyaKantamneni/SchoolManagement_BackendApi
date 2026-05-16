@@ -2168,6 +2168,8 @@ namespace SchoolManagementAPI.Models
         public string? ModifiedIp { get; set; }
         public DateTime? ModifiedDate { get; set; }
 
+        public string? AttachmentURL { get; set; }
+
         // Pagination & Search Flags
         [NotMapped]
         public string? Flag { get; set; }
@@ -2497,6 +2499,287 @@ namespace SchoolManagementAPI.Models
         public string SchoolId { get; set; }
         public string AdmissionId { get; set; }
         public string FileName { get; set; }
+    }
+
+    public class Tbl_HostelMaster
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+        public string? AcademicYear { get; set; }
+
+        public string? HostelName { get; set; }
+        public string? HostelType { get; set; }
+
+        public string? TotalRooms { get; set; }
+
+        public string? BedCapacity { get; set; }
+
+        public string? Address { get; set; }
+
+        public string? Remarks { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== DISPLAY FIELDS =====
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+    }
+
+    
+
+    public class Tbl_RoomMaster
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? HostelID { get; set; }
+
+        public string? RoomNumber { get; set; }
+
+        public string? BedCapacity { get; set; }
+
+        public string? Occupied { get; set; }
+
+        public string? Remarks { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== DISPLAY FIELDS =====
+
+        public string? HostelName { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+
+        public string? OccupiedBeds { get; set; }
+
+        public string? AvailableBeds { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+    }
+
+    
+
+    public class Tbl_RoomAllotment
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? HostelID { get; set; }
+
+        public string? RoomID { get; set; }
+
+        public string? StudentID { get; set; }
+
+        public string? AllotmentDate { get; set; }
+
+        public string? Remarks { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== DISPLAY FIELDS =====
+
+        public string? HostelName { get; set; }
+
+        public string? RoomNumber { get; set; }
+
+        public string? BedCapacity { get; set; }
+
+        public string? OccupiedBeds { get; set; }
+
+        public string? AvailableBeds { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
+    }
+
+    public class Tbl_OutPass
+    {
+        public string? ID { get; set; }
+
+        public string? SchoolID { get; set; }
+
+        public string? AcademicYear { get; set; }
+
+        public string? HostelID { get; set; }
+
+        public string? RoomID { get; set; }
+
+        public string? StudentID { get; set; }
+
+        public string? OutDateTime { get; set; }
+
+        public string? ExpectedReturnDateTime { get; set; }
+
+        public string? ActualReturnDateTime { get; set; }
+
+        public string? Destination { get; set; }
+
+        public string? Reason { get; set; }
+
+        public string? OutPassStatus { get; set; }
+
+        public string? ApprovedBy { get; set; }
+
+        public string? ApprovedDate { get; set; }
+
+        public string? Remarks { get; set; }
+
+        public string? IsActive { get; set; }
+
+        public string? CreatedBy { get; set; }
+        public string? CreatedIp { get; set; }
+        public DateTime? CreatedDate { get; set; }
+
+        public string? ModifiedBy { get; set; }
+        public string? ModifiedIp { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // ===== DISPLAY FIELDS =====
+
+        public string? HostelName { get; set; }
+
+        public string? RoomNumber { get; set; }
+
+        public string? SchoolName { get; set; }
+
+        public string? AcademicYearName { get; set; }
+
+        public string? StudentName { get; set; }
+
+        // ===== COMMON CONTROL FIELDS =====
+
+        [NotMapped]
+        public string? Flag { get; set; }
+
+        [NotMapped]
+        public string? Status { get; set; }
+
+        [NotMapped]
+        public int? Limit { get; set; }
+
+        [NotMapped]
+        public DateTime? LastCreatedDate { get; set; }
+
+        [NotMapped]
+        public int? LastID { get; set; }
+
+        [NotMapped]
+        public int? totalcount { get; set; }
+
+        [NotMapped]
+        public string? SortColumn { get; set; }
+
+        [NotMapped]
+        public string? SortDirection { get; set; }
+
+        [NotMapped]
+        public int? Offset { get; set; }
     }
 
     public class SchoolFile
