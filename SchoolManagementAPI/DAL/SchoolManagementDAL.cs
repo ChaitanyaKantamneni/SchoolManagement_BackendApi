@@ -11251,6 +11251,7 @@ namespace SchoolManagementAPI.DAL
                                         ModifiedDate = reader["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(reader["ModifiedDate"]),
                                         SchoolName = reader["SchoolName"]?.ToString(),
                                         AcademicYearName = reader["AcademicYearName"]?.ToString(),
+                                       
 
                                         Status = reader["Message"]?.ToString()
                                     };
