@@ -304,10 +304,18 @@ app.UseCors("AllowAngularClient");
 
 // STATIC FILES
 // STATIC FILES with CORS
+// STATIC FILES
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+
+// Create Uploads folder if missing
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/Uploads",
     OnPrepareResponse = ctx =>
     {
@@ -315,7 +323,6 @@ app.UseStaticFiles(new StaticFileOptions
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, OPTIONS");
     }
 });
-
 app.UseAuthentication();
 app.UseAuthorization();
 

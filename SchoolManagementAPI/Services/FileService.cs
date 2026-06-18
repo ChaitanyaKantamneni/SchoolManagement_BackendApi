@@ -46,8 +46,26 @@ public class FileService
         return path;
     }
 
+    //public async Task<(string url, string fileName)> SaveStudentFile(
+    //    IFormFile file, string schoolId, string admissionId)
+    //{
+    //    ValidateFile(file);
+
+    //    var folder = EnsureFolder(schoolId, "Students", admissionId);
+
+    //    var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+    //    var fullPath = Path.Combine(folder, fileName);
+
+    //    using var stream = new FileStream(fullPath, FileMode.Create);
+    //    await file.CopyToAsync(stream);
+
+    //    var url = $"{_baseUrl}/student/{schoolId}/{admissionId}/{fileName}";
+
+    //    return (url, fileName);
+    //}
+
     public async Task<(string url, string fileName)> SaveStudentFile(
-        IFormFile file, string schoolId, string admissionId)
+    IFormFile file, string schoolId, string admissionId)
     {
         ValidateFile(file);
 
@@ -59,7 +77,8 @@ public class FileService
         using var stream = new FileStream(fullPath, FileMode.Create);
         await file.CopyToAsync(stream);
 
-        var url = $"{_baseUrl}/student/{schoolId}/{admissionId}/{fileName}";
+        // FIXED
+        var url = $"student/{schoolId}/{admissionId}/{fileName}";
 
         return (url, fileName);
     }

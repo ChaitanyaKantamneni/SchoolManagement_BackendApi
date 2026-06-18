@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Uploads\11\Homework\temp\**" />
+    <Content Remove="Uploads\11\Homework\temp\**" />
+    <EmbeddedResource Remove="Uploads\11\Homework\temp\**" />
+    <None Remove="Uploads\11\Homework\temp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Uploads\2\HomeworkSubmission\temp\7049ef9b-a5b3-4c39-aae3-f357ff49ed99_Screenshot 2026-05-05 145253.png" />
     <None Remove="Uploads\2\HomeworkSubmission\temp\81586558-dc27-480d-934d-91640d70e999_image2.png" />
     <None Remove="Uploads\2\HomeworkSubmission\temp\93cc2e24-5a4d-4796-8bd0-6ed8141da0fc_Screenshot 2026-05-05 144449.png" />
@@ -43,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Uploads\11\Homework\" />
     <Folder Include="Uploads\2\HomeworkSubmission\temp\" />
     <Folder Include="Uploads\2\Homework\temp\" />
     <Folder Include="Uploads\2\Leave\" />
