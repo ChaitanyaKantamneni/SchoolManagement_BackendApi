@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
+/// <summary>
+/// FileService: Manages local system file uploads for the school ERP.
+/// This service is used to centralize file uploads (student photos, homework uploads, notices, fee receipts).
+/// It validates file sizes and MIME types to prevent malicious or excessively large files from consuming disk space.
+/// </summary>
 public class FileService
 {
     private readonly string _basePath;
@@ -22,6 +27,9 @@ public class FileService
         _baseUrl = "api/files";
     }
 
+    /// <summary>
+    /// Validates file existence, file size limits, and checks content-type headers against allowed extensions.
+    /// </summary>
     private void ValidateFile(IFormFile file)
     {
         if (file == null || file.Length == 0)

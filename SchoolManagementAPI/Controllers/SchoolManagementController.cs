@@ -31,6 +31,10 @@ namespace SchoolManagementAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    /// <summary>
+    /// SchoolManagementController: Exposes all REST endpoints for academic, finance, and user operations.
+    /// Handled via standard ASP.NET HTTP calls mapping straight to Stored Procedures through SchoolManagementDAL.
+    /// </summary>
     public class SchoolManagementController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -61,6 +65,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/sendotp
+        /// Purpose: Handles transactional and query operations for sendotp.
+        /// </summary>
         [HttpPost("sendotp")]
         public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
         {
@@ -91,6 +99,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/verifyotp
+        /// Purpose: Handles transactional and query operations for verifyotp.
+        /// </summary>
         [HttpPost("verifyotp")]
         public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
         {
@@ -152,557 +164,574 @@ namespace SchoolManagementAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Sends an OTP verification email to the user using SMTP credentials.
+        /// </summary>
         private async Task SendOtpEmail(string toEmail, string otp)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-            message.To.Add(MailboxAddress.Parse(toEmail));
-            message.Subject = "Your Login OTP";
-
-            message.Body = new BodyBuilder
             {
-                HtmlBody = $@"
-            <h2>Login OTP Verification</h2>
-            <p>Your OTP is:</p>
-            <h1 style='color:#2d3093'>{otp}</h1>
-            <p>This OTP is valid for 5 minutes.</p>"
-            }.ToMessageBody();
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                message.To.Add(MailboxAddress.Parse(toEmail));
+                message.Subject = "Your Login OTP";
 
-            using var smtp = new MailKit.Net.Smtp.SmtpClient();
+                message.Body = new BodyBuilder
+                {
+                    HtmlBody = $@"
+                <h2>Login OTP Verification</h2>
+                <p>Your OTP is:</p>
+                <h1 style='color:#2d3093'>{otp}</h1>
+                <p>This OTP is valid for 5 minutes.</p>"
+                }.ToMessageBody();
 
-            await smtp.ConnectAsync(
-                _configuration["Smtp:Host"],
-                int.Parse(_configuration["Smtp:Port"]),
-                MailKit.Security.SecureSocketOptions.Auto
-            );
+                using var smtp = new MailKit.Net.Smtp.SmtpClient();
 
-            await smtp.AuthenticateAsync(
-                _configuration["Smtp:Username"],
-                _configuration["Smtp:Password"]
-            );
+                await smtp.ConnectAsync(
+                    _configuration["Smtp:Host"],
+                    int.Parse(_configuration["Smtp:Port"]),
+                    MailKit.Security.SecureSocketOptions.Auto
+                );
 
-            await smtp.SendAsync(message);
-            await smtp.DisconnectAsync(true);
-        }
+                await smtp.AuthenticateAsync(
+                    _configuration["Smtp:Username"],
+                    _configuration["Smtp:Password"]
+                );
 
+                await smtp.SendAsync(message);
+                await smtp.DisconnectAsync(true);
+            }
+
+        /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/Tbl_Users_CRUD_Operations
+        /// Purpose: Registers new users or updates profile fields (supports profile image file upload).
+        /// </summary>
         [AllowAnonymous]
         [HttpPost("Tbl_Users" +
-            "_CRUD_Operations")]
+                "_CRUD_Operations")]
         public async Task<IActionResult> Tbl_Users_CRUD_Operations([FromForm] TblUser user, [FromForm] List<IFormFile>? files)
-        {
-            try
             {
-
-                if ((user.Flag == "1" || user.Flag == "7") && files != null && files.Count > 0)
+                try
                 {
-                    if (files.Count > 1)
-                        return BadRequest("Only one image can be uploaded.");
 
-                    var file = files[0];
-                    if (file.Length == 0)
-                        return BadRequest("Invalid file.");
-
-                    string[] allowedTypes = { "image/jpeg", "image/png", "image/gif", "image/bmp" };
-                    if (!allowedTypes.Contains(file.ContentType))
-                        return BadRequest("Invalid image format.");
-
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    if ((user.Flag == "1" || user.Flag == "7") && files != null && files.Count > 0)
                     {
-                        await file.CopyToAsync(fileStream);
+                        if (files.Count > 1)
+                            return BadRequest("Only one image can be uploaded.");
+
+                        var file = files[0];
+                        if (file.Length == 0)
+                            return BadRequest("Invalid file.");
+
+                        string[] allowedTypes = { "image/jpeg", "image/png", "image/gif", "image/bmp" };
+                        if (!allowedTypes.Contains(file.ContentType))
+                            return BadRequest("Invalid image format.");
+
+                        string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
+                        Directory.CreateDirectory(uploadsFolder);
+
+                        string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(fileStream);
+                        }
+
+                        string relativePath = Path.Combine("images", uniqueFileName).Replace("\\", "/");
+
+                        user.FileName = uniqueFileName;
+                        user.FilePath = "/" + relativePath;
                     }
 
-                    string relativePath = Path.Combine("images", uniqueFileName).Replace("\\", "/");
+                    var result = dbop.Tbl_Users_CRUD_Operations(user);
 
-                    user.FileName = uniqueFileName;
-                    user.FilePath = "/" + relativePath;
-                }
-
-                var result = dbop.Tbl_Users_CRUD_Operations(user);
-
-                if (result == null)
-                {
-                    return StatusCode(500, new
+                    if (result == null)
                     {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = "Database returned null result."
-                    });
-                }
-
-                var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
-                if (error != null)
-                {
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Success = false,
-                        Message = error.Status
-                    });
-                }
-
-                if (user.Flag == "4")
-                {
-                    var dbUser = result[0];
-
-                    if (string.IsNullOrEmpty(dbUser.RollId))
-                        return Unauthorized(new { message = "Invalid credentials" });
-
-                    //if (dbUser.RollId == "1" || dbUser.RollId == "2" || dbUser.RollId == "8")
-                    //{
-                    //    // NO TOKEN → frontend will trigger OTP
-                    //    string schoolRouteName1 = dbUser.SchoolName?.Replace(" ", "");
-
-                    //    return Ok(new
-                    //    {
-                    //        success = true,
-                    //        role = dbUser.RollId,
-                    //        email = dbUser.Email,
-                    //        schoolId = dbUser.SchoolID,
-                    //        schoolName = schoolRouteName1,
-                    //        requireOtp = true   // IMPORTANT FLAG
-                    //    });
-                    //}
-
-                    var tokenService = new TokenService(_configuration);
-                    string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
-
-                    string? schoolIDs = null;
-                    if (dbUser.RollId == "10") // group admin
-                    {
-                        var ids = dbop.GetStaffSchoolIDs(dbUser.Email);
-                        schoolIDs = ids.Count > 0 ? string.Join(",", ids) : null;
+                        return StatusCode(500, new
+                        {
+                            StatusCode = 500,
+                            Success = false,
+                            Message = "Database returned null result."
+                        });
                     }
 
-                    var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
-                        tokenService.GenerateTokens(
+                    var error = result.FirstOrDefault(x => x.Status?.ToLower().Contains("error") == true);
+                    if (error != null)
+                    {
+                        return StatusCode(500, new
+                        {
+                            StatusCode = 500,
+                            Success = false,
+                            Message = error.Status
+                        });
+                    }
+
+                    if (user.Flag == "4")
+                    {
+                        var dbUser = result[0];
+
+                        if (string.IsNullOrEmpty(dbUser.RollId))
+                            return Unauthorized(new { message = "Invalid credentials" });
+
+                        //if (dbUser.RollId == "1" || dbUser.RollId == "2" || dbUser.RollId == "8")
+                        //{
+                        //    // NO TOKEN → frontend will trigger OTP
+                        //    string schoolRouteName1 = dbUser.SchoolName?.Replace(" ", "");
+
+                        //    return Ok(new
+                        //    {
+                        //        success = true,
+                        //        role = dbUser.RollId,
+                        //        email = dbUser.Email,
+                        //        schoolId = dbUser.SchoolID,
+                        //        schoolName = schoolRouteName1,
+                        //        requireOtp = true   // IMPORTANT FLAG
+                        //    });
+                        //}
+
+                        var tokenService = new TokenService(_configuration);
+                        string? schoolID = dbUser.RollId != "1" ? dbUser.SchoolID : null;
+
+                        string? schoolIDs = null;
+                        if (dbUser.RollId == "10") // group admin
+                        {
+                            var ids = dbop.GetStaffSchoolIDs(dbUser.Email);
+                            schoolIDs = ids.Count > 0 ? string.Join(",", ids) : null;
+                        }
+
+                        var (accessToken, refreshToken, accessExpiryUtc, refreshExpiryUtc) =
+                            tokenService.GenerateTokens(
+                                dbUser.Email,
+                                $"{dbUser.FirstName} {dbUser.LastName}",
+                                dbUser.RollId,
+                                schoolID,
+                                schoolIDs
+                            );
+
+                        var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
+                        if (existingToken != null)
+                            dbop.RevokeUserToken(existingToken.RefreshToken);
+
+                        dbop.InsertUserToken(
                             dbUser.Email,
-                            $"{dbUser.FirstName} {dbUser.LastName}",
-                            dbUser.RollId,
-                            schoolID,
-                            schoolIDs
+                            accessToken,
+                            refreshToken,
+                            accessExpiryUtc,
+                            refreshExpiryUtc
                         );
 
-                    var existingToken = dbop.GetUserTokenByRefresh(dbUser.Email);
-                    if (existingToken != null)
-                        dbop.RevokeUserToken(existingToken.RefreshToken);
+                        string schoolRouteName = dbUser.SchoolName.Replace(" ", "");
 
-                    dbop.InsertUserToken(
-                        dbUser.Email,
-                        accessToken,
-                        refreshToken,
-                        accessExpiryUtc,
-                        refreshExpiryUtc
-                    );
+                        return Ok(new
+                        {
+                            accessToken,
+                            refreshToken,
+                            success = true,
+                            role = dbUser.RollId,
+                            email = dbUser.Email,
+                            schoolId = dbUser.SchoolID,
+                            schoolIds = schoolIDs,
+                            schoolName = schoolRouteName
+                        });
+                    }
+                    else if (user.Flag == "1")
+                    {
+                        var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
+                        var schoolId = User.FindFirst("SchoolID")?.Value;
 
-                    string schoolRouteName = dbUser.SchoolName.Replace(" ", "");
+                        if (roleId != "1")
+                        {
+                            user.SchoolID = schoolId;
+                        }
+                        string? schoolName = null;
+                        string? schoolUrl = null;
+
+                        if (!string.IsNullOrEmpty(user.SchoolID))
+                        {
+                            var school = GetSchoolById(user.SchoolID);
+                            if (school != null)
+                            {
+                                schoolName = school.Name;
+                                schoolUrl = !string.IsNullOrEmpty(school.Website) ? school.Website : "https://www.smartschools.com";
+                            }
+                        }
+
+                        await SendRegistrationEmailAsync(
+                            user.Email,
+                            $"{user.FirstName} {user.LastName}",
+                            user.Password,
+                            isAdmin: false,
+                            schoolName,
+                            schoolUrl,
+                            user.RollId
+                        );
+                    }
+
 
                     return Ok(new
                     {
-                        accessToken,
-                        refreshToken,
-                        success = true,
-                        role = dbUser.RollId,
-                        email = dbUser.Email,
-                        schoolId = dbUser.SchoolID,
-                        schoolIds = schoolIDs,
-                        schoolName = schoolRouteName
+                        StatusCode = 200,
+                        Success = true,
+                        Message = result.First().Status,
+                        Data = result
                     });
                 }
-                else if (user.Flag == "1")
+                catch (Exception ex)
                 {
-                    var roleId = User.FindFirst(ClaimTypes.Role)?.Value;
-                    var schoolId = User.FindFirst("SchoolID")?.Value;
-
-                    if (roleId != "1")
+                    dbop.LogException(ex, "SchoolManagementController", "Tbl_Users_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(user));
+                    return BadRequest(new
                     {
-                        user.SchoolID = schoolId;
-                    }
-                    string? schoolName = null;
-                    string? schoolUrl = null;
-
-                    if (!string.IsNullOrEmpty(user.SchoolID))
-                    {
-                        var school = GetSchoolById(user.SchoolID);
-                        if (school != null)
-                        {
-                            schoolName = school.Name;
-                            schoolUrl = !string.IsNullOrEmpty(school.Website) ? school.Website : "https://www.smartschools.com";
-                        }
-                    }
-
-                    await SendRegistrationEmailAsync(
-                        user.Email,
-                        $"{user.FirstName} {user.LastName}",
-                        user.Password,
-                        isAdmin: false,
-                        schoolName,
-                        schoolUrl,
-                        user.RollId
-                    );
+                        StatusCode = 500,
+                        Success = false,
+                        Message = "Internal server error.",
+                        Error = ex.Message
+                    });
                 }
-
-
-                return Ok(new
-                {
-                    StatusCode = 200,
-                    Success = true,
-                    Message = result.First().Status,
-                    Data = result
-                });
             }
-            catch (Exception ex)
-            {
-                dbop.LogException(ex, "SchoolManagementController", "Tbl_Users_CRUD_Operations", Newtonsoft.Json.JsonConvert.SerializeObject(user));
-                return BadRequest(new
-                {
-                    StatusCode = 500,
-                    Success = false,
-                    Message = "Internal server error.",
-                    Error = ex.Message
-                });
-            }
-        }
 
+        /// <summary>
+        /// Queries dbop master records to retrieve school settings by ID.
+        /// </summary>
         private SchoolDetails? GetSchoolById(string schoolId)
-        {
-            if (string.IsNullOrEmpty(schoolId))
-                return null;
-
-            var schoolList = dbop.Tbl_SchoolDetails_CRUD(new SchoolDetails
             {
-                Flag = "4",
-                ID = schoolId
-            });
+                if (string.IsNullOrEmpty(schoolId))
+                    return null;
 
-            return schoolList.FirstOrDefault();
-        }
+                var schoolList = dbop.Tbl_SchoolDetails_CRUD(new SchoolDetails
+                {
+                    Flag = "4",
+                    ID = schoolId
+                });
 
+                return schoolList.FirstOrDefault();
+            }
+
+                /// <summary>
+        /// Sends welcome confirmation emails to newly registered school staff.
+        /// </summary>
         private async Task SendRegistrationEmailAsync(string toEmail, string userName, string userPassword, bool isAdmin, string? schoolName = null, string? schoolUrl = null, string? Roleid = null)
-        {
-            if (Roleid == "5")
             {
-                //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                //            string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
+                if (Roleid == "5")
+                {
+                    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                    //            string subject = isAdmin ? "New Student Registered" : "Welcome to Smart Schools ERP";
 
-                //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+                    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
 
-                //            var emailMessage = new MimeMessage();
-                //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                //            emailMessage.Subject = subject;
+                    //            var emailMessage = new MimeMessage();
+                    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                    //            emailMessage.Subject = subject;
 
-                //            var builder = new BodyBuilder();
+                    //            var builder = new BodyBuilder();
 
-                //            // Attach images only if they exist
-                //            if (System.IO.File.Exists(imagePath))
-                //            {
-                //                var headerImage = builder.LinkedResources.Add(imagePath);
-                //                headerImage.ContentId = "CompanyLogo";
-                //            }
+                    //            // Attach images only if they exist
+                    //            if (System.IO.File.Exists(imagePath))
+                    //            {
+                    //                var headerImage = builder.LinkedResources.Add(imagePath);
+                    //                headerImage.ContentId = "CompanyLogo";
+                    //            }
 
-                //            if (System.IO.File.Exists(logoPath))
-                //            {
-                //                var footerLogo = builder.LinkedResources.Add(logoPath);
-                //                footerLogo.ContentId = "FooterLogo";
-                //            }
+                    //            if (System.IO.File.Exists(logoPath))
+                    //            {
+                    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+                    //                footerLogo.ContentId = "FooterLogo";
+                    //            }
 
-                //            // Choose URL and footer based on school
-                //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+                    //            // Choose URL and footer based on school
+                    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
 
-                //            string htmlBody = isAdmin
-                //                ? $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        <div class='content'>
-                //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //            <h2>New Student Registration</h2>
-                //            <p><strong>Name:</strong> {userName}</p>
-                //            <p><strong>Email:</strong> {toEmail}</p>
-                //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //        </div>
-                //        <p class='footer'>{footerText}</p>
-                //    </div>
-                //</body>
-                //</html>"
-                //                : $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //        <h2>Welcome, {userName}!</h2>
-                //        <p>Congratulations! Your Student account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-                //        <div class='content'>
-                //            <h3>Login Details:</h3>
-                //            <div class='credentials'>
-                //                <p><strong>Email / UserID:</strong> {toEmail}</p>
-                //                <p><strong>Password:</strong> {userPassword}</p>
-                //            </div>
-                //        </div>
-                //        <p>{loginText}</p>
-                //        <p>If you face any issues, contact your system administrator.</p>
-                //        <p class='footer'>{footerText}</p>
-                //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //    </div>
-                //</body>
-                //</html>";
+                    //            string htmlBody = isAdmin
+                    //                ? $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        <div class='content'>
+                    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //            <h2>New Student Registration</h2>
+                    //            <p><strong>Name:</strong> {userName}</p>
+                    //            <p><strong>Email:</strong> {toEmail}</p>
+                    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //        </div>
+                    //        <p class='footer'>{footerText}</p>
+                    //    </div>
+                    //</body>
+                    //</html>"
+                    //                : $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //        <h2>Welcome, {userName}!</h2>
+                    //        <p>Congratulations! Your Student account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+                    //        <div class='content'>
+                    //            <h3>Login Details:</h3>
+                    //            <div class='credentials'>
+                    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    //                <p><strong>Password:</strong> {userPassword}</p>
+                    //            </div>
+                    //        </div>
+                    //        <p>{loginText}</p>
+                    //        <p>If you face any issues, contact your system administrator.</p>
+                    //        <p class='footer'>{footerText}</p>
+                    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //    </div>
+                    //</body>
+                    //</html>";
 
-                //            builder.HtmlBody = htmlBody;
-                //            emailMessage.Body = builder.ToMessageBody();
+                    //            builder.HtmlBody = htmlBody;
+                    //            emailMessage.Body = builder.ToMessageBody();
 
-                //            try
-                //            {
-                //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                //                await smtpClient.SendAsync(emailMessage);
-                //                await smtpClient.DisconnectAsync(true);
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                Console.WriteLine($"Error sending email: {ex.Message}");
-                //                throw;
-                //            }
+                    //            try
+                    //            {
+                    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    //                await smtpClient.SendAsync(emailMessage);
+                    //                await smtpClient.DisconnectAsync(true);
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                Console.WriteLine($"Error sending email: {ex.Message}");
+                    //                throw;
+                    //            }
+                }
+                else if (Roleid == "6")
+                {
+                    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                    //            string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
+
+                    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+
+                    //            var emailMessage = new MimeMessage();
+                    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                    //            emailMessage.Subject = subject;
+
+                    //            var builder = new BodyBuilder();
+
+                    //            // Attach images only if they exist
+                    //            if (System.IO.File.Exists(imagePath))
+                    //            {
+                    //                var headerImage = builder.LinkedResources.Add(imagePath);
+                    //                headerImage.ContentId = "CompanyLogo";
+                    //            }
+
+                    //            if (System.IO.File.Exists(logoPath))
+                    //            {
+                    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+                    //                footerLogo.ContentId = "FooterLogo";
+                    //            }
+
+                    //            // Choose URL and footer based on school
+                    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+                    //            string htmlBody = isAdmin
+                    //                ? $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        <div class='content'>
+                    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //            <h2>New Parent Registration</h2>
+                    //            <p><strong>Name:</strong> {userName}</p>
+                    //            <p><strong>Email:</strong> {toEmail}</p>
+                    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //        </div>
+                    //        <p class='footer'>{footerText}</p>
+                    //    </div>
+                    //</body>
+                    //</html>"
+                    //                : $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //        <h2>Welcome, {userName}!</h2>
+                    //        <p>Congratulations! Your Parent account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+                    //        <div class='content'>
+                    //            <h3>Login Details:</h3>
+                    //            <div class='credentials'>
+                    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    //                <p><strong>Password:</strong> {userPassword}</p>
+                    //            </div>
+                    //        </div>
+                    //        <p>{loginText}</p>
+                    //        <p>If you face any issues, contact your system administrator.</p>
+                    //        <p class='footer'>{footerText}</p>
+                    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //    </div>
+                    //</body>
+                    //</html>";
+
+                    //            builder.HtmlBody = htmlBody;
+                    //            emailMessage.Body = builder.ToMessageBody();
+
+                    //            try
+                    //            {
+                    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    //                await smtpClient.SendAsync(emailMessage);
+                    //                await smtpClient.DisconnectAsync(true);
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                Console.WriteLine($"Error sending email: {ex.Message}");
+                    //                throw;
+                    //            }
+                }
+                else
+                {
+                    //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
+                    //            string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
+
+                    //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
+                    //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
+
+                    //            var emailMessage = new MimeMessage();
+                    //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
+                    //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
+                    //            emailMessage.Subject = subject;
+
+                    //            var builder = new BodyBuilder();
+
+                    //            // Attach images only if they exist
+                    //            if (System.IO.File.Exists(imagePath))
+                    //            {
+                    //                var headerImage = builder.LinkedResources.Add(imagePath);
+                    //                headerImage.ContentId = "CompanyLogo";
+                    //            }
+
+                    //            if (System.IO.File.Exists(logoPath))
+                    //            {
+                    //                var footerLogo = builder.LinkedResources.Add(logoPath);
+                    //                footerLogo.ContentId = "FooterLogo";
+                    //            }
+
+                    //            // Choose URL and footer based on school
+                    //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
+                    //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
+                    //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
+
+                    //            string htmlBody = isAdmin
+                    //                ? $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        <div class='content'>
+                    //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //            <h2>New Employee Registration</h2>
+                    //            <p><strong>Name:</strong> {userName}</p>
+                    //            <p><strong>Email:</strong> {toEmail}</p>
+                    //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //        </div>
+                    //        <p class='footer'>{footerText}</p>
+                    //    </div>
+                    //</body>
+                    //</html>"
+                    //                : $@"
+                    //<html>
+                    //<head>
+                    //    <style>
+                    //        body {{ font-family: Arial, sans-serif; }}
+                    //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
+                    //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
+                    //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
+                    //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
+                    //    </style>
+                    //</head>
+                    //<body>
+                    //    <div class='container'>
+                    //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
+                    //        <h2>Welcome, {userName}!</h2>
+                    //        <p>Congratulations! Your employee account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
+                    //        <div class='content'>
+                    //            <h3>Login Details:</h3>
+                    //            <div class='credentials'>
+                    //                <p><strong>Email / UserID:</strong> {toEmail}</p>
+                    //                <p><strong>Password:</strong> {userPassword}</p>
+                    //            </div>
+                    //        </div>
+                    //        <p>{loginText}</p>
+                    //        <p>If you face any issues, contact your system administrator.</p>
+                    //        <p class='footer'>{footerText}</p>
+                    //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
+                    //    </div>
+                    //</body>
+                    //</html>";
+
+                    //            builder.HtmlBody = htmlBody;
+                    //            emailMessage.Body = builder.ToMessageBody();
+
+                    //            try
+                    //            {
+                    //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                    //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+                    //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
+                    //                await smtpClient.SendAsync(emailMessage);
+                    //                await smtpClient.DisconnectAsync(true);
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                Console.WriteLine($"Error sending email: {ex.Message}");
+                    //                throw;
+                    //            }
+                }
             }
-            else if (Roleid == "6")
-            {
-                //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                //            string subject = isAdmin ? "New Parent Registered" : "Welcome to Smart Schools ERP";
-
-                //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
-
-                //            var emailMessage = new MimeMessage();
-                //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                //            emailMessage.Subject = subject;
-
-                //            var builder = new BodyBuilder();
-
-                //            // Attach images only if they exist
-                //            if (System.IO.File.Exists(imagePath))
-                //            {
-                //                var headerImage = builder.LinkedResources.Add(imagePath);
-                //                headerImage.ContentId = "CompanyLogo";
-                //            }
-
-                //            if (System.IO.File.Exists(logoPath))
-                //            {
-                //                var footerLogo = builder.LinkedResources.Add(logoPath);
-                //                footerLogo.ContentId = "FooterLogo";
-                //            }
-
-                //            // Choose URL and footer based on school
-                //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
-
-                //            string htmlBody = isAdmin
-                //                ? $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        <div class='content'>
-                //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //            <h2>New Parent Registration</h2>
-                //            <p><strong>Name:</strong> {userName}</p>
-                //            <p><strong>Email:</strong> {toEmail}</p>
-                //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //        </div>
-                //        <p class='footer'>{footerText}</p>
-                //    </div>
-                //</body>
-                //</html>"
-                //                : $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //        <h2>Welcome, {userName}!</h2>
-                //        <p>Congratulations! Your Parent account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-                //        <div class='content'>
-                //            <h3>Login Details:</h3>
-                //            <div class='credentials'>
-                //                <p><strong>Email / UserID:</strong> {toEmail}</p>
-                //                <p><strong>Password:</strong> {userPassword}</p>
-                //            </div>
-                //        </div>
-                //        <p>{loginText}</p>
-                //        <p>If you face any issues, contact your system administrator.</p>
-                //        <p class='footer'>{footerText}</p>
-                //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //    </div>
-                //</body>
-                //</html>";
-
-                //            builder.HtmlBody = htmlBody;
-                //            emailMessage.Body = builder.ToMessageBody();
-
-                //            try
-                //            {
-                //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                //                await smtpClient.SendAsync(emailMessage);
-                //                await smtpClient.DisconnectAsync(true);
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                Console.WriteLine($"Error sending email: {ex.Message}");
-                //                throw;
-                //            }
-            }
-            else
-            {
-                //            string actualRecipient = isAdmin ? "chaitanyakantamneni6@gmail.com" : toEmail;
-                //            string subject = isAdmin ? "New Employee Registered" : "Welcome to Smart Schools ERP";
-
-                //            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "emaillog.jpg");
-                //            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "buserelelog.jpg");
-
-                //            var emailMessage = new MimeMessage();
-                //            emailMessage.From.Add(new MailboxAddress("Smart Schools ERP", _configuration["Smtp:Username"]));
-                //            emailMessage.To.Add(MailboxAddress.Parse(actualRecipient));
-                //            emailMessage.Subject = subject;
-
-                //            var builder = new BodyBuilder();
-
-                //            // Attach images only if they exist
-                //            if (System.IO.File.Exists(imagePath))
-                //            {
-                //                var headerImage = builder.LinkedResources.Add(imagePath);
-                //                headerImage.ContentId = "CompanyLogo";
-                //            }
-
-                //            if (System.IO.File.Exists(logoPath))
-                //            {
-                //                var footerLogo = builder.LinkedResources.Add(logoPath);
-                //                footerLogo.ContentId = "FooterLogo";
-                //            }
-
-                //            // Choose URL and footer based on school
-                //            string loginUrl = !string.IsNullOrEmpty(schoolUrl) ? schoolUrl : "https://www.smartschools.com";
-                //            string loginText = !string.IsNullOrEmpty(schoolName) ? $"Please login at <a href='{loginUrl}'>{schoolName}</a>" : $"Please login at <a href='{loginUrl}'>www.smartschools.com</a>";
-                //            string footerText = !string.IsNullOrEmpty(schoolName) ? $"&copy; {schoolName} 2025. All rights reserved." : "&copy; Smart Schools ERP 2025. All rights reserved.";
-
-                //            string htmlBody = isAdmin
-                //                ? $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        <div class='content'>
-                //            {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //            <h2>New Employee Registration</h2>
-                //            <p><strong>Name:</strong> {userName}</p>
-                //            <p><strong>Email:</strong> {toEmail}</p>
-                //            {(System.IO.File.Exists(logoPath) ? "<img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //        </div>
-                //        <p class='footer'>{footerText}</p>
-                //    </div>
-                //</body>
-                //</html>"
-                //                : $@"
-                //<html>
-                //<head>
-                //    <style>
-                //        body {{ font-family: Arial, sans-serif; }}
-                //        .container {{ text-align: center; padding: 20px; background-color: #f0f0f0; }}
-                //        .content {{ margin: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; }}
-                //        .footer {{ margin-top: 20px; font-size: 12px; color: #555555; }}
-                //        .credentials {{ text-align: left; display: inline-block; margin-top: 10px; }}
-                //    </style>
-                //</head>
-                //<body>
-                //    <div class='container'>
-                //        {(System.IO.File.Exists(imagePath) ? "<img src='cid:CompanyLogo' alt='Smart Schools ERP Logo' width='200' />" : "")}
-                //        <h2>Welcome, {userName}!</h2>
-                //        <p>Congratulations! Your employee account has been successfully created in <strong>Smart Schools ERP</strong>.</p>
-                //        <div class='content'>
-                //            <h3>Login Details:</h3>
-                //            <div class='credentials'>
-                //                <p><strong>Email / UserID:</strong> {toEmail}</p>
-                //                <p><strong>Password:</strong> {userPassword}</p>
-                //            </div>
-                //        </div>
-                //        <p>{loginText}</p>
-                //        <p>If you face any issues, contact your system administrator.</p>
-                //        <p class='footer'>{footerText}</p>
-                //        {(System.IO.File.Exists(logoPath) ? $"<br><img src='cid:FooterLogo' alt='Smart Schools ERP Logo' width='150' />" : "")}
-                //    </div>
-                //</body>
-                //</html>";
-
-                //            builder.HtmlBody = htmlBody;
-                //            emailMessage.Body = builder.ToMessageBody();
-
-                //            try
-                //            {
-                //                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                //                await smtpClient.ConnectAsync(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
-                //                await smtpClient.AuthenticateAsync(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                //                await smtpClient.SendAsync(emailMessage);
-                //                await smtpClient.DisconnectAsync(true);
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                Console.WriteLine($"Error sending email: {ex.Message}");
-                //                throw;
-                //            }
-            }
-        }
 
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/refresh-token
+        /// Purpose: Handles transactional and query operations for refresh-token.
+        /// </summary>
         [HttpPost("refresh-token")]
         public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
         {
@@ -828,6 +857,10 @@ namespace SchoolManagementAPI.Controllers
         //    }
         //}
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_SchoolDetails_CRUD
+        /// Purpose: Handles transactional and query operations for Tbl_SchoolDetails_CRUD.
+        /// </summary>
         [HttpPost("Tbl_SchoolDetails_CRUD")]
         public IActionResult Tbl_SchoolDetails_CRUD([FromBody] SchoolDetails school)
         {
@@ -884,6 +917,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_AcademicYear_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_AcademicYear_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_AcademicYear_CRUD_Operations")]
         public IActionResult Tbl_AcademicYear_CRUD_Operations([FromBody] tblAcademicYear academicYear)
         {
@@ -957,6 +994,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Syllabus_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Syllabus_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Syllabus_CRUD_Operations")]
         public IActionResult Tbl_Syllabus_CRUD_Operations([FromBody] tblSyllabus syllabus)
         {
@@ -1025,6 +1066,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/ExportSyllabusToExcel
+        /// Purpose: Handles transactional and query operations for ExportSyllabusToExcel.
+        /// </summary>
         [HttpPost("ExportSyllabusToExcel")]
         public async Task<IActionResult> ExportSyllabusToExcel([FromBody] tblSyllabus filter)
         {
@@ -1286,6 +1331,10 @@ namespace SchoolManagementAPI.Controllers
         //    return BadRequest("Invalid export type");
         //}
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/ExportSyllabus
+        /// Purpose: Handles transactional and query operations for ExportSyllabus.
+        /// </summary>
         [HttpPost("ExportSyllabus")]
         public async Task<IActionResult> ExportSyllabus(
     [FromBody] tblSyllabus filter,
@@ -1488,6 +1537,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Class_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Class_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Class_CRUD_Operations")]
         public IActionResult Tbl_Class_CRUD_Operations([FromBody] tblClass Class)
         {
@@ -1555,6 +1608,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_ClassDivision_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_ClassDivision_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_ClassDivision_CRUD_Operations")]
         public IActionResult Tbl_ClassDivision_CRUD_Operations([FromBody] tblClassDivision classDivision)
         {
@@ -1686,6 +1743,10 @@ namespace SchoolManagementAPI.Controllers
         //    }
         //}
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Staff_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Staff_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Staff_CRUD_Operations")]
         public IActionResult Tbl_Staff_CRUD_Operations([FromBody] tblStaff staff)
         {
@@ -1735,6 +1796,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Subject_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Subject_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Subject_CRUD_Operations")]
         public IActionResult Tbl_Subject_CRUD_Operations([FromBody] tblSubjects subject)
         {
@@ -1805,6 +1870,10 @@ namespace SchoolManagementAPI.Controllers
 
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_SubjectStaff_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_SubjectStaff_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_SubjectStaff_CRUD_Operations")]
         public IActionResult Tbl_SubjectStaff_CRUD_Operations([FromBody] tblSubjectStaff subjectStaff)
         {
@@ -1874,6 +1943,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Modules_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Modules_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Modules_CRUD_Operations")]
         public IActionResult Tbl_Modules_CRUD_Operations([FromBody] tblModules module)
         {
@@ -1913,6 +1986,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Pages_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Pages_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Pages_CRUD_Operations")]
         public IActionResult Tbl_Pages_CRUD_Operations([FromBody] tblPages page)
         {
@@ -1952,6 +2029,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/ExportPages
+        /// Purpose: Handles transactional and query operations for ExportPages.
+        /// </summary>
         [HttpPost("ExportPages")]
         public IActionResult ExportPages([FromBody] tblPages filter, [FromQuery] string type)
         {
@@ -2104,6 +2185,10 @@ namespace SchoolManagementAPI.Controllers
             return BadRequest("Invalid export type");
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Roles_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Roles_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Roles_CRUD_Operations")]
         public IActionResult Tbl_Roles_CRUD_Operations([FromBody] tblRoles role)
         {
@@ -2151,6 +2236,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_UserRoles_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_UserRoles_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_UserRoles_CRUD_Operations")]
         public IActionResult Tbl_UserRoles_CRUD_Operations([FromBody] tblUserRoles userRole)
         {
@@ -2178,6 +2267,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_RolePermissions_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_RolePermissions_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_RolePermissions_CRUD_Operations")]
         public IActionResult Tbl_RolePermissions_CRUD_Operations([FromBody] List<tblRolePermissions> rolePerms)
         {
@@ -2206,6 +2299,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Get api/SchoolManagement/Tbl_GetRoleMenuPermissions/{roleId}
+        /// Purpose: Handles transactional and query operations for Tbl_GetRoleMenuPermissions/{roleId}.
+        /// </summary>
         [HttpGet("Tbl_GetRoleMenuPermissions/{roleId}")]
         public IActionResult Tbl_GetRoleMenuPermissions(string roleId)
         {
@@ -2254,6 +2351,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/GetPermissionsByRole
+        /// Purpose: Handles transactional and query operations for GetPermissionsByRole.
+        /// </summary>
         [HttpPost("GetPermissionsByRole")]
         public IActionResult GetPermissionsByRole([FromBody] tblRolePermissions model)
         {
@@ -2276,6 +2377,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         //Academic Module
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentDetails_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentDetails_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentDetails_CRUD_Operations([FromBody] tblStudentDetails admission)
         {
@@ -2339,6 +2444,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentAddressDetails_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentAddressDetails_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentAddressDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentAddressDetails_CRUD_Operations([FromBody] tblStudentAddressDetails admission)
         {
@@ -2394,6 +2503,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentParentDetails_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentParentDetails_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentParentDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentParentDetails_CRUD_Operations([FromBody] tblStudentParentDetails admission)
         {
@@ -2449,6 +2562,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentAcademicDetails_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentAcademicDetails_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentAcademicDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentAcademicDetails_CRUD_Operations([FromBody] tblStudentAcademicDetails admission)
         {
@@ -2504,6 +2621,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentTransportationDetails_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentTransportationDetails_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentTransportationDetails_CRUD_Operations")]
         public IActionResult Tbl_StudentTransportationDetails_CRUD_Operations([FromBody] tblStudentTransportationDetails admission)
         {
@@ -2560,6 +2681,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_AllotClassTeacher_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_AllotClassTeacher_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_AllotClassTeacher_CRUD_Operations")]
         public IActionResult Tbl_AllotClassTeacher_CRUD_Operations([FromBody] tblAllotClassTeacher ClassTeacher)
         {
@@ -2624,6 +2749,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         //Transportation Module
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Bus_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Bus_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Bus_CRUD_Operations")]
         public IActionResult Tbl_Bus_CRUD_Operations([FromBody] tblBus bus)
         {
@@ -2691,6 +2820,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Route_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Route_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Route_CRUD_Operations")]
         public IActionResult Tbl_Route_CRUD_Operations([FromBody] tblRoute route)
         {
@@ -2758,6 +2891,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Stops_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Stops_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Stops_CRUD_Operations")]
         public IActionResult Tbl_Stops_CRUD_Operations([FromBody] tblStops stop)
         {
@@ -2825,6 +2962,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Fare_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Fare_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Fare_CRUD_Operations")]
         public IActionResult Tbl_fare_CRUD_Operations([FromBody] tblFare fare)
         {
@@ -2893,6 +3034,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         //Time Table Module        
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_WorkingDays_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_WorkingDays_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_WorkingDays_CRUD_Operations")]
         public IActionResult Tbl_WorkingDays_CRUD_Operations([FromBody] TblWorkingDays wrkdays)
         {
@@ -2960,6 +3105,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Session_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Session_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Session_CRUD_Operations")]
         public IActionResult Tbl_Session_CRUD_Operations([FromBody] TblSession Session1)
         {
@@ -3027,6 +3176,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_TimeTable_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_TimeTable_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_TimeTable_CRUD_Operations")]
         public IActionResult Tbl_TimeTable_CRUD_Operations([FromBody] TblTimeTable model)
         {
@@ -3095,6 +3248,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         //Exam Module
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Examtype_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Examtype_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Examtype_CRUD_Operations")]
         public IActionResult Tbl_examtype_CRUD_Operations([FromBody] tblExamType fare)
         {
@@ -3162,6 +3319,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_SetExam_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_SetExam_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_SetExam_CRUD_Operations")]
         public IActionResult Tbl_setExam_CRUD_Operations([FromBody] tblSetExam fare)
         {
@@ -3229,6 +3390,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_ExamAttendence_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_ExamAttendence_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_ExamAttendence_CRUD_Operations")]
         public IActionResult Tbl_ExamAttendece_CRUD_Operations([FromBody] tblExamAttendence fare)
         {
@@ -3285,6 +3450,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_ExamMarks_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_ExamMarks_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_ExamMarks_CRUD_Operations")]
         public IActionResult Tbl_ExamMarks_CRUD_Operations([FromBody] tblExamMarks fare)
         {
@@ -3341,6 +3510,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentAttendance_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentAttendance_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentAttendance_CRUD_Operations")]
         public IActionResult Tbl_StudentAttendance_CRUD_Operations([FromBody] tblStudentAttendance attendance)
         {
@@ -3410,6 +3583,10 @@ namespace SchoolManagementAPI.Controllers
 
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StaffAttendance_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StaffAttendance_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StaffAttendance_CRUD_Operations")]
         public IActionResult Tbl_StaffAttendance_CRUD_Operations([FromBody] tblStaffAttendance attendance)
         {
@@ -3478,6 +3655,10 @@ namespace SchoolManagementAPI.Controllers
 
         //Finance Module
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_FeeCategory_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_FeeCategory_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_FeeCategory_CRUD_Operations")]
         public IActionResult Tbl_FeeCategory_CRUD_Operations([FromBody] feeCategory fee)
         {
@@ -3545,6 +3726,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_FeeAllocation_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_FeeAllocation_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_FeeAllocation_CRUD_Operations")]
         public IActionResult Tbl_feeAllocation_CRUD_Operations([FromBody] tblfeeAllocation fee)
         {
@@ -3614,6 +3799,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_FeeDiscountCategory_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_FeeDiscountCategory_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_FeeDiscountCategory_CRUD_Operations")]
         public IActionResult Tbl_FeeDiscountCategory_CRUD_Operations([FromBody] tblfeeDiscountCategory fee)
         {
@@ -3684,6 +3873,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         // Fee Doscount
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_FeeDiscount_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_FeeDiscount_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_FeeDiscount_CRUD_Operations")]
         public IActionResult Tbl_FeeDiscount_CRUD_Operations([FromBody] tblfeeDiscount fee)
         {
@@ -3754,6 +3947,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_FeeCollection_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_FeeCollection_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_FeeCollection_CRUD_Operations")]
         public IActionResult Tbl_FeeCollection_CRUD_Operations([FromBody] tblFeeCollection fee)
         {
@@ -3814,6 +4011,10 @@ namespace SchoolManagementAPI.Controllers
 
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_StudentTransfer_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_StudentTransfer_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_StudentTransfer_CRUD_Operations")]
         public IActionResult Tbl_StudentTransfer_CRUD_Operations([FromBody] tblStudentTransfer fare)
         {
@@ -3882,7 +4083,11 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
-        [HttpPost]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/Dashboard_API
+        /// Purpose: Fetches statistics (student counts, attendance sums, fee collections) for layouts.
+        /// </summary>
+    [HttpPost]
         [Route("Dashboard_API")]
         public IActionResult Dashboard_API([FromBody] DashboardRequest req)
         {
@@ -3961,6 +4166,10 @@ namespace SchoolManagementAPI.Controllers
         //}
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_SalarySettings_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_SalarySettings_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_SalarySettings_CRUD_Operations")]
         public IActionResult Tbl_SalarySettings_CRUD_Operations([FromBody] TblSalarySetting req)
         {
@@ -4054,6 +4263,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_SalaryPay_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_SalaryPay_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_SalaryPay_CRUD_Operations")]
         public IActionResult Tbl_SalaryPay_CRUD_Operations([FromBody] TblSalaryPay req)
         {
@@ -4144,6 +4357,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_PayrollHead_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_PayrollHead_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_PayrollHead_CRUD_Operations")]
         public IActionResult Tbl_PayrollHead_CRUD_Operations([FromBody] tblPayrollHead ph)
         {
@@ -4213,6 +4430,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_PaymentMode_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_PaymentMode_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_PaymentMode_CRUD_Operations")]
         public IActionResult Tbl_PaymentMode_CRUD_Operations([FromBody] TblPaymentMode ph)
         {
@@ -4282,6 +4503,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_AdvanceSalary_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_AdvanceSalary_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_AdvanceSalary_CRUD_Operations")]
         public IActionResult Tbl_AdvanceSalary_CRUD_Operations([FromBody] TblAdvanceSalary a)
         {
@@ -4355,6 +4580,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_leavePolicy_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_leavePolicy_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_leavePolicy_CRUD_Operations")]
         public IActionResult Tbl_leavePolicy_CRUD_Operations([FromBody] tblLeavepolicy fee)
         {
@@ -4424,6 +4653,10 @@ namespace SchoolManagementAPI.Controllers
 
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_LeaveApplication_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_LeaveApplication_Operations.
+        /// </summary>
         [HttpPost("Tbl_LeaveApplication_Operations")]
         public IActionResult Tbl_LeaveApplication_Operations([FromBody] tblLeaveApplication obj)
         {
@@ -4535,7 +4768,11 @@ namespace SchoolManagementAPI.Controllers
                 });
             }
         }
-        [HttpPost("upload-leave-doc")]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/upload-leave-doc
+        /// Purpose: Uploads medical certificates or documents supporting leave applications.
+        /// </summary>
+    [HttpPost("upload-leave-doc")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadLeaveDoc([FromForm] LeaveUploadRequest request)
         {
@@ -4558,12 +4795,19 @@ namespace SchoolManagementAPI.Controllers
             });
         }
 
-        public class LeaveUploadRequest
+            /// <summary>
+    /// Data Transfer Object Model: LeaveUploadRequest
+    /// </summary>
+    public class LeaveUploadRequest
         {
             public IFormFile? File { get; set; }
             public string? SchoolId { get; set; }
             public string? LeaveId { get; set; }
         }
+        /// <summary>
+        /// API Endpoint: Delete api/SchoolManagement/delete-leave-file
+        /// Purpose: Handles transactional and query operations for delete-leave-file.
+        /// </summary>
         [HttpDelete("delete-leave-file")]
         public IActionResult DeleteLeaveFile([FromBody] DeleteLeaveFileRequest request)
         {
@@ -4607,7 +4851,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        public class DeleteLeaveFileRequest
+            /// <summary>
+    /// Data Transfer Object Model: DeleteLeaveFileRequest
+    /// </summary>
+    public class DeleteLeaveFileRequest
         {
             public string? SchoolId { get; set; }
             public string? LeaveId { get; set; }
@@ -4788,7 +5035,11 @@ namespace SchoolManagementAPI.Controllers
         //        }
         //    }
 
-        [HttpPost("upload-student-docs")]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/upload-student-docs
+        /// Purpose: Saves verification documents during student registration processes.
+        /// </summary>
+    [HttpPost("upload-student-docs")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadStudentDocs([FromForm] StudentUploadRequest request)
         {
@@ -4846,6 +5097,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         // ================= GET FILES =================
+        /// <summary>
+        /// API Endpoint: Get api/SchoolManagement/get-student-files/{admissionId}
+        /// Purpose: Handles transactional and query operations for get-student-files/{admissionId}.
+        /// </summary>
         [HttpGet("get-student-files/{admissionId}")]
         public IActionResult GetStudentFiles(string admissionId)
         {
@@ -4859,6 +5114,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         // ================= DELETE =================
+        /// <summary>
+        /// API Endpoint: Delete api/SchoolManagement/delete-student-file
+        /// Purpose: Handles transactional and query operations for delete-student-file.
+        /// </summary>
         [HttpDelete("delete-student-file")]
         public IActionResult DeleteStudentFile([FromBody] DeleteFileRequest req)
         {
@@ -4892,6 +5151,10 @@ namespace SchoolManagementAPI.Controllers
 
         // ================= SERVE FILE =================
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Get api/SchoolManagement/student/{schoolId}/{admissionId}/{fileName}
+        /// Purpose: Handles transactional and query operations for student/{schoolId}/{admissionId}/{fileName}.
+        /// </summary>
         [HttpGet("student/{schoolId}/{admissionId}/{fileName}")]
         public IActionResult GetStudentFile(string schoolId, string admissionId, string fileName)
         {
@@ -4917,7 +5180,11 @@ namespace SchoolManagementAPI.Controllers
             return PhysicalFile(path, contentType);
         }
 
-        [HttpPost("upload-school-logo")]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/upload-school-logo
+        /// Purpose: Configures and updates school logo image parameters.
+        /// </summary>
+    [HttpPost("upload-school-logo")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadSchoolLogo([FromForm] StudentUploadRequest request)
         {
@@ -4944,6 +5211,10 @@ namespace SchoolManagementAPI.Controllers
             return Ok(new { filePath = result.url });
         }
 
+        /// <summary>
+        /// API Endpoint: Get api/SchoolManagement/get-school-logo/{schoolId}
+        /// Purpose: Handles transactional and query operations for get-school-logo/{schoolId}.
+        /// </summary>
         [HttpGet("get-school-logo/{schoolId}")]
         public IActionResult GetSchoolLogo(string schoolId)
         {
@@ -4957,6 +5228,10 @@ namespace SchoolManagementAPI.Controllers
             return Ok(data.FirstOrDefault());
         }
 
+        /// <summary>
+        /// API Endpoint: Delete api/SchoolManagement/delete-school-logo
+        /// Purpose: Handles transactional and query operations for delete-school-logo.
+        /// </summary>
         [HttpDelete("delete-school-logo")]
         public IActionResult DeleteSchoolLogo([FromBody] SchoolFile req)
         {
@@ -4971,6 +5246,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
         [AllowAnonymous]
+        /// <summary>
+        /// API Endpoint: Get api/SchoolManagement/student/{schoolId}/School/{fileName}
+        /// Purpose: Handles transactional and query operations for student/{schoolId}/School/{fileName}.
+        /// </summary>
         [HttpGet("student/{schoolId}/School/{fileName}")]
         public IActionResult GetSchoolFile(string schoolId, string fileName)
         {
@@ -4993,6 +5272,10 @@ namespace SchoolManagementAPI.Controllers
             return PhysicalFile(path, "application/octet-stream");
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Homework_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Homework_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Homework_CRUD_Operations")]
         public IActionResult Tbl_Homework_CRUD_Operations([FromBody] tblHomework obj)
         {
@@ -5114,7 +5397,11 @@ namespace SchoolManagementAPI.Controllers
             }
         }
         
-        [HttpPost("upload-homework-doc")]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/upload-homework-doc
+        /// Purpose: Allows teaching staff to upload homework assignments.
+        /// </summary>
+    [HttpPost("upload-homework-doc")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadHomeworkDoc([FromForm] HomeworkUploadRequest request)
         {
@@ -5130,13 +5417,20 @@ namespace SchoolManagementAPI.Controllers
             return Ok(new { url = result.url, fileName = result.fileName });
         }
 
-        public class HomeworkUploadRequest
+            /// <summary>
+    /// Data Transfer Object Model: HomeworkUploadRequest
+    /// </summary>
+    public class HomeworkUploadRequest
         {
             public IFormFile? File { get; set; }
             public string? SchoolId { get; set; }
             public string? HomeworkId { get; set; }
         }
 
+        /// <summary>
+        /// API Endpoint: Delete api/SchoolManagement/delete-homework-file
+        /// Purpose: Handles transactional and query operations for delete-homework-file.
+        /// </summary>
         [HttpDelete("delete-homework-file")]
         public IActionResult DeleteHomeworkFile([FromBody] DeleteHomeworkFileRequest request)
         {
@@ -5247,7 +5541,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        public class DeleteHomeworkFileRequest
+            /// <summary>
+    /// Data Transfer Object Model: DeleteHomeworkFileRequest
+    /// </summary>
+    public class DeleteHomeworkFileRequest
         {
             public string? SchoolId { get; set; }
             public string? HomeworkId { get; set; }
@@ -5257,6 +5554,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_HomeworkSubmission_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_HomeworkSubmission_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_HomeworkSubmission_CRUD_Operations")]
         public IActionResult Tbl_HomeworkSubmission_CRUD_Operations([FromBody] tblHomeworkSubmission obj)
         {
@@ -5426,7 +5727,11 @@ namespace SchoolManagementAPI.Controllers
         }
         // Add these methods to your SchoolManagementController.cs
 
-        [HttpPost("upload-homework-submission-doc")]
+                /// <summary>
+        /// API Endpoint: POST api/SchoolManagement/upload-homework-submission-doc
+        /// Purpose: Allows students to upload files submitting their homework.
+        /// </summary>
+    [HttpPost("upload-homework-submission-doc")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadHomeworkSubmissionDoc([FromForm] HomeworkSubmissionUploadRequest request)
         {
@@ -5442,13 +5747,20 @@ namespace SchoolManagementAPI.Controllers
             return Ok(new { url = result.url, fileName = result.fileName });
         }
 
-        public class HomeworkSubmissionUploadRequest
+            /// <summary>
+    /// Data Transfer Object Model: HomeworkSubmissionUploadRequest
+    /// </summary>
+    public class HomeworkSubmissionUploadRequest
         {
             public IFormFile? File { get; set; }
             public string? SchoolId { get; set; }
             public string? SubmissionId { get; set; }
         }
 
+        /// <summary>
+        /// API Endpoint: Delete api/SchoolManagement/delete-homework-submission-file
+        /// Purpose: Handles transactional and query operations for delete-homework-submission-file.
+        /// </summary>
         [HttpDelete("delete-homework-submission-file")]
         public IActionResult DeleteHomeworkSubmissionFile([FromBody] DeleteHomeworkSubmissionFileRequest request)
         {
@@ -5546,7 +5858,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
-        public class DeleteHomeworkSubmissionFileRequest
+            /// <summary>
+    /// Data Transfer Object Model: DeleteHomeworkSubmissionFileRequest
+    /// </summary>
+    public class DeleteHomeworkSubmissionFileRequest
         {
             public string? SchoolId { get; set; }
             public string? SubmissionId { get; set; }
@@ -5555,6 +5870,10 @@ namespace SchoolManagementAPI.Controllers
             public string? ModifiedIp { get; set; }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_HolidayCalendar_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_HolidayCalendar_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_HolidayCalendar_CRUD_Operations")]
         public IActionResult Tbl_HolidayCalendar_CRUD_Operations([FromBody] TblHolidayCalendar fee)
         {
@@ -5627,6 +5946,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Notices_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Notices_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Notices_CRUD_Operations")]
         public IActionResult Tbl_Notices_CRUD_Operations([FromBody] TblNotices req)
         {
@@ -5708,6 +6031,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_HostelMaster_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_HostelMaster_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_HostelMaster_CRUD_Operations")]
         public IActionResult Tbl_HostelMaster_CRUD_Operations([FromBody] Tbl_HostelMaster hostel)
         {
@@ -5800,6 +6127,10 @@ namespace SchoolManagementAPI.Controllers
 
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_RoomMaster_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_RoomMaster_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_RoomMaster_CRUD_Operations")]
         public IActionResult Tbl_RoomMaster_CRUD_Operations([FromBody] Tbl_RoomMaster room)
         {
@@ -5892,6 +6223,10 @@ namespace SchoolManagementAPI.Controllers
 
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_RoomAllotment_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_RoomAllotment_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_RoomAllotment_CRUD_Operations")]
         public IActionResult Tbl_RoomAllotment_CRUD_Operations([FromBody] Tbl_RoomAllotment allotment)
         {
@@ -5987,6 +6322,10 @@ namespace SchoolManagementAPI.Controllers
         }
 
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_OutPass_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_OutPass_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_OutPass_CRUD_Operations")]
         public IActionResult Tbl_OutPass_CRUD_Operations([FromBody] Tbl_OutPass outpass)
         {
@@ -6077,6 +6416,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Units_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Units_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Units_CRUD_Operations")]
         public IActionResult Tbl_Units_CRUD_Operations([FromBody] tblUnits unit)
         {
@@ -6156,6 +6499,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Categories_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Categories_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Categories_CRUD_Operations")]
         public IActionResult Tbl_Categories_CRUD_Operations([FromBody] tblCategories category)
         {
@@ -6226,6 +6573,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Items_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Items_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Items_CRUD_Operations")]
         public IActionResult Tbl_Items_CRUD_Operations([FromBody] tblItems items)
         {
@@ -6296,6 +6647,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Suppliers_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Suppliers_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Suppliers_CRUD_Operations")]
         public IActionResult Tbl_Suppliers_CRUD_Operations([FromBody] tblSuppliers supplier)
         {
@@ -6379,6 +6734,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Purchase_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Purchase_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Purchase_CRUD_Operations")]
         public IActionResult Tbl_Purchase_CRUD_Operations([FromBody] tblPurchase purchase)
         {
@@ -6462,6 +6821,10 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/Tbl_Sales_CRUD_Operations
+        /// Purpose: Handles transactional and query operations for Tbl_Sales_CRUD_Operations.
+        /// </summary>
         [HttpPost("Tbl_Sales_CRUD_Operations")]
         public IActionResult Tbl_Sales_CRUD_Operations([FromBody] tblSales sales)
         {
