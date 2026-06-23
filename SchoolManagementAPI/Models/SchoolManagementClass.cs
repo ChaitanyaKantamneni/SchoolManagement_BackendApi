@@ -2,8 +2,14 @@ using MySqlConnector;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 
-namespace SchoolManagementAPI.Models
+/// <summary>
+    /// Model DTO schemas mapping inbound JSON requests and database columns.
+    /// </summary>
+    namespace SchoolManagementAPI.Models
 {
+    /// <summary>
+    /// Data Transfer Object Model: SchoolManagementClass
+    /// </summary>
     public class SchoolManagementClass
     {
     }
@@ -33,6 +39,9 @@ namespace SchoolManagementAPI.Models
     //    public int? Offset { get; set; }
     //}
 
+    /// <summary>
+    /// Data Transfer Object Model: SchoolDetails
+    /// </summary>
     public class SchoolDetails
     {
         public string? SchoolID { get; set; }
@@ -65,6 +74,9 @@ namespace SchoolManagementAPI.Models
         public string? SchoolIDs { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: TblUser
+    /// </summary>
     public class TblUser
     {
         public long ID { get; set; }
@@ -125,6 +137,9 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: UserOTP
+    /// </summary>
     public class UserOTP
     {
         public string Email { get; set; }
@@ -132,11 +147,17 @@ namespace SchoolManagementAPI.Models
         public DateTime ExpiryTime { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: SendOtpRequest
+    /// </summary>
     public class SendOtpRequest
     {
         public string Email { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: VerifyOtpRequest
+    /// </summary>
     public class VerifyOtpRequest
     {
         public string Email { get; set; }
@@ -144,6 +165,9 @@ namespace SchoolManagementAPI.Models
         public string? NewPassword { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblAcademicYear
+    /// </summary>
     public class tblAcademicYear
     {
         public string? SchoolID { get; set; }
@@ -173,6 +197,9 @@ namespace SchoolManagementAPI.Models
         public int? activeCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblSyllabus
+    /// </summary>
     public class tblSyllabus
     {
         public int? ID { get; set; }
@@ -214,6 +241,9 @@ namespace SchoolManagementAPI.Models
         public int? activeCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblClass
+    /// </summary>
     public class tblClass
     {
         public string? ID { get; set; }
@@ -245,6 +275,9 @@ namespace SchoolManagementAPI.Models
         public int? activeCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblClassDivision
+    /// </summary>
     public class tblClassDivision
     {
         public string? ID { get; set; }
@@ -279,6 +312,9 @@ namespace SchoolManagementAPI.Models
         public int? activeCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblSubjects
+    /// </summary>
     public class tblSubjects
     {
         public string? ID { get; set; }
@@ -316,6 +352,9 @@ namespace SchoolManagementAPI.Models
         public int? activeCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblSubjectStaff
+    /// </summary>
     public class tblSubjectStaff
     {
         public string? ID { get; set; }
@@ -345,6 +384,9 @@ namespace SchoolManagementAPI.Models
         public string? IsActive { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: ExportSyllabusRequest
+    /// </summary>
     public class ExportSyllabusRequest
     {
         public string Flag { get; set; } = "2";
@@ -353,6 +395,9 @@ namespace SchoolManagementAPI.Models
         public string? Name { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblModules
+    /// </summary>
     public class tblModules
     {
         public string? ID { get; set; }
@@ -378,6 +423,9 @@ namespace SchoolManagementAPI.Models
         public List<tblPages>? Pages { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblPages
+    /// </summary>
     public class tblPages
     {
         public string? ID { get; set; }
@@ -420,6 +468,9 @@ namespace SchoolManagementAPI.Models
         public string? CanDelete { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblStaff
+    /// </summary>
     public class tblStaff
     {
         public string? ID { get; set; }
@@ -468,6 +519,9 @@ namespace SchoolManagementAPI.Models
         public string? SchoolIDs { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: UserToken
+    /// </summary>
     public class UserToken
     {
         public string Email { get; set; }
@@ -477,12 +531,18 @@ namespace SchoolManagementAPI.Models
         public DateTime RefreshExpiry { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: RefreshTokenRequest
+    /// </summary>
     public class RefreshTokenRequest
     {
         public string Email { get; set; }
         public string RefreshToken { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblRoles
+    /// </summary>
     public class tblRoles
     {
         public string? ID { get; set; }
@@ -515,6 +575,9 @@ namespace SchoolManagementAPI.Models
         public string? SortDirection { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblUserRoles
+    /// </summary>
     public class tblUserRoles
     {
         public string? UserID { get; set; }
@@ -523,6 +586,9 @@ namespace SchoolManagementAPI.Models
         public string? Status { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblRolePermissions
+    /// </summary>
     public class tblRolePermissions
     {
         public string? RoleID { get; set; }
@@ -535,8 +601,9 @@ namespace SchoolManagementAPI.Models
         public string? Status { get; set; }
     }
 
-
-
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentDetails
+    /// </summary>
     public class tblStudentDetails
     {
         public string? ID { get; set; }
@@ -587,6 +654,9 @@ namespace SchoolManagementAPI.Models
 
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentAddressDetails
+    /// </summary>
     public class tblStudentAddressDetails
     {
         public string? ID { get; set; }
@@ -629,6 +699,9 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentParentDetails
+    /// </summary>
     public class tblStudentParentDetails
     {
         public string? ID { get; set; }
@@ -668,6 +741,9 @@ namespace SchoolManagementAPI.Models
 
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentTransportationDetails
+    /// </summary>
     public class tblStudentTransportationDetails
     {
         public string? ID { get; set; }
@@ -699,6 +775,9 @@ namespace SchoolManagementAPI.Models
         public string? FareName { get; set; }
     }
     
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentAcademicDetails
+    /// </summary>
     public class tblStudentAcademicDetails
     {
         public string? ID { get; set; }
@@ -728,6 +807,9 @@ namespace SchoolManagementAPI.Models
     }
 
     
+    /// <summary>
+    /// Data Transfer Object Model: tblAllotClassTeacher
+    /// </summary>
     public class tblAllotClassTeacher
     {
         public string? ID { get; set; }
@@ -758,6 +840,10 @@ namespace SchoolManagementAPI.Models
         public string? StaffName { get; set; }
         public string? DivisionName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblBus
+    /// </summary>
     public class tblBus
     {
         public string? ID { get; set; }
@@ -807,6 +893,10 @@ namespace SchoolManagementAPI.Models
         public int? inactiveCount { get; set; }
         public int? activeCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblRoute
+    /// </summary>
     public class tblRoute
     {
         public string? ID { get; set; }
@@ -846,6 +936,10 @@ namespace SchoolManagementAPI.Models
         public int? inactiveCount { get; set; }
         public int? activeCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblStops
+    /// </summary>
     public class tblStops
     {
         public string? ID { get; set; }
@@ -890,6 +984,10 @@ namespace SchoolManagementAPI.Models
         public int? inactiveCount { get; set; }
         public int? activeCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblFare
+    /// </summary>
     public class tblFare
     {
         public string? ID { get; set; }
@@ -932,6 +1030,10 @@ namespace SchoolManagementAPI.Models
         public int? inactiveCount { get; set; }
         public int? activeCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: TblWorkingDays
+    /// </summary>
     public class TblWorkingDays
     {
         public string? ID { get; set; }
@@ -969,6 +1071,10 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? RouteName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: TblSession
+    /// </summary>
     public class TblSession
     {
         public string? ID { get; set; }
@@ -1006,6 +1112,10 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? RouteName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: TblTimeTable
+    /// </summary>
     public class TblTimeTable
     {
         public string? ID { get; set; }
@@ -1058,6 +1168,10 @@ namespace SchoolManagementAPI.Models
         public string? DivisionName { get; set; }
         public string? SubjectName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: TblTimeTableDetail
+    /// </summary>
     public class TblTimeTableDetail
     {
         public string? ID { get; set; }
@@ -1070,6 +1184,10 @@ namespace SchoolManagementAPI.Models
         public string? SubjectID { get; set; }
         public string? StaffID { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblExamType
+    /// </summary>
     public class tblExamType
     {
         public string? ID { get; set; }
@@ -1113,6 +1231,10 @@ namespace SchoolManagementAPI.Models
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblSetExam
+    /// </summary>
     public class tblSetExam
     {
         public string? RowID { get; set; }
@@ -1185,6 +1307,10 @@ namespace SchoolManagementAPI.Models
 
 
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblExamAttendence
+    /// </summary>
     public class tblExamAttendence
     {
         public string? ID { get; set; }
@@ -1246,12 +1372,20 @@ namespace SchoolManagementAPI.Models
         public List<AttendanceStudent>? Students { get; set; }  // received from frontend
         public string? StudentsJson { get; set; }               // serialized before SP call
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: AttendanceStudent
+    /// </summary>
     public class AttendanceStudent
     {
         public string AdmissionID { get; set; }
         public string Attendance { get; set; }
         public string Remarks { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblExamMarks
+    /// </summary>
     public class tblExamMarks
     {
         public string? ID { get; set; }
@@ -1324,11 +1458,19 @@ namespace SchoolManagementAPI.Models
         public List<ExamMarksStudent>? Students { get; set; }
         public string? StudentsJson { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: ExamMarksStudent
+    /// </summary>
     public class ExamMarksStudent
     {
         public string? AdmissionID { get; set; }
         public string? Marks { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentAttendance
+    /// </summary>
     public class tblStudentAttendance
     {
         public string? ID { get; set; }
@@ -1388,8 +1530,11 @@ namespace SchoolManagementAPI.Models
         public string? ClassName { get; set; }
         public List<StudentAttendanceStudent>? Students { get; set; }
         public string? StudentsJson { get; set; }
-        public class StudentAttendanceStudent
-        {
+        /// <summary>
+    /// Data Transfer Object Model: StudentAttendanceStudent
+    /// </summary>
+    public class StudentAttendanceStudent
+    {
             public string? AdmissionID { get; set; }
             public string? Attendance { get; set; }
             public string? LateInMinutes { get; set; }
@@ -1398,6 +1543,10 @@ namespace SchoolManagementAPI.Models
             public string? Remarks { get; set; }          // ← ADD
         }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblStaffAttendance
+    /// </summary>
     public class tblStaffAttendance
     {
         public string? ID { get; set; }
@@ -1463,8 +1612,11 @@ namespace SchoolManagementAPI.Models
         public List<StaffAttendanceItem>? Students { get; set; }
         public string? StudentsJson { get; set; }
 
-        public class StaffAttendanceItem
-        {
+        /// <summary>
+    /// Data Transfer Object Model: StaffAttendanceItem
+    /// </summary>
+    public class StaffAttendanceItem
+    {
             public string? StaffID { get; set; }
             public string? Attendance { get; set; }
             public string? LateInMinutes { get; set; }
@@ -1475,6 +1627,10 @@ namespace SchoolManagementAPI.Models
             public string? Remarks { get; set; }   // add this
         }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: feeCategory
+    /// </summary>
     public class feeCategory
     {
         public string? ID { get; set; }
@@ -1522,6 +1678,10 @@ namespace SchoolManagementAPI.Models
         public int? inactiveCount { get; set; }
         public int? activeCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblfeeAllocation
+    /// </summary>
     public class tblfeeAllocation
     {
         public string? ID { get; set; }
@@ -1567,6 +1727,10 @@ namespace SchoolManagementAPI.Models
         public string? DivisionName { get; set; }
         public string? FeeCategoryName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblfeeDiscountCategory
+    /// </summary>
     public class tblfeeDiscountCategory
     {
         public string? ID { get; set; }
@@ -1611,6 +1775,10 @@ namespace SchoolManagementAPI.Models
         public string? AcademicYearName { get; set; }
         public string? FeeCategoryName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblfeeDiscount
+    /// </summary>
     public class tblfeeDiscount
     {
         public string? ID { get; set; }
@@ -1659,6 +1827,10 @@ namespace SchoolManagementAPI.Models
         public string? NewRecordNo { get; set; }
         public string? FeeCategory { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblStudentTransfer
+    /// </summary>
     public class tblStudentTransfer
     {
         public string? ID { get; set; }
@@ -1695,6 +1867,10 @@ namespace SchoolManagementAPI.Models
         [NotMapped]
         public int? Offset { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblFeeCollection
+    /// </summary>
     public class tblFeeCollection
     {
         public string? ID { get; set; }
@@ -1751,6 +1927,10 @@ namespace SchoolManagementAPI.Models
         [NotMapped]
         public int? totalcount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: DashboardRequest
+    /// </summary>
     public class DashboardRequest
     {
         public int? SchoolID { get; set; }
@@ -1767,6 +1947,10 @@ namespace SchoolManagementAPI.Models
         public int? DrillEntityID { get; set; }
         public string? SchoolIDs { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: DashboardResponse
+    /// </summary>
     public class DashboardResponse
     {
         //public DashboardCounts Counts { get; set; }
@@ -1786,6 +1970,10 @@ namespace SchoolManagementAPI.Models
         public List<DashboardAlert> alerts { get; set; } = new();
         public DashboardMeta meta { get; set; } = new();
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: DashboardCounts
+    /// </summary>
     public class DashboardCounts
     {
         public int ClassCount { get; set; }
@@ -1793,33 +1981,57 @@ namespace SchoolManagementAPI.Models
         public int StaffCount { get; set; }
         public int StudentsCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: StaffChart
+    /// </summary>
     public class StaffChart
     {
         public string StaffType { get; set; }
         public int Count { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: AttendanceChart
+    /// </summary>
     public class AttendanceChart
     {
         public string Month { get; set; }
         public double Attendance { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: StudentChart
+    /// </summary>
     public class StudentChart
     {
         public int ID { get; set; }
         public string Name { get; set; }
         public int StudentCount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: Notice
+    /// </summary>
     public class Notice
     {
         public string Title { get; set; }
         public DateTime CreatedDate { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: FeeChart
+    /// </summary>
     public class FeeChart
     {
         public string Month { get; set; }
         public double Attendance { get; set; }
         public double Amount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: RecentAdmission
+    /// </summary>
     public class RecentAdmission
     {
         public string Name { get; set; }
@@ -1827,6 +2039,10 @@ namespace SchoolManagementAPI.Models
         public DateTime CreatedDate { get; set; }
         public DateTime? JoinDate { get; set; }
     }
+   
+    /// <summary>
+    /// Data Transfer Object Model: RecentStaff
+    /// </summary>
     public class RecentStaff
     {
         public string Name { get; set; }
@@ -1835,6 +2051,9 @@ namespace SchoolManagementAPI.Models
         public string RoleName { get; set; }   // your proc returns RoleName
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: MiniKpis
+    /// </summary>
     public class MiniKpis
     {
         public double attendancePercent { get; set; }
@@ -1843,6 +2062,9 @@ namespace SchoolManagementAPI.Models
         public double upcomingExams { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: RoleActivityItem
+    /// </summary>
     public class RoleActivityItem
     {
         public DateTime CreatedDate { get; set; }
@@ -1851,6 +2073,9 @@ namespace SchoolManagementAPI.Models
         public DateTime? activityDate { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: DashboardAlert
+    /// </summary>
     public class DashboardAlert
     {
         public string severity { get; set; }
@@ -1859,11 +2084,17 @@ namespace SchoolManagementAPI.Models
         public string actionText { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: DashboardMeta
+    /// </summary>
     public class DashboardMeta
     {
         public DateTime? generatedAt { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: TblSalarySetting
+    /// </summary>
     public class TblSalarySetting
     {
         public int? ID { get; set; }
@@ -1900,6 +2131,9 @@ namespace SchoolManagementAPI.Models
     // =============================================
     // 3) MODEL: TblSalaryPay
     // =============================================
+    /// <summary>
+    /// Data Transfer Object Model: TblSalaryPay
+    /// </summary>
     public class TblSalaryPay
     {
         public int? ID { get; set; }
@@ -1940,6 +2174,9 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public int? TotalCount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblPayrollHead
+    /// </summary>
     public class tblPayrollHead
     {
         public int? ID { get; set; }
@@ -1974,6 +2211,9 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public int? totalcount { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: TblPaymentMode
+    /// </summary>
     public class TblPaymentMode
     {
         public int? ID { get; set; }
@@ -2009,6 +2249,9 @@ namespace SchoolManagementAPI.Models
     }
 
 
+    /// <summary>
+    /// Data Transfer Object Model: TblAdvanceSalary
+    /// </summary>
     public class TblAdvanceSalary
     {
         public long? ID { get; set; }
@@ -2046,6 +2289,10 @@ namespace SchoolManagementAPI.Models
         [NotMapped] public string? SortDirection { get; set; }
         [NotMapped] public int? totalcount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblLeavepolicy
+    /// </summary>
     public class tblLeavepolicy
     {
         public string? ID { get; set; }
@@ -2085,7 +2332,10 @@ namespace SchoolManagementAPI.Models
         public int? Offset { get; set; }
     }
 
-public class tblLeaveApplication
+    /// <summary>
+    /// Data Transfer Object Model: tblLeaveApplication
+    /// </summary>
+    public class tblLeaveApplication
     {
         public string? ID { get; set; }
         public string? SchoolID { get; set; }
@@ -2163,6 +2413,9 @@ public class tblLeaveApplication
         public string? MaxDays { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: TblHolidayCalendar
+    /// </summary>
     public class TblHolidayCalendar
     {
         public string? ID { get; set; }
@@ -2199,8 +2452,9 @@ public class tblLeaveApplication
         [NotMapped] public int? Offset { get; set; }
     }
 
-
-
+    /// <summary>
+    /// Data Transfer Object Model: TblNotices
+    /// </summary>
     public class TblNotices
     {
         public int? NoticeId { get; set; }
@@ -2287,6 +2541,10 @@ public class tblLeaveApplication
     //    [NotMapped]
     //    public int? Offset { get; set; }
     //}
+
+    /// <summary>
+    /// Data Transfer Object Model: tblHomework
+    /// </summary>
     public class tblHomework
     {
         public string? ID { get; set; }
@@ -2353,6 +2611,11 @@ public class tblLeaveApplication
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+    
+
+    /// <summary>
+    /// Data Transfer Object Model: HomeworkUploadRequest
+    /// </summary>
     public class HomeworkUploadRequest
     {
         public IFormFile? File { get; set; }
@@ -2361,6 +2624,9 @@ public class tblLeaveApplication
         public string? FileType { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblHomeworkSubmission
+    /// </summary>
     public class tblHomeworkSubmission
     {
         public string? ID { get; set; }
@@ -2425,6 +2691,9 @@ public class tblLeaveApplication
         public string? StudentName { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: StudentDocumentsUpload
+    /// </summary>
     public class StudentDocumentsUpload
     {
         public string? AdmissionID { get; set; }
@@ -2437,6 +2706,9 @@ public class tblLeaveApplication
         public string? IsActive { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: StudentUploadRequest
+    /// </summary>
     public class StudentUploadRequest
     {
         public List<IFormFile>? Files { get; set; }
@@ -2446,12 +2718,18 @@ public class tblLeaveApplication
         public string? FileType { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: LogoUploadRequest
+    /// </summary>
     public class LogoUploadRequest
     {
         public IFormFile File { get; set; }
         public string SchoolId { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: DeleteFileRequest
+    /// </summary>
     public class DeleteFileRequest
     {
         public string SchoolId { get; set; }
@@ -2459,6 +2737,9 @@ public class tblLeaveApplication
         public string FileName { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: tblUnits
+    /// </summary>
     public class tblUnits
     {
         public string? ID { get; set; }
@@ -2516,6 +2797,10 @@ public class tblLeaveApplication
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblCategories
+    /// </summary>
     public class tblCategories
     {
         public string? ID { get; set; }
@@ -2561,6 +2846,10 @@ public class tblLeaveApplication
         public string? SchoolName { get; set; }
         public string? AcademicYearName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblItems
+    /// </summary>
     public class tblItems
     {
         public string? ID { get; set; }
@@ -2603,6 +2892,10 @@ public class tblLeaveApplication
         public string? Status { get; set; }
         public int? totalcount { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblSuppliers
+    /// </summary>
     public class tblSuppliers
     {
         public string? ID { get; set; }
@@ -2661,6 +2954,10 @@ public class tblLeaveApplication
 
         public string? AcademicYearName { get; set; }
     }
+   
+    /// <summary>
+    /// Data Transfer Object Model: tblPurchase
+    /// </summary>
     public class tblPurchase
     {
         public string? ID { get; set; }
@@ -2739,6 +3036,10 @@ public class tblLeaveApplication
 
         public string? AcademicYearName { get; set; }
     }
+    
+    /// <summary>
+    /// Data Transfer Object Model: tblSales
+    /// </summary>
     public class tblSales
     {
         public string? ID { get; set; }
@@ -2825,6 +3126,9 @@ public class tblLeaveApplication
         public string? ItemNames { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: Tbl_HostelMaster
+    /// </summary>
     public class Tbl_HostelMaster
     {
         public string? ID { get; set; }
@@ -2889,8 +3193,9 @@ public class tblLeaveApplication
         public int? Offset { get; set; }
     }
 
-
-
+    /// <summary>
+    /// Data Transfer Object Model: Tbl_RoomMaster
+    /// </summary>
     public class Tbl_RoomMaster
     {
         public string? ID { get; set; }
@@ -2961,8 +3266,9 @@ public class tblLeaveApplication
         public int? Offset { get; set; }
     }
 
-
-
+    /// <summary>
+    /// Data Transfer Object Model: Tbl_RoomAllotment
+    /// </summary>
     public class Tbl_RoomAllotment
     {
         public string? ID { get; set; }
@@ -3022,6 +3328,9 @@ public class tblLeaveApplication
         public int? Offset { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: Tbl_OutPass
+    /// </summary>
     public class Tbl_OutPass
     {
         public string? ID { get; set; }
@@ -3106,6 +3415,9 @@ public class tblLeaveApplication
         public int? Offset { get; set; }
     }
 
+    /// <summary>
+    /// Data Transfer Object Model: SchoolFile
+    /// </summary>
     public class SchoolFile
     {
         public string? SchoolID { get; set; }

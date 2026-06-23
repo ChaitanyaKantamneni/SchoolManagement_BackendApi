@@ -1,4 +1,4 @@
-﻿//using Microsoft.IdentityModel.Tokens;
+//using Microsoft.IdentityModel.Tokens;
 //using System.IdentityModel.Tokens.Jwt;
 //using System.Security.Claims;
 //using System.Text;
@@ -63,6 +63,11 @@ using System.Text;
 
 namespace SchoolManagementAPI.Services
 {
+    /// <summary>
+    /// TokenService: Manages JWT token generation and validation.
+    /// This service is used to enforce secure, stateless session authentication across the SchoolManagementERP.
+    /// It generates HMAC-SHA256 encrypted Access tokens and UUID Refresh tokens.
+    /// </summary>
     public class TokenService
     {
         private readonly IConfiguration _config;
@@ -72,6 +77,15 @@ namespace SchoolManagementAPI.Services
             _config = config;
         }
 
+        /// <summary>
+        /// Generates a pair of JWT Access and Refresh tokens containing user claims.
+        /// Access tokens are used in subsequent API requests. Refresh tokens are stored in the database to get new access keys.
+        /// </summary>
+        /// <param name="email">User's identity email</param>
+        /// <param name="fullName">User's display name</param>
+        /// <param name="role">Role ID (e.g. 1 = Super Admin, 2 = School Admin)</param>
+        /// <param name="schoolId">Operational tenant context ID</param>
+        /// <param name="schoolIds">List of authorized school identifiers</param>
         public (string AccessToken, string RefreshToken, DateTime AccessExpiryUtc, DateTime RefreshExpiryUtc)
             GenerateTokens(string email, string fullName, string role, string? schoolId = null, string? schoolIds = null)
         {

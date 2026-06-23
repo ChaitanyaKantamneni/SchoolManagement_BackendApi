@@ -26,6 +26,10 @@ namespace SchoolManagementAPI.DAL
             _connectionString = connectionString;
         }
 
+        /// <summary>
+        /// Executes DB operations: LogException
+        /// Returns: void
+        /// </summary>
         public void LogException(Exception ex, string controller, string action, string data)
         {
             using var conn = new MySqlConnection(_connectionString);
@@ -41,6 +45,10 @@ namespace SchoolManagementAPI.DAL
             cmd.ExecuteNonQuery();
         }
 
+
+        /// <summary>
+        /// DateTimeHelper: Standardizes Date/Time conversions to India Standard Time (IST).
+        /// </summary>
         public static class DateTimeHelper
         {
             private static readonly TimeZoneInfo IstTimeZone =
@@ -64,6 +72,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: UserOTP_Operations
+        /// Returns: DataTable
+        /// </summary>
         public DataTable UserOTP_Operations(string email, string otp, string flag)
         {
             using var conn = new MySqlConnection(_connectionString);
@@ -85,6 +97,10 @@ namespace SchoolManagementAPI.DAL
             return dt;
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Users_CRUD_Operations
+        /// Returns: List<TblUser>
+        /// </summary>
         public List<TblUser> Tbl_Users_CRUD_Operations(TblUser user)
         {
             var users = new List<TblUser>();
@@ -229,6 +245,9 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Retrieves active token information using user email and optional refresh token key.
+        /// </summary>
         public UserToken GetUserTokenByRefresh(string email, string refreshToken = null)
         {
             using var conn = new MySqlConnection(_connectionString);
@@ -264,6 +283,10 @@ namespace SchoolManagementAPI.DAL
             return null;
         }
 
+        /// <summary>
+        /// Executes DB operations: InsertUserToken
+        /// Returns: void
+        /// </summary>
         public void InsertUserToken(string email, string accessToken, string refreshToken, DateTime accessExpiryUtc, DateTime refreshExpiryUtc)
         {
             using var conn = new MySqlConnection(_connectionString);
@@ -286,6 +309,10 @@ namespace SchoolManagementAPI.DAL
             cmd.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Executes DB operations: RevokeUserToken
+        /// Returns: void
+        /// </summary>
         public void RevokeUserToken(string refreshToken)
         {
             using var conn = new MySqlConnection(_connectionString);
@@ -451,6 +478,10 @@ namespace SchoolManagementAPI.DAL
         //    }
         //}
 
+        /// <summary>
+        /// Executes DB operations: Tbl_SchoolDetails_CRUD
+        /// Returns: List<SchoolDetails>
+        /// </summary>
         public List<SchoolDetails> Tbl_SchoolDetails_CRUD(SchoolDetails school)
         {
             var schools = new List<SchoolDetails>();
@@ -594,6 +625,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_AcademicYear_CRUD_Operations
+        /// Returns: List<tblAcademicYear>
+        /// </summary>
         public List<tblAcademicYear> Tbl_AcademicYear_CRUD_Operations(tblAcademicYear academicYear)
         {
             var AcademicYears = new List<tblAcademicYear>();
@@ -761,6 +796,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Syllabus_CRUD_Operations
+        /// Returns: List<tblSyllabus>
+        /// </summary>
         public List<tblSyllabus> Tbl_Syllabus_CRUD_Operations(tblSyllabus syllabus)
         {
             var Syllabuses = new List<tblSyllabus>();
@@ -931,6 +970,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Class_CRUD_Operations
+        /// Returns: List<tblClass>
+        /// </summary>
         public List<tblClass> Tbl_Class_CRUD_Operations(tblClass Class)
         {
             var Classes = new List<tblClass>();
@@ -1102,6 +1145,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_ClassDivision_CRUD_Operations
+        /// Returns: List<tblClassDivision>
+        /// </summary>
         public List<tblClassDivision> Tbl_ClassDivision_CRUD_Operations(tblClassDivision classDivision)
         {
             var ClassDivisions = new List<tblClassDivision>();
@@ -1293,6 +1340,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Staff_CRUD_Operations
+        /// Returns: List<tblStaff>
+        /// </summary>
         public List<tblStaff> Tbl_Staff_CRUD_Operations(tblStaff staff)
         {
             var StaffList = new List<tblStaff>();
@@ -1520,6 +1571,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Subjects_CRUD_Operations
+        /// Returns: List<tblSubjects>
+        /// </summary>
         public List<tblSubjects> Tbl_Subjects_CRUD_Operations(tblSubjects subject)
         {
             var Subjects = new List<tblSubjects>();
@@ -1703,6 +1758,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_SubjectStaff_CRUD_Operations
+        /// Returns: List<tblSubjectStaff>
+        /// </summary>
         public List<tblSubjectStaff> Tbl_SubjectStaff_CRUD_Operations(tblSubjectStaff subjectStaff)
         {
             var SubjectStaffs = new List<tblSubjectStaff>();
@@ -1849,6 +1908,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Modules_CRUD_Operations
+        /// Returns: List<tblModules>
+        /// </summary>
         public List<tblModules> Tbl_Modules_CRUD_Operations(tblModules module)
         {
             var modules = new List<tblModules>();
@@ -1972,6 +2035,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Pages_CRUD_Operations
+        /// Returns: List<tblPages>
+        /// </summary>
         public List<tblPages> Tbl_Pages_CRUD_Operations(tblPages page)
         {
             var pages = new List<tblPages>();
@@ -2116,6 +2183,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Roles_CRUD_Operations
+        /// Returns: List<tblRoles>
+        /// </summary>
         public List<tblRoles> Tbl_Roles_CRUD_Operations(tblRoles role)
         {
             var roles = new List<tblRoles>();
@@ -2229,6 +2300,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_UserRoles_CRUD_Operations
+        /// Returns: List<tblUserRoles>
+        /// </summary>
         public List<tblUserRoles> Tbl_UserRoles_CRUD_Operations(tblUserRoles userRole)
         {
             var userRoles = new List<tblUserRoles>();
@@ -2272,6 +2347,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_RolePermissions_CRUD_Operations
+        /// Returns: List<tblRolePermissions>
+        /// </summary>
         public List<tblRolePermissions> Tbl_RolePermissions_CRUD_Operations(List<tblRolePermissions> rolePerms)
         {
             var perms = new List<tblRolePermissions>();
@@ -2334,6 +2413,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_GetRoleMenuPermissions
+        /// Returns: List<tblModules>
+        /// </summary>
         public List<tblModules> Tbl_GetRoleMenuPermissions(string roleId)
         {
             var modules = new List<tblModules>();
@@ -2412,6 +2495,10 @@ namespace SchoolManagementAPI.DAL
 
 
         //Academic Module
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentDetails_CRUD_Operations
+        /// Returns: List<tblStudentDetails>
+        /// </summary>
         public List<tblStudentDetails> Tbl_StudentDetails_CRUD_Operations(tblStudentDetails admission)
         {
             var Admissions = new List<tblStudentDetails>();
@@ -2688,6 +2775,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentAddressDetails_CRUD_Operations
+        /// Returns: List<tblStudentAddressDetails>
+        /// </summary>
         public List<tblStudentAddressDetails> Tbl_StudentAddressDetails_CRUD_Operations(tblStudentAddressDetails admission)
         {
             var Admissions = new List<tblStudentAddressDetails>();
@@ -2898,6 +2989,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentParentDetails_CRUD_Operations
+        /// Returns: List<tblStudentParentDetails>
+        /// </summary>
         public List<tblStudentParentDetails> Tbl_StudentParentDetails_CRUD_Operations(tblStudentParentDetails admission)
         {
             var Admissions = new List<tblStudentParentDetails>();
@@ -3111,6 +3206,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentAcademicDetails_CRUD_Operations
+        /// Returns: List<tblStudentAcademicDetails>
+        /// </summary>
         public List<tblStudentAcademicDetails> Tbl_StudentAcademicDetails_CRUD_Operations(tblStudentAcademicDetails admission)
         {
             var Admissions = new List<tblStudentAcademicDetails>();
@@ -3279,6 +3378,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentTransportationDetails_CRUD_Operations
+        /// Returns: List<tblStudentTransportationDetails>
+        /// </summary>
         public List<tblStudentTransportationDetails> Tbl_StudentTransportationDetails_CRUD_Operations(tblStudentTransportationDetails admission)
         {
             var Admissions = new List<tblStudentTransportationDetails>();
@@ -3475,6 +3578,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_AllotClassTeacher_CRUD_Operations
+        /// Returns: List<tblAllotClassTeacher>
+        /// </summary>
         public List<tblAllotClassTeacher> Tbl_AllotClassTeacher_CRUD_Operations(tblAllotClassTeacher ClassTeacher)
         {
             var ClassTeachers = new List<tblAllotClassTeacher>();
@@ -3649,6 +3756,10 @@ namespace SchoolManagementAPI.DAL
 
 
         //Transportation Module
+        /// <summary>
+        /// Executes DB operations: Tbl_bus_CRUD_Operations
+        /// Returns: List<tblBus>
+        /// </summary>
         public List<tblBus> Tbl_bus_CRUD_Operations(tblBus bus)
         {
             var Buses = new List<tblBus>();
@@ -3854,6 +3965,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_route_CRUD_Operations
+        /// Returns: List<tblRoute>
+        /// </summary>
         public List<tblRoute> Tbl_route_CRUD_Operations(tblRoute route)
         {
             var Routes = new List<tblRoute>();
@@ -4027,6 +4142,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_stops_CRUD_Operations
+        /// Returns: List<tblStops>
+        /// </summary>
         public List<tblStops> Tbl_stops_CRUD_Operations(tblStops stop)
         {
             var Stops = new List<tblStops>();
@@ -4208,6 +4327,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_fare_CRUD_Operations
+        /// Returns: List<tblFare>
+        /// </summary>
         public List<tblFare> Tbl_fare_CRUD_Operations(tblFare fare)
         {
             var Fare = new List<tblFare>();
@@ -4390,6 +4513,10 @@ namespace SchoolManagementAPI.DAL
         }
 
         //Time Table Module
+        /// <summary>
+        /// Executes DB operations: Tbl_WorkingDays_CRUD_Operations
+        /// Returns: List<TblWorkingDays>
+        /// </summary>
         public List<TblWorkingDays> Tbl_WorkingDays_CRUD_Operations(TblWorkingDays wrkdays)
         {
             var Wrkdays = new List<TblWorkingDays>();
@@ -4557,6 +4684,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Session_CRUD_Operations
+        /// Returns: List<TblSession>
+        /// </summary>
         public List<TblSession> Tbl_Session_CRUD_Operations(TblSession Session1)
         {
             var Sessiontt = new List<TblSession>();
@@ -4724,6 +4855,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_TimeTable_CRUD
+        /// Returns: List<TblTimeTable>
+        /// </summary>
         public List<TblTimeTable> Tbl_TimeTable_CRUD(TblTimeTable model)
         {
             var list = new List<TblTimeTable>();
@@ -4995,6 +5130,10 @@ namespace SchoolManagementAPI.DAL
         }
 
         //Exam Module
+        /// <summary>
+        /// Executes DB operations: Tbl_ExamType_CRUD_Operations
+        /// Returns: List<tblExamType>
+        /// </summary>
         public List<tblExamType> Tbl_ExamType_CRUD_Operations(tblExamType examtype)
         {
             var ExamType = new List<tblExamType>();
@@ -5188,6 +5327,11 @@ namespace SchoolManagementAPI.DAL
             }
 
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_SetExam_CRUD_Operations
+        /// Returns: List<tblSetExam>
+        /// </summary>
         public List<tblSetExam> Tbl_SetExam_CRUD_Operations(tblSetExam examtype)
         {
             var ExamType = new List<tblSetExam>();
@@ -5555,6 +5699,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_ExamAttendece_CRUD_Operations
+        /// Returns: List<tblExamAttendence>
+        /// </summary>
         public List<tblExamAttendence> Tbl_ExamAttendece_CRUD_Operations(tblExamAttendence exam)
         {
             var result = new List<tblExamAttendence>();
@@ -5604,7 +5752,7 @@ namespace SchoolManagementAPI.DAL
 
                     conn.Open();
 
-                    // FLAG 1 — now bulk, no loop needed
+                    // FLAG 1 ï¿½ now bulk, no loop needed
                     if (exam.Flag == "1")
                     {
                         using var reader = cmd.ExecuteReader();
@@ -5617,7 +5765,7 @@ namespace SchoolManagementAPI.DAL
                         }
                     }
 
-                    // FLAG 5 — now bulk, no loop needed
+                    // FLAG 5 ï¿½ now bulk, no loop needed
                     else if (exam.Flag == "5")
                     {
                         using var reader = cmd.ExecuteReader();
@@ -5630,7 +5778,7 @@ namespace SchoolManagementAPI.DAL
                         }
                     }
 
-                    // All other flags stay EXACTLY as they were — no changes below this line
+                    // All other flags stay EXACTLY as they were ï¿½ no changes below this line
                     else if (exam.Flag == "6" || exam.Flag == "8")
                     {
                         using var reader = cmd.ExecuteReader();
@@ -5747,6 +5895,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_ExamMarks_CRUD_Operations
+        /// Returns: List<tblExamMarks>
+        /// </summary>
         public List<tblExamMarks> Tbl_ExamMarks_CRUD_Operations(tblExamMarks exam)
         {
             var result = new List<tblExamMarks>();
@@ -5973,6 +6126,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentAttendance_CRUD_Operations
+        /// Returns: List<tblStudentAttendance>
+        /// </summary>
         public List<tblStudentAttendance> Tbl_StudentAttendance_CRUD_Operations(tblStudentAttendance exam)
         {
             var result = new List<tblStudentAttendance>();
@@ -6190,6 +6347,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StaffAttendance_CRUD_Operations
+        /// Returns: List<tblStaffAttendance>
+        /// </summary>
         public List<tblStaffAttendance> Tbl_StaffAttendance_CRUD_Operations(tblStaffAttendance exam)
         {
             var result = new List<tblStaffAttendance>();
@@ -6232,7 +6393,7 @@ namespace SchoolManagementAPI.DAL
 
                 conn.Open();
 
-                // Flag 1 and 5 — just read the Message
+                // Flag 1 and 5 ï¿½ just read the Message
                 if (exam.Flag == "1" || exam.Flag == "5")
                 {
                     using var reader = cmd.ExecuteReader();
@@ -6315,6 +6476,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_feeCategory_CRUD_Operations
+        /// Returns: List<feeCategory>
+        /// </summary>
         public List<feeCategory> Tbl_feeCategory_CRUD_Operations(feeCategory fee)
         {
             var Routes = new List<feeCategory>();
@@ -6515,6 +6681,11 @@ namespace SchoolManagementAPI.DAL
                 };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_feeallocation_CRUD_Operations
+        /// Returns: List<tblfeeAllocation>
+        /// </summary>
         public List<tblfeeAllocation> Tbl_feeallocation_CRUD_Operations(tblfeeAllocation fee)
         {
             var Routes = new List<tblfeeAllocation>();
@@ -6708,6 +6879,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_FeeDiscountCategory_CRUD_Operations
+        /// Returns: List<tblfeeDiscountCategory>
+        /// </summary>
         public List<tblfeeDiscountCategory> Tbl_FeeDiscountCategory_CRUD_Operations(tblfeeDiscountCategory fee)
         {
             var Routes = new List<tblfeeDiscountCategory>();
@@ -6909,7 +7084,13 @@ namespace SchoolManagementAPI.DAL
                 };
             }
         }
+        
+        
         // Fee Discount
+        /// <summary>
+        /// Executes DB operations: Tbl_FeeDiscount_CRUD_Operations
+        /// Returns: List<tblfeeDiscount>
+        /// </summary>
         public List<tblfeeDiscount> Tbl_FeeDiscount_CRUD_Operations(tblfeeDiscount fee)
         {
             var Routes = new List<tblfeeDiscount>();
@@ -7142,6 +7323,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentTransfer_CRUD_Operations
+        /// Returns: List<tblStudentTransfer>
+        /// </summary>
         public List<tblStudentTransfer> Tbl_StudentTransfer_CRUD_Operations(tblStudentTransfer fee)
         {
             var Routes = new List<tblStudentTransfer>();
@@ -7308,6 +7493,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_FeeCollection_CRUD_Operations
+        /// Returns: List<tblFeeCollection>
+        /// </summary>
         public List<tblFeeCollection> Tbl_FeeCollection_CRUD_Operations(tblFeeCollection fee)
         {
             var Routes = new List<tblFeeCollection>();
@@ -7511,6 +7700,9 @@ namespace SchoolManagementAPI.DAL
 
 
         //Dashboard
+        /// <summary>
+        /// Collects aggregated stats (counts, sums) for administrative dashboards.
+        /// </summary>
         public DashboardResponse GetDashboardData(DashboardRequest req)
         {
             var response = new DashboardResponse();
@@ -7936,6 +8128,10 @@ namespace SchoolManagementAPI.DAL
         //    return response;
         //}
 
+       
+        /// <summary>
+        /// Safely extracts and converts a database column to an integer value, handling DBNull values.
+        /// </summary>
         private static int SafeInt(IDataRecord r, string c)
         {
             try
@@ -7946,6 +8142,10 @@ namespace SchoolManagementAPI.DAL
             catch { return 0; }
         }
 
+        
+        /// <summary>
+        /// Safely extracts and converts a database column to a double value, handling DBNull values.
+        /// </summary>
         private static double SafeDouble(IDataRecord r, string c)
         {
             try
@@ -7956,6 +8156,10 @@ namespace SchoolManagementAPI.DAL
             catch { return 0; }
         }
 
+        
+        /// <summary>
+        /// Safely extracts a database column as a string, substituting empty strings for DBNull values.
+        /// </summary>
         private static string SafeString(IDataRecord r, string c)
         {
             try
@@ -7966,6 +8170,10 @@ namespace SchoolManagementAPI.DAL
             catch { return ""; }
         }
 
+        
+        /// <summary>
+        /// Safely converts database column records to clean strings without throw errors.
+        /// </summary>
         private static string SafeStringSafe(IDataRecord r, string c)
         {
             try
@@ -7979,6 +8187,9 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Safely converts database columns to nullable DateTime formats.
+        /// </summary>
         private static DateTime? SafeDateTimeNullable(IDataRecord r, string c)
         {
             try
@@ -7993,6 +8204,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_SalarySettings_CRUD_Operations
+        /// Returns: List<TblSalarySetting>
+        /// </summary>
         public List<TblSalarySetting> Tbl_SalarySettings_CRUD_Operations(TblSalarySetting req)
         {
             var result = new List<TblSalarySetting>();
@@ -8091,9 +8306,11 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
-        // =============================================
-        // 4) DAL METHOD
-        // =============================================
+
+        /// <summary>
+        /// Executes DB operations: Tbl_SalaryPay_CRUD_Operations
+        /// Returns: List<TblSalaryPay>
+        /// </summary>
         public List<TblSalaryPay> Tbl_SalaryPay_CRUD_Operations(TblSalaryPay req)
         {
             var result = new List<TblSalaryPay>();
@@ -8198,7 +8415,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
-
+        /// <summary>
+        /// Executes DB operations: Tbl_PayrollHead_CRUD_Operations
+        /// Returns: List<tblPayrollHead>
+        /// </summary>
         public List<tblPayrollHead> Tbl_PayrollHead_CRUD_Operations(tblPayrollHead ph)
         {
             var PayrollHeads = new List<tblPayrollHead>();
@@ -8363,6 +8583,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_PaymentMode_CRUD_Operations
+        /// Returns: List<TblPaymentMode>
+        /// </summary>
         public List<TblPaymentMode> Tbl_PaymentMode_CRUD_Operations(TblPaymentMode ph)
         {
             var PayrollHeads = new List<TblPaymentMode>();
@@ -8528,6 +8752,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_AdvanceSalary_CRUD_Operations
+        /// Returns: List<TblAdvanceSalary>
+        /// </summary>
         public List<TblAdvanceSalary> Tbl_AdvanceSalary_CRUD_Operations(TblAdvanceSalary a)
         {
             var result = new List<TblAdvanceSalary>();
@@ -8655,6 +8883,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_leavePolicy_CRUD_Operations
+        /// Returns: List<tblLeavepolicy>
+        /// </summary>
         public List<tblLeavepolicy> Tbl_leavePolicy_CRUD_Operations(tblLeavepolicy fee)
         {
             var Routes = new List<tblLeavepolicy>();
@@ -8833,6 +9066,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_LeaveApplication_CRUD_Operations
+        /// Returns: List<tblLeaveApplication>
+        /// </summary>
         public List<tblLeaveApplication> Tbl_LeaveApplication_CRUD_Operations(tblLeaveApplication fee)
         {
             var Routes = new List<tblLeaveApplication>();
@@ -8982,6 +9219,10 @@ namespace SchoolManagementAPI.DAL
                 return new List<tblLeaveApplication> { new tblLeaveApplication { Status = $"ERROR: {ex.Message}" } };
             }
         }
+        
+        /// <summary>
+        /// Uploads supporting leave documentation files to temporary storage paths.
+        /// </summary>
         public async Task<(string fileName, string url, string tempPath)> SaveLeaveFile(IFormFile file, string schoolId, string leaveId)
         {
             var tempFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", schoolId, "Leave", "temp");
@@ -9000,6 +9241,10 @@ namespace SchoolManagementAPI.DAL
             var url = $"Uploads/{schoolId}/Leave/temp/{fileName}";
             return (fileName, url, path);
         }
+        
+        /// <summary>
+        /// Commits temporary leave documents to final permanent folders on approval.
+        /// </summary>
         public (string newUrl, bool success) MoveLeaveFileToFinal(string schoolId, string leaveId, string fileName)
         {
             try
@@ -9024,6 +9269,11 @@ namespace SchoolManagementAPI.DAL
                 return (null, false);
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_Homework_CRUD_Operations
+        /// Returns: List<tblHomework>
+        /// </summary>
         public List<tblHomework> Tbl_Homework_CRUD_Operations(tblHomework homework)
         {
             var Homework = new List<tblHomework>();
@@ -9230,6 +9480,9 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Saves uploaded homework documents to temporary storage paths.
+        /// </summary>
         public async Task<(string fileName, string url, string tempPath)> SaveHomeworkFile(IFormFile file, string schoolId, string homeworkId)
         {
             // Always save to TEMP folder first
@@ -9250,6 +9503,10 @@ namespace SchoolManagementAPI.DAL
             var tempUrl = $"Uploads/{schoolId}/Homework/temp/{fileName}";
             return (fileName, tempUrl, tempFilePath);
         }
+        
+        /// <summary>
+        /// Commits temporary homework files to final permanent directories.
+        /// </summary>
         public (string newUrl, bool success) MoveHomeworkFileToFinal(string schoolId, string homeworkId, string fileName)
         {
             try
@@ -9275,6 +9532,11 @@ namespace SchoolManagementAPI.DAL
                 return (null, false);
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_HomeworkSubmission_CRUD_Operations
+        /// Returns: List<tblHomeworkSubmission>
+        /// </summary>
         public List<tblHomeworkSubmission> Tbl_HomeworkSubmission_CRUD_Operations(tblHomeworkSubmission obj)
         {
             var list = new List<tblHomeworkSubmission>();
@@ -9489,6 +9751,9 @@ namespace SchoolManagementAPI.DAL
 
         // Add these methods to your SchoolManagementDAL.cs
 
+        /// <summary>
+        /// Saves uploaded homework submissions to temporary folders.
+        /// </summary>
         public async Task<(string fileName, string url, string tempPath)> SaveHomeworkSubmissionFile(IFormFile file, string schoolId, string submissionId)
         {
             // Always save to TEMP folder first
@@ -9511,6 +9776,9 @@ namespace SchoolManagementAPI.DAL
             return (fileName, tempUrl, tempFilePath);
         }
 
+        /// <summary>
+        /// Commits temporary homework submissions to final permanent locations.
+        /// </summary>
         public (string newUrl, bool success) MoveHomeworkSubmissionFileToFinal(string schoolId, string submissionId, string fileName)
         {
             try
@@ -9543,6 +9811,11 @@ namespace SchoolManagementAPI.DAL
                 return (null, false);
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_StudentDocumentsUpload_CRUD
+        /// Returns: List<StudentDocumentsUpload>
+        /// </summary>
         public List<StudentDocumentsUpload> Tbl_StudentDocumentsUpload_CRUD(StudentDocumentsUpload doc)
         {
             var list = new List<StudentDocumentsUpload>();
@@ -9605,6 +9878,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Proc_Tbl_SchoolFiles
+        /// Returns: List<SchoolFile>
+        /// </summary>
         public List<SchoolFile> Proc_Tbl_SchoolFiles(SchoolFile file)
         {
             var list = new List<SchoolFile>();
@@ -9654,6 +9931,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_HolidayCalendar_CRUD_Operations
+        /// Returns: List<TblHolidayCalendar>
+        /// </summary>
         public List<TblHolidayCalendar> Tbl_HolidayCalendar_CRUD_Operations(TblHolidayCalendar fee)
         {
             var Routes = new List<TblHolidayCalendar>();
@@ -9835,6 +10116,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Notices_CRUD_Operations
+        /// Returns: List<TblNotices>
+        /// </summary>
         public List<TblNotices> Tbl_Notices_CRUD_Operations(TblNotices req)
         {
             var result = new List<TblNotices>();
@@ -9990,6 +10275,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_HostelMaster_CRUD_Operations
+        /// Returns: List<Tbl_HostelMaster>
+        /// </summary>
         public List<Tbl_HostelMaster> Tbl_HostelMaster_CRUD_Operations(Tbl_HostelMaster hostel)
         {
             var Hostel = new List<Tbl_HostelMaster>();
@@ -10170,6 +10459,10 @@ namespace SchoolManagementAPI.DAL
 
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_RoomMaster_CRUD_Operations
+        /// Returns: List<Tbl_RoomMaster>
+        /// </summary>
         public List<Tbl_RoomMaster> Tbl_RoomMaster_CRUD_Operations(Tbl_RoomMaster room)
         {
             var Room = new List<Tbl_RoomMaster>();
@@ -10415,6 +10708,10 @@ namespace SchoolManagementAPI.DAL
 
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_RoomAllotment_CRUD_Operations
+        /// Returns: List<Tbl_RoomAllotment>
+        /// </summary>
         public List<Tbl_RoomAllotment> Tbl_RoomAllotment_CRUD_Operations(Tbl_RoomAllotment allotment)
         {
             var Allotment = new List<Tbl_RoomAllotment>();
@@ -10607,6 +10904,10 @@ namespace SchoolManagementAPI.DAL
         }
 
 
+        /// <summary>
+        /// Executes DB operations: Tbl_OutPass_CRUD_Operations
+        /// Returns: List<Tbl_OutPass>
+        /// </summary>
         public List<Tbl_OutPass> Tbl_OutPass_CRUD_Operations(Tbl_OutPass outpass)
         {
             var OutPass = new List<Tbl_OutPass>();
@@ -10897,6 +11198,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: TagStaffSchools
+        /// Returns: void
+        /// </summary>
         public void TagStaffSchools(long staffId, List<string> schoolIds)
         {
             // First clear existing tags
@@ -10922,6 +11227,10 @@ namespace SchoolManagementAPI.DAL
             }
         }
 
+        /// <summary>
+        /// Executes DB operations: GetStaffSchoolIDs
+        /// Returns: List<string>
+        /// </summary>
         public List<string> GetStaffSchoolIDs(string email)
         {
             // Flag 11 gives user by email, then we use Flag 14 on staff
@@ -10953,6 +11262,10 @@ namespace SchoolManagementAPI.DAL
             return ids;
         }
 
+        /// <summary>
+        /// Executes DB operations: Tbl_Units_CRUD_Operations
+        /// Returns: List<tblUnits>
+        /// </summary>
         public List<tblUnits> Tbl_Units_CRUD_Operations(tblUnits units)
         {
             var Units = new List<tblUnits>();
@@ -11176,6 +11489,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+       
+        /// <summary>
+        /// Executes DB operations: Tbl_Categories_CRUD_Operations
+        /// Returns: List<tblCategories>
+        /// </summary>
         public List<tblCategories> Tbl_Categories_CRUD_Operations(tblCategories category)
         {
             var Categories = new List<tblCategories>();
@@ -11317,6 +11635,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_Items_CRUD_Operations
+        /// Returns: List<tblItems>
+        /// </summary>
         public List<tblItems> Tbl_Items_CRUD_Operations(tblItems items)
         {
             var Items = new List<tblItems>();
@@ -11507,6 +11830,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_Suppliers_CRUD_Operations
+        /// Returns: List<tblSuppliers>
+        /// </summary>
         public List<tblSuppliers> Tbl_Suppliers_CRUD_Operations(tblSuppliers supplier)
         {
             var Suppliers = new List<tblSuppliers>();
@@ -11751,6 +12079,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_Purchase_CRUD_Operations
+        /// Returns: List<tblPurchase>
+        /// </summary>
         public List<tblPurchase> Tbl_Purchase_CRUD_Operations(tblPurchase purchase)
         {
             var Purchases = new List<tblPurchase>();
@@ -12062,6 +12395,11 @@ namespace SchoolManagementAPI.DAL
         };
             }
         }
+        
+        /// <summary>
+        /// Executes DB operations: Tbl_Sales_CRUD_Operations
+        /// Returns: List<tblSales>
+        /// </summary>
         public List<tblSales> Tbl_Sales_CRUD_Operations(tblSales sales)
         {
             var Sales = new List<tblSales>();
