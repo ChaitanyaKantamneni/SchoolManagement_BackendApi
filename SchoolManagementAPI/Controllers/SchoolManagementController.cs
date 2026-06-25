@@ -6910,5 +6910,140 @@ namespace SchoolManagementAPI.Controllers
             }
         }
 
+        [HttpPost("TransitionAcademicYearData")]
+        /// <summary>
+        /// API Endpoint: Post api/SchoolManagement/TransitionAcademicYearData
+        /// Purpose: Initiates cloning of selected academic masters and transportation data to a target academic year.
+        /// </summary>
+        public IActionResult TransitionAcademicYearData([FromBody] TransitionAcademicYearDataRequest request)
+         {
+            if (request == null)
+            {
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Success = false,
+                    Message = "Payload is required."
+                });
+            }
+
+            try
+            {
+                var result = dbop.TransitionAcademicYearData(request);
+                if (result.StartsWith("SUCCESS"))
+                {
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Success = true,
+                        Message = result
+                    });
+                }
+
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Success = false,
+                    Message = result
+                });
+            }
+            catch (Exception ex)
+            {
+                dbop.LogException(
+                    ex,
+                    "SchoolManagementController",
+                    "TransitionAcademicYearData",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(request)
+                );
+
+                return StatusCode(500, new
+                {
+                    StatusCode = 500,
+                    Success = false,
+                    Message = "Internal server error occurred.",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        // ==========================================
+        //         MESSAGING CONTROLLER ENDPOINTS
+        // ==========================================
+
+        [HttpGet("GetGatewayConfig")]
+        public IActionResult GetGatewayConfig([FromQuery] string schoolId)
+        {
+            if (string.IsNullOrEmpty(schoolId)) return BadRequest("SchoolId is required.");
+            var config = dbop.GetGatewayConfig(schoolId);
+            return Ok(new { StatusCode = 200, Success = true, Data = config });
+        }
+
+        [HttpPost("SaveGatewayConfig")]
+        public IActionResult SaveGatewayConfig([FromBody] MessagingGatewayConfig config)
+        {
+            if (config == null || string.IsNullOrEmpty(config.SchoolId)) return BadRequest("Invalid payload or SchoolId.");
+            var result = dbop.SaveGatewayConfig(config);
+            if (result == "SUCCESS")
+            {
+                return Ok(new { StatusCode = 200, Success = true, Message = "Gateway config saved successfully." });
+            }
+            return StatusCode(500, new { StatusCode = 500, Success = false, Message = result });
+        }
+
+        [HttpGet("GetTemplates")]
+        public IActionResult GetTemplates([FromQuery] string schoolId)
+        {
+            if (string.IsNullOrEmpty(schoolId)) return BadRequest("SchoolId is required.");
+            var templates = dbop.GetTemplates(schoolId);
+            return Ok(new { StatusCode = 200, Success = true, Data = templates });
+        }
+
+        [HttpPost("SaveTemplate")]
+        public IActionResult SaveTemplate([FromBody] MessagingTemplateDto template)
+        {
+            if (template == null || string.IsNullOrEmpty(template.SchoolId)) return BadRequest("Invalid payload or SchoolId.");
+            var result = dbop.SaveTemplate(template);
+            if (result == "SUCCESS")
+            {
+                return Ok(new { StatusCode = 200, Success = true, Message = "Template saved successfully." });
+            }
+            return StatusCode(500, new { StatusCode = 500, Success = false, Message = result });
+        }
+
+        [HttpDelete("DeleteTemplate")]
+        public IActionResult DeleteTemplate([FromQuery] string schoolId, [FromQuery] string templateId)
+        {
+            if (string.IsNullOrEmpty(schoolId) || string.IsNullOrEmpty(templateId)) return BadRequest("SchoolId and TemplateId are required.");
+            var result = dbop.DeleteTemplate(schoolId, templateId);
+            if (result == "SUCCESS")
+            {
+                return Ok(new { StatusCode = 200, Success = true, Message = "Template deleted successfully." });
+            }
+            else if (result == "NOT_FOUND_OR_DEFAULT")
+            {
+                return BadRequest(new { StatusCode = 400, Success = false, Message = "Cannot delete default templates or template not found." });
+            }
+            return StatusCode(500, new { StatusCode = 500, Success = false, Message = result });
+        }
+
+        [HttpGet("GetDeliveryLogs")]
+        public IActionResult GetDeliveryLogs([FromQuery] string schoolId)
+        {
+            if (string.IsNullOrEmpty(schoolId)) return BadRequest("SchoolId is required.");
+            var logs = dbop.GetDeliveryLogs(schoolId);
+            return Ok(new { StatusCode = 200, Success = true, Data = logs });
+        }
+
+        [HttpPost("SendMessages")]
+        public async Task<IActionResult> SendMessages([FromBody] SendMessageRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.SchoolId)) return BadRequest("Invalid message payload.");
+            var result = await dbop.SendMessagesViaGateway(request);
+            if (result == "SUCCESS")
+            {
+                return Ok(new { StatusCode = 200, Success = true, Message = "Messages successfully queued / dispatched via Msg91 gateway." });
+            }
+            return BadRequest(new { StatusCode = 400, Success = false, Message = result });
+        }
     }
 }
