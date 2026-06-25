@@ -3426,4 +3426,100 @@ using System.Data;
         public string? FileType { get; set; }
         public string? Flag { get; set; }
     }
+
+    /// <summary>
+    /// Configuration for multi-tenant SMS and WhatsApp providers (Msg91 and fallback sandboxes).
+    /// </summary>
+    public class MessagingGatewayConfig
+    {
+        public string? SchoolId { get; set; }
+        public bool SmsActive { get; set; } = true;
+        public string? SmsProvider { get; set; } = "Msg91 API";
+        public string? SmsApiKey { get; set; }
+        public string? SmsSenderId { get; set; }
+        public bool WhatsAppActive { get; set; } = true;
+        public string? WhatsAppProvider { get; set; } = "Msg91 API";
+        public string? WhatsAppApiKey { get; set; }
+        public string? WhatsAppNumber { get; set; }
+    }
+
+    /// <summary>
+    /// Model to store and fetch SMS/WhatsApp notification message templates.
+    /// </summary>
+    public class MessagingTemplateDto
+    {
+        public string? Id { get; set; }
+        public string? SchoolId { get; set; }
+        public string? Title { get; set; }
+        public string? Body { get; set; }
+        public string? Channel { get; set; }
+        public string? Category { get; set; }
+        public bool IsDefault { get; set; }
+    }
+
+    /// <summary>
+    /// Delivery logs recording sent notifications history.
+    /// </summary>
+    public class MessagingLogDto
+    {
+        public string? Id { get; set; }
+        public string? SchoolId { get; set; }
+        public string? AcademicYearId { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? Channel { get; set; }
+        public string? RecipientType { get; set; }
+        public int RecipientCount { get; set; }
+        public string? MessageSnippet { get; set; }
+        public string? Status { get; set; }
+    }
+
+    /// <summary>
+    /// Payload request for triggering SMS/WhatsApp messages.
+    /// </summary>
+    public class SendMessageRequest
+    {
+        public string? SchoolId { get; set; }
+        public string? AcademicYearId { get; set; }
+        public string? Channel { get; set; }
+        public string? RecipientType { get; set; }
+        public string? MessageBody { get; set; }
+        public List<RecipientInfo>? Recipients { get; set; }
+    }
+
+    /// <summary>
+    /// Individual recipient details inside the bulk messaging dispatch list.
+    /// </summary>
+    public class RecipientInfo
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? ContactName { get; set; }
+        public string? Mobile { get; set; }
+        public string? Email { get; set; }
+    }
+
+    /// <summary>
+    /// Data Transfer Object Model: TransitionAcademicYearDataRequest
+    /// Represents inbound payload parameters to copy configuration settings across academic years.
+    /// </summary>
+    public class TransitionAcademicYearDataRequest
+    {
+        public string? SchoolID { get; set; }
+        public string? SourceYearID { get; set; }
+        public string? TargetYearID { get; set; }
+        public string? TransferSyllabus { get; set; }
+        public string? TransferClass { get; set; }
+        public string? TransferDivision { get; set; }
+        public string? TransferSubject { get; set; }
+        public string? TransferSubjectStaff { get; set; }
+        public string? TransferModules { get; set; }
+        public string? TransferPages { get; set; }
+        public string? TransferRoles { get; set; }
+        public string? TransferStaff { get; set; }
+        public string? TransferGroupAdmin { get; set; }
+        public string? TransferBus { get; set; }
+        public string? TransferRoutes { get; set; }
+        public string? TransferStops { get; set; }
+        public string? TransferFares { get; set; }
+    }
 }
